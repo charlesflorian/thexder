@@ -3,6 +3,7 @@ from pygame.locals import *
 
 from animation import *
 from level import *
+from constants import *
 
 def main():
     print "hello"
