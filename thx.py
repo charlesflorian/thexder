@@ -5,7 +5,7 @@ from animation import *
 from level import *
 
 def main():
-    pass
+    print "hello"
 
 if __name__ == "__main__":
     main()
