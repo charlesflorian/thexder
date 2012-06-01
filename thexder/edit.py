@@ -8,6 +8,7 @@ import pygame
 from pygame.locals import *
 
 from . import data
+from . import config
 
 def init_colours():
     # This is the default colour scheme, white text on black background.
@@ -972,6 +973,7 @@ def main(w):
         display_lvl(w,working_lvl,scr_x,scr_y)
 
 def cli():
+    config.set_app_config_from_cli(config.base_argument_parser())
     return wrapper(main)
 
 if __name__ == "__main__":

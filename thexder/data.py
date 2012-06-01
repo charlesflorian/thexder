@@ -11,11 +11,12 @@ import shutil
 from datetime import datetime
 from contextlib import contextmanager
 
+from . import config
+
 isfile = os.path.isfile
 join = os.path.join
 
 log = logging.getLogger(__name__)
-DATA_DIR = 'data' # HACK -- this will use 'data' in the current directory
 
 class DataManager(object):
 
@@ -60,6 +61,11 @@ class DataManager(object):
         with open(self.data_file_name(name, force=True), 'wb') as fh:
             yield fh
 
+manager = None
 
 def default_data_manager():
-    return DataManager(DATA_DIR)
+    global manager
+    if manager is None:
+        manager = DataManager(config.app_config().data_dir)
+
+    return manager
