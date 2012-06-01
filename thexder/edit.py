@@ -4,7 +4,6 @@ from random import *
 from sys import exit
 from os import rename
 
-from log import *
 import pygame
 from pygame.locals import *
 
