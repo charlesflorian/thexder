@@ -10,8 +10,6 @@ from pygame.locals import *
 
 from . import data
 
-DATA_DIR = 'data' # HACK -- this will use 'data' in the current directory
-
 def init_colours():
     # This is the default colour scheme, white text on black background.
     init_pair(1,COLOR_WHITE,COLOR_BLACK)
@@ -158,7 +156,7 @@ class level:
         This will open the level. This perhaps should be called in the __init__ procedure.
         """
         global LVL_HEIGHT
-        dm = data.DataManager(DATA_DIR)
+        dm = data.default_data_manager()
         level_name = "MAP{0:0>2}.BIN".format(self.curlvl)
         raw_level_data = dm.load_file(level_name)
         self.ldata = [[]]
@@ -208,29 +206,28 @@ class level:
 
         b) shouldn't matter, but a) might...
         """
-        f = open("MAP{0:0>2}.BIN".format(self.curlvl),"wb")
-        for i in range(0, self.width()):
-            # Grab the first character from this column.
-            last_char = self.tile(i,0)
-            char_count = 1
+        dm = data.default_data_manager()
 
-            for j in range(1,self.height(i)):
-                # Grab the next character
-                char = self.tile(i,j)
-                if char != last_char or char_count >= 8:
-                    # The character has changed, or we've gone over 8. Write the buffer to the file.
-                    self.write_char(f,last_char,char_count)
-                    char_count = 1
-                else:
-                    # Increment the count.
-                    char_count += 1
-                last_char = char
+        with dm.write("MAP{0:0>2}.BIN".format(self.curlvl)) as f:
+            for i in range(0, self.width()):
+                # Grab the first character from this column.
+                last_char = self.tile(i,0)
+                char_count = 1
 
-            # Write the last bit to the file.
-            self.write_char(f,last_char,char_count)
+                for j in range(1,self.height(i)):
+                    # Grab the next character
+                    char = self.tile(i,j)
+                    if char != last_char or char_count >= 8:
+                        # The character has changed, or we've gone over 8. Write the buffer to the file.
+                        self.write_char(f,last_char,char_count)
+                        char_count = 1
+                    else:
+                        # Increment the count.
+                        char_count += 1
+                    last_char = char
 
-        # And close the file.
-        f.close()
+                # Write the last bit to the file.
+                self.write_char(f,last_char,char_count)
 
         return True
 
@@ -725,9 +722,7 @@ def load_raw_tiles():
     """
     global TILE_SIZE
 
-    f = open("TNCHRS.BIN","rb")
-    content = f.read()
-    f.close()
+    content = data.default_data_manager().load_file("TNCHRS.BIN")
 
     output = []
 
@@ -747,7 +742,7 @@ def load_raw_animation_data():
     global MAX_LEVELS
     output = []
 
-    dm = data.DataManager(DATA_DIR)
+    dm = data.default_data_manager()
 
     # Get the first set of tiles.
     output.append(dm.load_file("TANBIT01.BIN"))

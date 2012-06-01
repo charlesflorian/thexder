@@ -7,11 +7,15 @@ Copyright (c) 2012 Off By One Services. All rights reserved.
 """
 import logging
 import os
+import shutil
+from datetime import datetime
+from contextlib import contextmanager
 
 isfile = os.path.isfile
 join = os.path.join
 
 log = logging.getLogger(__name__)
+DATA_DIR = 'data' # HACK -- this will use 'data' in the current directory
 
 class DataManager(object):
 
@@ -28,7 +32,7 @@ class DataManager(object):
     def has_data_file(self, name):
         return self.data_file_name(name) is not None
 
-    def data_file_name(self, name):
+    def data_file_name(self, name, force=False):
         # try the name's case, and then try case-insensitive search
         if isfile(join(self.data_dir, name)):
             return join(self.data_dir, name)
@@ -38,3 +42,24 @@ class DataManager(object):
         for c in candidates:
             if c.lower() == name.lower():
                 return join(self.data_dir, c)
+
+        if force:
+            return join(self.data_dir, name.upper())
+
+    def backup(self, name):
+        backup_name = '{}.backup-{}'.format(name, datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
+        shutil.copy(self.data_file_name(name),
+                    join(self.data_dir, backup_name))
+
+    @contextmanager
+    def write(self, name):
+        existing_data_file = self.data_file_name(name)
+        if existing_data_file:
+            self.backup(existing_data_file)
+
+        with open(self.data_file_name(name, force=True), 'wb') as fh:
+            yield fh
+
+
+def default_data_manager():
+    return DataManager(DATA_DIR)
