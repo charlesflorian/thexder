@@ -141,14 +141,14 @@ COLORS = [pygame.Color(0,0,0), #Black
 
 class level:
     """This will be where the class for storing level data."""
-    
+
     def __init__(self,n):
         if n < 1 or n > 16:
             self.curlvl = 1
         else:
             self.curlvl = n
         self.open_lvl()
-        
+
     def open_lvl(self):
         """
         This will open the level. This perhaps should be called in the __init__ procedure.
@@ -189,7 +189,7 @@ class level:
 
 
         # Aaaand... close the file.
-        f.close()            
+        f.close()
 
     def write_char(self, f, char, n):
         if n > 8:
@@ -341,7 +341,7 @@ class animation:
     """
     def __init__(self, n, raw_tiles, pointers):
         global NUM_TILES, PTR_SIZE, MAX_ENEMIES
-        
+
         if n < 0 or n >= MAX_ENEMIES:
             return False
 
@@ -353,7 +353,7 @@ class animation:
                        ord(pointers[n * PTR_SIZE + i * 0x100 + 2]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 3])],
                       [ord(pointers[n * PTR_SIZE + i * 0x100 + 4]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 5]),
                        ord(pointers[n * PTR_SIZE + i * 0x100 + 6]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 7])]]
-            offsets.append(offset) 
+            offsets.append(offset)
 
         # There are 8 tiles.
         self.tiles = []
@@ -380,7 +380,7 @@ class tile_array:
         but for now this is easier.
         """
         global TILE_WIDTH, TILE_HEIGHT
-        
+
         self.tiles = []
         for i in range(0, len(offsets)):
             self.tiles.append([])
@@ -431,7 +431,7 @@ class tile:
         global TILE_HEIGHT
 
         cur_tile = tiles[offset : offset + TILE_SIZE]
-        
+
         # Here we read in the string into an 8x8 array of pixel data.
         self.tile_data = []
         for i in range(0,TILE_HEIGHT):
@@ -444,8 +444,8 @@ class tile:
                 self.tile_data[i].extend([high, low])
 
         self.offset = offset
-            
-        
+
+
 
     def pixel(self,x,y):
         return self.tile_data[y][x]
@@ -463,7 +463,7 @@ class tile:
     def height(self):
         # Same here.
         return len(self.tile_data)
-        
+
 ##################################################################################################
 #
 # This is the actual stuff to run the `editor'.
@@ -478,7 +478,7 @@ def in_range(a,b,x):
         return (a <= x) and (x <= b)
     else:
         return (b <= x) and (x <= a)
-        
+
 def display_lvl(win, lvl, x, y):
     """
     This will show on the window win the level lvl, with upper left corner at position x, y in the level.
@@ -506,7 +506,7 @@ def display_lvl(win, lvl, x, y):
                         colors = [3,3]
 
             high = tile >> 4
-                
+
             if high > 0:
                 win.addch(j,i,tiles[(curlvl-1) / 4][tile % 16],color_pair(colors[1]))
                 #win.addch(j,i,tiles[(curlvl-1) / 4][tile % 16],color_pair(high + 10))
@@ -543,7 +543,7 @@ def show_lvl_tiles(tiles,level):
     """
     SCR_WIDTH = 880
     SCR_HEIGHT = 704
-    
+
     pygame.init()
     pygame.key.set_repeat(120,30)
     screen = pygame.display.set_mode((SCR_WIDTH,SCR_HEIGHT))
@@ -599,7 +599,7 @@ def show_lvl_tiles(tiles,level):
                     x_pos = 0
                 elif x_pos >= 512:
                     x_pos = 511
-    
+
 
 def show_lvl_tiles_old(tiles):
     """
@@ -628,7 +628,7 @@ def show_lvl_tiles_old(tiles):
         screen.blit(text,(5,322))
 
         pygame.display.update()
-        
+
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 keys = pygame.key.get_pressed()
@@ -644,7 +644,7 @@ def show_lvl_tiles_old(tiles):
                 else:
                     pygame.display.quit()
                     going = False
-    
+
     pygame.display.quit()
 
 
@@ -659,7 +659,7 @@ def show_tiles(w, raw_tiles, raw_pointers):
     package), but it is a start...
     """
     global MAX_ENEMIES, NUM_TILES
-        
+
     monsters = []
     for i in range(0,MAX_ENEMIES):
         monsters.append(animation(i,raw_tiles,raw_pointers))
@@ -738,7 +738,7 @@ def load_raw_tiles():
 
     return output
 
-                    
+
 def load_raw_animation_data():
     """
     This will just load the raw tiles from the TANBITXX.BIN files.
@@ -749,12 +749,12 @@ def load_raw_animation_data():
     global MAX_LEVELS
     output = []
 
-    
+
     # Get the first set of tiles.
     f = open("TANBIT01.BIN","rb")
     output.append(f.read())
     f.close()
-    
+
     for i in range(1, MAX_LEVELS):
         try:
             # open the next file
@@ -788,9 +788,9 @@ def main(w):
     init_colours()
 
     (raw_tiles, raw_pointers) = load_raw_animation_data()
-    
+
     working_lvl = level(curlvl)
-            
+
     display_lvl(w,working_lvl,0,0)
 
     while True:
@@ -966,7 +966,7 @@ def main(w):
                 else:
                     bottom_y = cursor_y
                     top_y = select_y
-                
+
                 if ord('0') <= ch and ch <= ord('9'):
                     for i in range(bottom_x,top_x+1):
                         for j in range(bottom_y, top_y + 1):
@@ -976,13 +976,16 @@ def main(w):
                         for j in range(bottom_y, top_y + 1):
                             working_lvl.change_tile(scr_x + i,scr_y + j,ch - ord('a') + 10)
 
-        # Until I actually display the cursor... Actually, I think I'll keep this.   
+        # Until I actually display the cursor... Actually, I think I'll keep this.
         if edit:
             alert(w,"x = %d, y = %d" % (cursor_x, cursor_y))
         else:
             alert(w,"x = %d, y = %d" % (scr_x, scr_y))
-            
+
         display_lvl(w,working_lvl,scr_x,scr_y)
 
+def cli():
+    return wrapper(main)
+
 if __name__ == "__main__":
-    wrapper(main)
+    cli()
