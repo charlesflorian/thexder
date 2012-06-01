@@ -8,6 +8,10 @@ from log import *
 import pygame
 from pygame.locals import *
 
+from . import data
+
+DATA_DIR = 'data' # HACK -- this will use 'data' in the current directory
+
 def init_colours():
     # This is the default colour scheme, white text on black background.
     init_pair(1,COLOR_WHITE,COLOR_BLACK)
@@ -154,15 +158,13 @@ class level:
         This will open the level. This perhaps should be called in the __init__ procedure.
         """
         global LVL_HEIGHT
-        f = open("MAP{0:0>2}.BIN".format(self.curlvl),"rb")
+        dm = data.DataManager(DATA_DIR)
+        level_name = "MAP{0:0>2}.BIN".format(self.curlvl)
+        raw_level_data = dm.load_file(level_name)
         self.ldata = [[]]
         column_count = 0
         current_column = 0
-        while True:
-            c = f.read(1)
-            if not c:
-                break
-
+        for c in raw_level_data:
             # If we've gone over/reached the level height, then we move over to the next column.
             if column_count >= LVL_HEIGHT:
                 column_count = 0
@@ -186,10 +188,6 @@ class level:
                 for i in range(0, high):
                     self.ldata[current_column].append(low)
                 column_count += high
-
-
-        # Aaaand... close the file.
-        f.close()
 
     def write_char(self, f, char, n):
         if n > 8:
@@ -749,32 +747,27 @@ def load_raw_animation_data():
     global MAX_LEVELS
     output = []
 
+    dm = data.DataManager(DATA_DIR)
 
     # Get the first set of tiles.
-    f = open("TANBIT01.BIN","rb")
-    output.append(f.read())
-    f.close()
+    output.append(dm.load_file("TANBIT01.BIN"))
 
     for i in range(1, MAX_LEVELS):
         try:
             # open the next file
-            f = open("TANBIT{0:0>2}.BIN".format(i+1),"rb")
-            tiles = f.read()
+            tiles = dm.load_file("TANBIT{0:0>2}.BIN".format(i+1))
             # if it isn't as long as the previous set of tiles, then we need to borrow from that set.
             if len(tiles) < len(output[-1]):
                 tiles += output[-1][len(tiles):]
             output.append(tiles)
-            f.close()
-        except IOError:
+        except ValueError:
             # alternatively, if the file just doesn't exist (e.g. TANBIT03.BIN) then we just use the previous
             # tiles.
             output.append(output[-1])
 
     pointers = []
     for i in range(0, MAX_LEVELS):
-        f = open("EGAPTR{0:0>2}.BIN".format(i+1),"rb")
-        pointers.append(f.read())
-        f.close()
+        pointers.append(dm.load_file("EGAPTR{0:0>2}.BIN".format(i+1)))
 
     return (output, pointers)
 
