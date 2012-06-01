@@ -1,1 +1,3 @@
 LVL_HEIGHT = 44
+
+MAX_LEVELS = 16
