@@ -447,7 +447,9 @@ def main():
                     x_pos += 1
                 elif keys[K_LEFT]:
                     x_pos -= 1
-                elif keys[K_o]:
+                elif keys[K_m]:
+                    pass
+                elif keys[K_n]:
                     # This will open a new level. This is all old code and doesn't make sense.
                     new_lvl = prompt(w,"Which level would you like to open?")
                     try:
