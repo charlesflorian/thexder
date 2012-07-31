@@ -840,25 +840,6 @@ def main(w):
                 working_lvl = level(curlvl)
                 scr_x = 0
                 scr_y = 0
-        elif ch == ord('m'):
-            #Switch modes between editing and moving.
-            edit = not edit
-            if edit:
-                alert(w,"You are now in editing mode.")
-                selecting = False
-            else:
-                alert(w,"You are no longer in editing mode.")
-        elif ch == ord('x'):
-            #This is to switch between selecting a large box and not.
-            if edit:
-                if selecting:
-                    selecting = False
-                else:
-                    selecting = True
-                    select_x = cursor_x
-                    select_y = cursor_y
-            else:
-                alert(w,"Can't use selection tool while not in edit mode.")
         elif ch == ord('q'):
             # Not surprisingly, this quits.
             if changes:
@@ -867,43 +848,6 @@ def main(w):
                     break
             else:
                 break
-        elif ch == ord('w'):
-            # This is to swap parts of levels. Though I'm not sure how best to implement this, since
-            # the actual data files are in the Dosbox folder...
-            while True:
-                response = prompt(w, "What is the first level you want to swap?")
-                try:
-                    old_lvl = int(response)
-                    if 1 <= old_lvl <= 16:
-                        break
-                except ValueError:
-                    pass
-            while True:
-                response = prompt(w, "What is the second level you want to swap?")
-                try:
-                    new_lvl = int(response)
-                    if 1 <= new_lvl <= 16:
-                        break
-                except ValueError:
-                    pass
-            while True:
-                response = prompt(w, "Binary: 1 = MAP, 2 = BUGDB, 4 = EGABIT, 8 = EGAPTR, 16 = TANBIT:")
-                try:
-                    swaps = int(response)
-                    if 1 <= swaps <= 31:
-                        break
-                except ValueError:
-                    pass
-            if swaps & 1:
-                swap_files(old_lvl, new_lvl, "MAP")
-            if swaps & 2:
-                swap_files(old_lvl, new_lvl, "BUGDB")
-            if swaps & 4:
-                swap_files(old_lvl, new_lvl, "EGABIT")
-            if swaps & 8:
-                swap_files(old_lvl, new_lvl, "EGAPTR")
-            if swaps & 16:
-                swap_files(old_lvl, new_lvl, "TANBIT")
         elif ch == ord('t'):
             # This will be a way to look at (and edit?) graphics tiles.
             show_tiles(w,raw_tiles[curlvl-1], raw_pointers[curlvl - 1])
@@ -931,47 +875,8 @@ def main(w):
             show_lvl_tiles(lvl_tiles[lower_tile:upper_tile], working_lvl)
             #show_lvl_tiles_old(lvl_tiles)
         else:
-            if edit:
-                # This whole bit feels kludgy, but I'm not sure of a better way to do it.
-                # All I'm trying to do is figure out the bottom value of the selection versus cursor
-                # so that I can use the function range(a,b) with the requisite bottom value.
-                # That being done, we run a double for loop over the selected area (which can be a
-                # single cell or a range, it doesn't matter).
-                if not selecting:
-                    select_x = cursor_x
-                    select_y = cursor_y
-                else:
-                    selecting = False
-
-                if select_x < cursor_x:
-                    bottom_x = select_x
-                    top_x = cursor_x
-                else:
-                    bottom_x = cursor_x
-                    top_x = select_x
-
-                if select_y < cursor_y:
-                    bottom_y = select_y
-                    top_y = cursor_y
-                else:
-                    bottom_y = cursor_y
-                    top_y = select_y
-
-                if ord('0') <= ch and ch <= ord('9'):
-                    for i in range(bottom_x,top_x+1):
-                        for j in range(bottom_y, top_y + 1):
-                            working_lvl.change_tile(scr_x + i,scr_y + j,ch - ord('0'))
-                elif ord('a') <= ch and ch <= ord('f'):
-                    for i in range(bottom_x,top_x+1):
-                        for j in range(bottom_y, top_y + 1):
-                            working_lvl.change_tile(scr_x + i,scr_y + j,ch - ord('a') + 10)
-
-        # Until I actually display the cursor... Actually, I think I'll keep this.
-        if edit:
-            alert(w,"x = %d, y = %d" % (cursor_x, cursor_y))
-        else:
-            alert(w,"x = %d, y = %d" % (scr_x, scr_y))
-
+            pass
+            
         display_lvl(w,working_lvl,scr_x,scr_y)
 
 def cli():
