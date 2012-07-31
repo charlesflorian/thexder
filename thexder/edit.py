@@ -10,6 +10,8 @@ from pygame.locals import *
 from . import data
 from . import config
 
+# for debugging: import pdb; pdb.set_trace()
+
 def init_colours():
     # This is the default colour scheme, white text on black background.
     init_pair(1,COLOR_WHITE,COLOR_BLACK)
