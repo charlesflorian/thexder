@@ -12,53 +12,6 @@ from . import config
 
 # for debugging: import pdb; pdb.set_trace()
 
-def init_colours():
-    # This is the default colour scheme, white text on black background.
-    init_pair(1,COLOR_WHITE,COLOR_BLACK)
-    # This is the colour scheme for monshters, white text on red background.
-    init_pair(2,COLOR_WHITE,COLOR_BLUE)
-    # The cursor colours:
-    init_pair(3,COLOR_BLACK,COLOR_CYAN)
-    # Out of bounds colours:
-    init_pair(5,COLOR_YELLOW, COLOR_RED)
-
-    # And now, the colours needed for graphics.
-    # These sort of suck, actually, and it'd be nice to fix them.
-    # I'm not sure that this can be done in curses though.
-    init_pair(10,COLOR_BLACK,COLOR_BLACK)
-    init_pair(11,COLOR_RED,COLOR_RED)
-    init_pair(12,COLOR_BLACK,COLOR_GREEN)
-    init_pair(13,COLOR_GREEN,COLOR_GREEN)
-    init_pair(14,COLOR_YELLOW,COLOR_YELLOW)
-    init_pair(15,COLOR_BLACK,COLOR_RED)
-    init_pair(16,COLOR_YELLOW,COLOR_YELLOW)
-    init_pair(17,COLOR_MAGENTA,COLOR_MAGENTA)
-    init_pair(18,COLOR_BLACK,COLOR_BLUE)
-    init_pair(19,COLOR_MAGENTA,COLOR_MAGENTA)
-    init_pair(20,COLOR_BLUE,COLOR_BLUE)
-    init_pair(21,COLOR_CYAN,COLOR_CYAN)
-    init_pair(22,COLOR_BLACK,COLOR_GREEN)
-    init_pair(23,COLOR_MAGENTA,COLOR_MAGENTA)
-    init_pair(24,COLOR_BLACK,COLOR_WHITE) #grey?
-    init_pair(25,COLOR_WHITE,COLOR_WHITE)
-
-def prompt(window, query):
-    alert(window,query)
-    echo()
-    answer =  window.getstr(SCR_HEIGHT + 1, len(query) + 1)
-    noecho()
-    window.move(SCR_HEIGHT+1,0)
-    window.clrtoeol()
-    return answer
-
-def alert(window, phrase):
-    window.move(SCR_HEIGHT+1,0)
-    window.clrtoeol()
-    window.addstr(phrase)
-
-def hline(window, y, length):
-    for i in range(0,length):
-        window.addch(y,i,"_")
 
 ###################################################
 #
@@ -67,8 +20,8 @@ def hline(window, y, length):
 ###################################################
 
 #These are the screen dimensions (Constants!)
-SCR_HEIGHT = 22
-SCR_WIDTH = 80
+SCR_HEIGHT = 704
+SCR_WIDTH = 880
 
 #These are the level dimensions. There is no reason for me to have a fixed width. Also constant.
 LVL_HEIGHT = 44
@@ -91,34 +44,6 @@ MAX_LEVELS = 16
 #Which level are we editing?
 curlvl = 1
 
-#Are we in editing mode?
-edit = False
-
-#Here are some things we might want to do in edit mode:
-
-#This is so we can select a large block and change them all at the same time. Default is False.
-selecting = False
-
-# These will be the far corner of the selection box.
-select_x = 0
-select_y = 0
-
-#Have any changes been made since last save?
-changes = False
-
-#These refer to the cursor position
-cursor_x = 0
-cursor_y = 0
-
-#These refer to the screen position
-scr_x = 0
-scr_y = 0
-
-#This will be an array consisting of the tiles that will be displayed. This makes it easy to change things.
-tiles = [[" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A","B","C","D","E", "F"],
-[" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A","B","C","D","E", "F"],
-[" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A","B","C","D","E", "F"],
-[" ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A","B","C","D","E", "F"]]
 
 COLORS = [pygame.Color(0,0,0), #Black
           pygame.Color(0xfa, 0x80, 0x72), #Salmon?
@@ -461,68 +386,6 @@ class tile:
         # Same here.
         return len(self.tile_data)
 
-##################################################################################################
-#
-# This is the actual stuff to run the `editor'.
-#
-##################################################################################################
-
-def in_range(a,b,x):
-    """
-    This function will just test to see if the number x is in the range [a,b], or [b,a], as appropriate.
-    """
-    if a < b:
-        return (a <= x) and (x <= b)
-    else:
-        return (b <= x) and (x <= a)
-
-def display_lvl(win, lvl, x, y):
-    """
-    This will show on the window win the level lvl, with upper left corner at position x, y in the level.
-    """
-    global SCR_HEIGHT
-    global SCR_WIDTH
-    global tiles
-    global curlvl
-    global edit
-    global cursor_x, cursor_y
-    for j in range(0,SCR_HEIGHT):
-        for i in range(0,SCR_WIDTH):
-            tile = lvl.tile(i+x,j+y)
-            if tile is False:
-                # i.e. if the x, y were out of bounds.
-                tile = 0
-                colors = [5,5]
-            else:
-                colors = [1,2]
-                if edit:
-                    if selecting:
-                        if in_range(cursor_x,select_x,i) and in_range(cursor_y, select_y,j):
-                            colors = [3,3]
-                    elif (i,j) == (cursor_x, cursor_y):
-                        colors = [3,3]
-
-            high = tile >> 4
-
-            if high > 0:
-                win.addch(j,i,tiles[(curlvl-1) / 4][tile % 16],color_pair(colors[1]))
-                #win.addch(j,i,tiles[(curlvl-1) / 4][tile % 16],color_pair(high + 10))
-            else:
-                win.addch(j,i,tiles[(curlvl-1) / 4][tile % 16],color_pair(colors[0]))
-    hline(win,SCR_HEIGHT,SCR_WIDTH)
-    return False
-
-def swap_files(old_file, new_file, fname):
-    """
-    This will swap two files.
-
-    Input is:
-    old_file, new_file: integers between 1 and 16
-    fname: a string such as "MAP", "BUGDB", etd.
-    """
-    rename(fname.upper() + "{0:0>2}.BIN".format(old_file),"temp")
-    rename(fname.upper() + "{0:0>2}.BIN".format(new_file),fname.upper() + "{0:0>2}.BIN".format(old_file))
-    rename("temp",fname.upper() + "{0:0>2}.BIN".format(new_file))
 
 ##########################################################################################
 #
@@ -534,126 +397,39 @@ def swap_files(old_file, new_file, fname):
 #
 ##########################################################################################
 
-def show_lvl_tiles(tiles,level):
+def display_init(width, height):
     """
-    This will show a preview of the level.
+    This just sets up the pygame display.
     """
-    SCR_WIDTH = 880
-    SCR_HEIGHT = 704
-
     pygame.init()
     pygame.key.set_repeat(120,30)
-    screen = pygame.display.set_mode((SCR_WIDTH,SCR_HEIGHT))
+    return pygame.display.set_mode((width,height))
 
+def draw_tiles(tiles):
+    """
+    This should take as input a set of tiles and return as output an array of game tiles. These
+    will be pygame.Surface objects.
+    """
     graphics = []
-    for k in range(0, 16):
+    for k in range(0, len(tiles)):
         graphics.append(draw_tile(tiles[k],2))
 
     graphics.append(pygame.Surface((16,16)))
-    pygame.draw.rect(graphics[16],(180,0,0),(0,0,16,16),0)
 
-    x_pos = 0
-    y_pos = 0
+    # Make the last one a blank one.
+    pygame.draw.rect(graphics[len(tiles)],(180,0,0),(0,0,16,16),0)
 
-    going = True
-    while going:
-        for j in range(0,SCR_WIDTH / 16):
-            for i in range(0, SCR_HEIGHT / 16):
-                cur_tile = level.tile(j + x_pos, i + y_pos)
-                if cur_tile is False:
-                    cur_tile = 0
-
-                if cur_tile >> 4:
-                    screen.blit(graphics[16],(j*16, i * 16))
-                else:
-                    screen.blit(graphics[cur_tile % 16], (j * 16, i * 16))
-
-        pygame.display.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                keys = pygame.key.get_pressed()
-
-                if keys[K_UP]:
-                #    y_pos -= 1
-                #    if y_pos < 0:
-                #        y_pos = 0
-                    x_pos -= 10
-                elif keys[K_DOWN]:
-                #    y_pos += 1
-                #    if y_pos >= LVL_HEIGHT - SCR_HEIGHT:
-                #        y_pos = LVL_HEIGHT - SCR_HEIGHT - 1
-                    x_pos += 10
-                elif keys[K_RIGHT]:
-                    x_pos += 1
-                elif keys[K_LEFT]:
-                    x_pos -= 1
-                else:
-                    pygame.display.quit()
-                    going = False
-
-                if x_pos < 0:
-                    x_pos = 0
-                elif x_pos >= 512:
-                    x_pos = 511
+    return graphics
 
 
-def show_lvl_tiles_old(tiles):
-    """
-    This function just lets you scroll through the tiles, four at a time. It will be replaced by something that
-    lets you see a preview of the level.
-
-    At the same time, I would prefer to keep this to allow myself to easily view through all of these tiles.
-    """
-    pygame.init()
-    pygame.key.set_repeat(120,60)
-    screen = pygame.display.set_mode((320,340))
-
-    cur_tile = 0
-
-    going = True
-    while going:
-        arial_font = pygame.font.SysFont("Arial",15)
-
-        text = arial_font.render("Tile = %d" % cur_tile, True, (255,255,255),(0,0,0))
-
-        screen.blit(draw_tile(tiles[cur_tile]), (0,0))
-        screen.blit(draw_tile(tiles[cur_tile + 1]), (160, 0))
-        screen.blit(draw_tile(tiles[cur_tile + 2]), (0, 160))
-        screen.blit(draw_tile(tiles[cur_tile + 3]), (160, 160))
-
-        screen.blit(text,(5,322))
-
-        pygame.display.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                keys = pygame.key.get_pressed()
-
-                if keys[K_UP] or keys[K_LEFT]:
-                    cur_tile -= 4
-                    if cur_tile < 0:
-                        cur_tile = 0
-                elif keys[K_DOWN] or keys[K_RIGHT]:
-                    cur_tile += 4
-                    if cur_tile >= len(tiles):
-                        cur_tile = len(tiles) - 1
-                else:
-                    pygame.display.quit()
-                    going = False
-
-    pygame.display.quit()
 
 
-def show_tiles(w, raw_tiles, raw_pointers):
+def show_tiles(raw_tiles, raw_pointers):
     """
     This is intended to be a function for switching into the mode of showing tiles instead of the level.
     It needs to have w, the window, passed, as well as the current level to look at.
 
     Also, the raw tile data is passed. I'm not sure quite yet how I want to use it.
-
-    The colours are all screwy (This seems to be a difficulty with the curses
-    package), but it is a start...
     """
     global MAX_ENEMIES, NUM_TILES
 
@@ -698,7 +474,7 @@ def show_tiles(w, raw_tiles, raw_pointers):
                     if cur_tile < 0:
                         cur_tile = NUM_TILES - 1
                 else:
-                    pygame.display.quit()
+                    #pygame.display.quit()
                     going = False
 
 
@@ -772,112 +548,110 @@ def load_raw_animation_data():
 #And here is the main function.
 def main(w):
     global SCR_HEIGHT, SCR_WIDTH, LVL_HEIGHT
-    global curlvl, edit, selecting, select_x, select_y, changes, cursor_x, cursor_y, scr_x, scr_y
+    global curlvl
     global tiles
 
-    init_colours()
-
+    # Load all the tile data.
     (raw_tiles, raw_pointers) = load_raw_animation_data()
+    lvl_tiles = load_raw_tiles()
 
     working_lvl = level(curlvl)
 
-    display_lvl(w,working_lvl,0,0)
+    lower_tile = 0x20
+    upper_tile = 0x30
 
-    while True:
-        ch = w.getch()
-        if ch == KEY_LEFT:
-            if edit:
-                cursor_x -= 1
-                if cursor_x < 0:
-                    cursor_x = 0
-            else:
-                scr_x -= 8
-                if scr_x < 0:
-                    scr_x = 0
-        elif ch == KEY_UP:
-            if edit:
-                cursor_y -= 1
-                if cursor_y < 0:
-                    cursor_y = 0
-            else:
-                scr_y -= 8
-                if scr_y < 0:
-                    scr_y = 0
-        elif ch == KEY_DOWN:
-            if edit:
-                cursor_y += 1
-                if cursor_y >= SCR_HEIGHT:
-                    cursor_y = SCR_HEIGHT - 1
-            else:
-                scr_y += 8
-                if scr_y > LVL_HEIGHT - SCR_HEIGHT:
-                    scr_y = LVL_HEIGHT - SCR_HEIGHT
-        elif ch == KEY_RIGHT:
-            if edit:
-                cursor_x += 1
-                if cursor_x >= SCR_WIDTH:
-                    cursor_x = SCR_WIDTH - 1
-            else:
-                scr_x += 8
-                if scr_x > working_lvl.width() - SCR_WIDTH:
-                    scr_x = working_lvl.width() - SCR_WIDTH
-        elif ch == ord('s'):
-            #Save file
-            response = prompt(w, "Are you sure you want to save? (y/n)").lower()
-            if response.startswith("y"):
-                if working_lvl.save():
-                    alert(w,"File saved successfully.")
+##########################
+#
+# This was a separate function before. For now it is included in main(), but this could change.
+#
+##########################
+
+    tiles = lvl_tiles[lower_tile:upper_tile]
+
+    screen = display_init(SCR_WIDTH, SCR_HEIGHT)
+
+    graphics = draw_tiles(tiles)
+
+    x_pos = 0
+    y_pos = 0
+
+    going = True
+    while going:
+        for j in range(0,SCR_WIDTH / 16):
+            for i in range(0, SCR_HEIGHT / 16):
+                cur_tile = working_lvl.tile(j + x_pos, i + y_pos)
+                if cur_tile is False:
+                    cur_tile = 0
+
+                if cur_tile >> 4:
+                    screen.blit(graphics[16],(j*16, i * 16))
                 else:
-                    alert(w,"There was an error saving the file.")
-        elif ch == ord('o'):
-            # Open a new level.
-            new_lvl = prompt(w,"Which level would you like to open?")
-            try:
-                curlvl = int(new_lvl)
-            except ValueError:
-                alert(w,"Not a valid level number!")
-            else:
-                working_lvl = level(curlvl)
-                scr_x = 0
-                scr_y = 0
-        elif ch == ord('q'):
-            # Not surprisingly, this quits.
-            if changes:
-                response = prompt(w,"Are you sure you want to quit without saving? (y/n)").lower()
-                if respons.startswith("y"):
-                    break
-            else:
-                break
-        elif ch == ord('t'):
-            # This will be a way to look at (and edit?) graphics tiles.
-            show_tiles(w,raw_tiles[curlvl-1], raw_pointers[curlvl - 1])
-            w.erase()
-        elif ch == ord('l'):
-            # This will zip along the level proper with actual tiles visible. Whoo!
-            lvl_tiles = load_raw_tiles()
+                    screen.blit(graphics[cur_tile % 16], (j * 16, i * 16))
 
-            # All of this stuff is just to match the relatively arbitrary decisions made in the game itself.
-            if 1 <= curlvl <= 4:
-                lower_tile = 0x20
-                upper_tile = 0x30
-            elif 5 <= curlvl <= 7:
-                lower_tile = 0x10
-                upper_tile = 0x20
-            elif 8 <= curlvl <= 11:
-                lower_tile = 0x60
-                upper_tile = 0x70
-            elif 13 <= curlvl <= 15:
-                lower_tile = 0x70
-                upper_tile = 0x80
-            else:
-                lower_tile = 0x00
-                upper_tile = 0x10
-            show_lvl_tiles(lvl_tiles[lower_tile:upper_tile], working_lvl)
-            #show_lvl_tiles_old(lvl_tiles)
-        else:
-            pass
-            
-        display_lvl(w,working_lvl,scr_x,scr_y)
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                keys = pygame.key.get_pressed()
+
+                if keys[K_UP]:
+                #    y_pos -= 1
+                #    if y_pos < 0:
+                #        y_pos = 0
+                    x_pos -= 10
+                elif keys[K_DOWN]:
+                #    y_pos += 1
+                #    if y_pos >= LVL_HEIGHT - SCR_HEIGHT:
+                #        y_pos = LVL_HEIGHT - SCR_HEIGHT - 1
+                    x_pos += 10
+                elif keys[K_RIGHT]:
+                    x_pos += 1
+                elif keys[K_LEFT]:
+                    x_pos -= 1
+                elif keys[K_o]:
+                    # This will open a new level. This is all old code and doesn't make sense.
+                    new_lvl = prompt(w,"Which level would you like to open?")
+                    try:
+                        curlvl = int(new_lvl)
+                    except ValueError:
+                        alert(w,"Not a valid level number!")
+                    else:
+                        working_lvl = level(curlvl)
+                        scr_x = 0
+                        scr_y = 0
+
+                    # Once we've loaded a level, we need to make sure that we are using the correct tiles.
+                    # These seem to be hard-coded, so unfortunately this is all I can do.
+                    if 1 <= curlvl <= 4:
+                        lower_tile = 0x20
+                        upper_tile = 0x30
+                    elif 5 <= curlvl <= 7:
+                        lower_tile = 0x10
+                        upper_tile = 0x20
+                    elif 8 <= curlvl <= 11:
+                        lower_tile = 0x60
+                        upper_tile = 0x70
+                    elif 13 <= curlvl <= 15:
+                        lower_tile = 0x70
+                        upper_tile = 0x80
+                    else:
+                        lower_tile = 0x00
+                        upper_tile = 0x10
+
+                elif keys[K_t]:
+                    # This will show the enemy tiles.
+                    show_tiles(raw_tiles[curlvl-1], raw_pointers[curlvl - 1])
+                else:
+                    pygame.display.quit()
+                    going = False
+
+                if x_pos < 0:
+                    x_pos = 0
+                elif x_pos >= 512:
+                    x_pos = 511
+
+##############################
+
 
 def cli():
     config.set_app_config_from_cli(config.base_argument_parser())
