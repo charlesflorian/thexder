@@ -1,4 +1,3 @@
-from curses import *
 from math import *
 from random import *
 from sys import exit
@@ -10,6 +9,10 @@ from pygame.locals import *
 from . import data
 from . import config
 
+from . import thx_map
+
+from constants import *
+
 # for debugging: import pdb; pdb.set_trace()
 
 
@@ -19,48 +22,11 @@ from . import config
 #
 ###################################################
 
-#These are the screen dimensions (Constants!)
-SCR_HEIGHT = 704
-SCR_WIDTH = 880
-
-#These are the level dimensions. There is no reason for me to have a fixed width. Also constant.
-LVL_HEIGHT = 44
-
-# This is the size of a tile in the file EGABITXX.BIN or TANBITXX.BIN
-TILE_SIZE = 0x20
-
-NUM_TILES = 8
-
-TILE_HEIGHT = 0x08
-TILE_WIDTH = 0x08
-
-# This is the size of a pointer bit in EGAPTRXX.BIN
-PTR_SIZE = 0x08
-
-MAX_ENEMIES = 0x20
-
-MAX_LEVELS = 16
 
 #Which level are we editing?
 curlvl = 1
 
 
-COLORS = [pygame.Color(0,0,0), #Black
-          pygame.Color(0xfa, 0x80, 0x72), #Salmon?
-          pygame.Color(0,255,0), #Green
-          pygame.Color(0,100,0), #Dark green
-          pygame.Color(0xc7,0x61,0x14), #Brown?
-          pygame.Color(100,0,0), #Dark red
-          pygame.Color(255,255,100), #Yellow
-          pygame.Color(255,0,255), #Magenta
-          pygame.Color(0,0,100), #Dark Blue
-          pygame.Color(100,0,75), #Dark purple
-          pygame.Color(0,0,180), #Blue
-          pygame.Color(100,255,255), #Cyan
-          pygame.Color(40,40,40), #Dark Grey
-          pygame.Color(255,50,255), #Magenta
-          pygame.Color(130,130,160), #Blue-Gray
-          pygame.Color(255,255,255)] #White
 
 ###############################################################################################
 #
@@ -68,133 +34,6 @@ COLORS = [pygame.Color(0,0,0), #Black
 #
 ###############################################################################################
 
-class level:
-    """This will be where the class for storing level data."""
-
-    def __init__(self,n):
-        if n < 1 or n > 16:
-            self.curlvl = 1
-        else:
-            self.curlvl = n
-        self.open_lvl()
-
-    def open_lvl(self):
-        """
-        This will open the level. This perhaps should be called in the __init__ procedure.
-        """
-        global LVL_HEIGHT
-        dm = data.default_data_manager()
-        level_name = "MAP{0:0>2}.BIN".format(self.curlvl)
-        raw_level_data = dm.load_file(level_name)
-        self.ldata = [[]]
-        column_count = 0
-        current_column = 0
-        for c in raw_level_data:
-            # If we've gone over/reached the level height, then we move over to the next column.
-            if column_count >= LVL_HEIGHT:
-                column_count = 0
-                current_column += 1
-                self.ldata.append([])
-
-            c = ord(c)
-            low = c % 16
-            high = c >> 4
-            # Two quick modifications: A high bit of 0 means 8 things in a row.
-            # High bits of greater than (or equal to) 8 signify a monster.
-            # There's also a slight issue here: This loses information when we do th bit about the high
-            # bit being greater than 8. But there's no reason this has to be the case; we can store the data
-            # in the ldata array, and use the tiles array when we actually display things.
-            if high >= 8:
-                self.ldata[current_column].append((high << 4) + low)
-                column_count += 1
-            else:
-                if high == 0:
-                    high = 8
-                for i in range(0, high):
-                    self.ldata[current_column].append(low)
-                column_count += high
-
-    def write_char(self, f, char, n):
-        if n > 8:
-            return False
-        elif n == 8:
-            n = 0
-        if (char >> 4) > 0:
-            f.write(chr(char))
-        else:
-            f.write(chr((n << 4) + char))
-        return True
-
-    def save(self):
-        """
-        This, not suprisingly, will save the file.
-        It's a little unclear what happens a) to the junk at the end of the file
-        b) to the fact that some bits are randomly stored otherwise.
-
-        b) shouldn't matter, but a) might...
-        """
-        dm = data.default_data_manager()
-
-        with dm.write("MAP{0:0>2}.BIN".format(self.curlvl)) as f:
-            for i in range(0, self.width()):
-                # Grab the first character from this column.
-                last_char = self.tile(i,0)
-                char_count = 1
-
-                for j in range(1,self.height(i)):
-                    # Grab the next character
-                    char = self.tile(i,j)
-                    if char != last_char or char_count >= 8:
-                        # The character has changed, or we've gone over 8. Write the buffer to the file.
-                        self.write_char(f,last_char,char_count)
-                        char_count = 1
-                    else:
-                        # Increment the count.
-                        char_count += 1
-                    last_char = char
-
-                # Write the last bit to the file.
-                self.write_char(f,last_char,char_count)
-
-        return True
-
-    def tile(self,x,y):
-        """
-        This returns the tile at position x, y. These both start at 0.
-        """
-        if x < 0 or x >= len(self.ldata):
-            return False
-        if y < 0 or y >= len(self.ldata[x]):
-            return False
-        return self.ldata[x][y]
-
-    def change_tile(self,x,y,new_tile):
-        """
-        This obviously changes the level data by making the tile at position (x,y) to be new_tile.
-
-        The only thing that I need to consider is what to do about tiles with non-zero high bits.
-        What should I do there? Leave them be for now?
-
-        (x,y) are the position of the tile to change
-        new_tile is (for now) a number between x0 and xF.
-        """
-
-        # First, check the bounds.
-        if x < 0 or x >= self.width():
-            return False
-        if y < 0 or y >= self.height(x):
-            return False
-
-        self.ldata[x][y] = new_tile
-        return True
-
-    def width(self):
-        return len(self.ldata)
-
-    def height(self,column):
-        if column >= self.width():
-            return False
-        return len(self.ldata[column])
 
 #############################################################################################
 #
@@ -246,7 +85,7 @@ class level:
 #
 ##############################################################################################
 
-class enemy:
+class enemy(object):
     """
     This should somehow be the class of a monster. It will consist of at least the animation,
     and also other data.
@@ -254,7 +93,7 @@ class enemy:
     def __init__(self):
         pass
 
-class animation:
+class animation(object):
     """
     This will be the class for an animation; it will consist of a collection of tiles.
     As usual, it takes as input a level number.
@@ -289,7 +128,7 @@ class animation:
         raise IOError
 
 
-class tile_array:
+class tile_array(object):
     """
     This will be a class that contains a collection of tiles which fit into some array.
     """
@@ -340,7 +179,7 @@ class tile_array:
     def height(self):
         return self.px_height
 
-class tile:
+class tile(object):
     """
     This will be the class for tile data, specifically an 8x8 tile.
     """
@@ -546,7 +385,7 @@ def load_raw_animation_data():
 
 
 #And here is the main function.
-def main(w):
+def main():
     global SCR_HEIGHT, SCR_WIDTH, LVL_HEIGHT
     global curlvl
     global tiles
@@ -555,7 +394,7 @@ def main(w):
     (raw_tiles, raw_pointers) = load_raw_animation_data()
     lvl_tiles = load_raw_tiles()
 
-    working_lvl = level(curlvl)
+    working_lvl = thx_map.Map(curlvl)
 
     lower_tile = 0x20
     upper_tile = 0x30
@@ -616,7 +455,7 @@ def main(w):
                     except ValueError:
                         alert(w,"Not a valid level number!")
                     else:
-                        working_lvl = level(curlvl)
+                        working_lvl = thx_map.Map(curlvl)
                         scr_x = 0
                         scr_y = 0
 
@@ -655,7 +494,7 @@ def main(w):
 
 def cli():
     config.set_app_config_from_cli(config.base_argument_parser())
-    return wrapper(main)
+    return main()
 
 if __name__ == "__main__":
     cli()
