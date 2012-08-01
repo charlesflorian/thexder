@@ -1,4 +1,5 @@
 from constants import *
+from . import thx_map
 
 class Level(object):
     """
@@ -13,4 +14,8 @@ class Level(object):
         """
         if n < 1 or n > 16:
             return False
-        return True
+
+        self.map = thx_map.Map(n)
+
+    def tile(self, x, y):
+        return self.map.tile(x,y)

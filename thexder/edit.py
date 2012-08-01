@@ -422,7 +422,8 @@ def main():
     (raw_tiles, raw_pointers) = load_raw_animation_data()
     lvl_tiles = load_raw_tiles()
 
-    working_lvl = thx_map.Map(curlvl)
+    #working_lvl = thx_map.Map(curlvl)
+    working_lvl = level.Level(curlvl)
 
     (lower_tile, upper_tile) = tile_bounds()
 
@@ -484,7 +485,8 @@ def main():
                     except ValueError:
                         alert(w,"Not a valid level number!")
                     else:
-                        working_lvl = thx_map.Map(curlvl)
+                        #working_lvl = thx_map.Map(curlvl)
+                        working_lvl = level.Level(curlvl)
                         scr_x = 0
                         scr_y = 0
 
