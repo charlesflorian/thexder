@@ -10,6 +10,7 @@ from . import data
 from . import config
 
 from . import thx_map
+from . import level
 
 from constants import *
 
@@ -383,6 +384,33 @@ def load_raw_animation_data():
 
     return (output, pointers)
 
+def tile_bounds(level=1):
+    """
+    This just sets the bounds, as best as I could tell, for the level tiles.
+    """
+    if 1 <= curlvl <= 4:
+        lower_tile = 0x20
+        upper_tile = 0x30
+    elif 5 <= curlvl <= 7:
+        lower_tile = 0x10
+        upper_tile = 0x20
+    elif 8 <= curlvl <= 11:
+        lower_tile = 0x60
+        upper_tile = 0x70
+    elif 13 <= curlvl <= 15:
+        lower_tile = 0x70
+        upper_tile = 0x80
+    else:
+        lower_tile = 0x00
+        upper_tile = 0x10
+    return (lower_tile, upper_tile)
+
+
+def load_levels():
+    """
+    This function will return an array consisting of all 16 levels.
+    """
+    pass
 
 #And here is the main function.
 def main():
@@ -396,8 +424,7 @@ def main():
 
     working_lvl = thx_map.Map(curlvl)
 
-    lower_tile = 0x20
-    upper_tile = 0x30
+    (lower_tile, upper_tile) = tile_bounds()
 
 ##########################
 #
@@ -463,21 +490,7 @@ def main():
 
                     # Once we've loaded a level, we need to make sure that we are using the correct tiles.
                     # These seem to be hard-coded, so unfortunately this is all I can do.
-                    if 1 <= curlvl <= 4:
-                        lower_tile = 0x20
-                        upper_tile = 0x30
-                    elif 5 <= curlvl <= 7:
-                        lower_tile = 0x10
-                        upper_tile = 0x20
-                    elif 8 <= curlvl <= 11:
-                        lower_tile = 0x60
-                        upper_tile = 0x70
-                    elif 13 <= curlvl <= 15:
-                        lower_tile = 0x70
-                        upper_tile = 0x80
-                    else:
-                        lower_tile = 0x00
-                        upper_tile = 0x10
+                    (lower_tile, upper_tile) = tile_bounds(curlvl)
 
                 elif keys[K_t]:
                     # This will show the enemy tiles.
