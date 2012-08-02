@@ -11,6 +11,7 @@ from . import config
 
 from . import thx_map
 from . import level
+from . import animation
 
 from constants import *
 
@@ -86,15 +87,7 @@ curlvl = 1
 #
 ##############################################################################################
 
-class enemy(object):
-    """
-    This should somehow be the class of a monster. It will consist of at least the animation,
-    and also other data.
-    """
-    def __init__(self):
-        pass
-
-class animation(object):
+class ganimation(object):
     """
     This will be the class for an animation; it will consist of a collection of tiles.
     As usual, it takes as input a level number.
@@ -275,7 +268,7 @@ def show_tiles(raw_tiles, raw_pointers):
 
     monsters = []
     for i in range(0,MAX_ENEMIES):
-        monsters.append(animation(i,raw_tiles,raw_pointers))
+        monsters.append(animation.Animation(i,raw_tiles,raw_pointers))
 
     cur_tile = 0
     cur_monster = 0
@@ -345,7 +338,7 @@ def load_raw_tiles():
     output = []
 
     for i in range(0, len(content) / TILE_SIZE ):
-        output.append(tile(content,i * TILE_SIZE ))
+        output.append(animation.Tile(content,i * TILE_SIZE ))
 
     return output
 
@@ -410,7 +403,11 @@ def load_levels():
     """
     This function will return an array consisting of all 16 levels.
     """
-    pass
+    levels = []
+    for i in range(0, 16):
+        levels.append(level.Level(i+1))
+
+    return levels
 
 #And here is the main function.
 def main():
@@ -422,8 +419,7 @@ def main():
     (raw_tiles, raw_pointers) = load_raw_animation_data()
     lvl_tiles = load_raw_tiles()
 
-    #working_lvl = thx_map.Map(curlvl)
-    working_lvl = level.Level(curlvl)
+    levels = load_levels()
 
     (lower_tile, upper_tile) = tile_bounds()
 
@@ -446,7 +442,7 @@ def main():
     while going:
         for j in range(0,SCR_WIDTH / 16):
             for i in range(0, SCR_HEIGHT / 16):
-                cur_tile = working_lvl.tile(j + x_pos, i + y_pos)
+                cur_tile = levels[curlvl - 1].tile(j + x_pos, i + y_pos)
                 if cur_tile is False:
                     cur_tile = 0
 
@@ -461,41 +457,33 @@ def main():
             if event.type == pygame.KEYDOWN:
                 keys = pygame.key.get_pressed()
 
+                # These are the basic motion; for the time being, up/down skip you through the level
+                # quickly with left/right being one tile at a time.
                 if keys[K_UP]:
-                #    y_pos -= 1
-                #    if y_pos < 0:
-                #        y_pos = 0
                     x_pos -= 10
                 elif keys[K_DOWN]:
-                #    y_pos += 1
-                #    if y_pos >= LVL_HEIGHT - SCR_HEIGHT:
-                #        y_pos = LVL_HEIGHT - SCR_HEIGHT - 1
                     x_pos += 10
                 elif keys[K_RIGHT]:
                     x_pos += 1
                 elif keys[K_LEFT]:
                     x_pos -= 1
+
+                # These next two switch from one level to the next.
                 elif keys[K_m]:
-                    pass
-                elif keys[K_n]:
-                    # This will open a new level. This is all old code and doesn't make sense.
-                    new_lvl = prompt(w,"Which level would you like to open?")
-                    try:
-                        curlvl = int(new_lvl)
-                    except ValueError:
-                        alert(w,"Not a valid level number!")
-                    else:
-                        #working_lvl = thx_map.Map(curlvl)
-                        working_lvl = level.Level(curlvl)
-                        scr_x = 0
-                        scr_y = 0
-
-                    # Once we've loaded a level, we need to make sure that we are using the correct tiles.
-                    # These seem to be hard-coded, so unfortunately this is all I can do.
+                    curlvl += 1
+                    if curlvl > 16:
+                        curlvl = 16
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
+                    x_pos = 0
+                elif keys[K_n]:
+                    curlvl -= 1
+                    if curlvl < 1:
+                        curlvl = 1
+                    (lower_tile, upper_tile) = tile_bounds(curlvl)
+                    x_pos = 0
 
+                # This is to look at the monster tiles.
                 elif keys[K_t]:
-                    # This will show the enemy tiles.
                     show_tiles(raw_tiles[curlvl-1], raw_pointers[curlvl - 1])
                 else:
                     pygame.display.quit()
