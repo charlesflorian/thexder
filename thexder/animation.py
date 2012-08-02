@@ -1,5 +1,57 @@
 from constants import *
 
+#############################################################################################
+#
+# In the file BUGDBXX.BIN, the header information is as follows: each type of monster has two bytes
+# per 0x40-length chunk. The five chunks are interpreted as follows:
+#
+# 0x0000 - health gain
+# 0x0040 - enmax gain
+# 0x0080 - points gain
+# 0x00C0 - motion type:
+#       00 - no motion.
+#       01 - normal slow flying
+#       02 - falling
+#       03 - slow horizontal motion, no falling.
+#       04 - rocket-type loopy motion.
+#       05 - falling + slow horizontal motion.
+#       06 - hidden (animation is different!), no moving once open.
+#       07 - hidden (animation is different!), moves quickly once open.
+#       08 - falls, moves randomly-ish.
+#       09 - Seems to be about the same as 04?
+#       0A - Quick up/down flying (ala bats)
+#       0B - Weird jittery flying (also fast)
+#       0C - diagonal fall, then no moving.
+#       0D - same as 0C
+#       0E - same as 0C
+#       0F - same as 0C
+#
+# 0x0100 - health
+#
+# After this chunk, beginning at 0x0140, there are 12 bytes devoted to each monster.
+# I will investigate further what they mean.
+#
+# Actually, it really seems that there are only 4 bytes. To be fair, not a lot must be encoded:
+# Type, x-, y-positions.
+#
+# A typical one looks like ZWXY where
+#   Z - Seems to be an offset into... something?
+#       This seems to need to be a multiple of 4, starting at 80.
+#       If it goes past the number of monsters (? How does it know?) then it gives junk.
+#       If it is less than 80, then it seems to just be tiles.
+#       If it is not a multiple of 4 then it gives animations, but they're offset. Also, the monsters
+#       in such cases do not die (or not always?)
+#   W - 0 always?
+#   X - x position
+#   Y - y position
+#
+#
+# It is worth noting that it appears that the animation, thus, is hard-coded... sort of.
+#
+##############################################################################################
+
+
+
 class Monster(object):
     """
     This will be the underlying class of a monster. I don't know what to do with this.
