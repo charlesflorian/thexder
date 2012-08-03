@@ -64,6 +64,10 @@ def render_tiles(tiles, lower, upper):
     # Make the last one a blank one.
     pygame.draw.rect(graphics[len(graphics) - 1],(180,0,0),(0,0,16,16),0)
 
+    # This is just so that I can (tentatively) draw monsters.
+    graphics.append(pygame.Surface((16,16)))
+    pygame.draw.rect(graphics[len(graphics) - 1],(255,75,150),(0,0,16,16),0)
+
     return graphics
 
 
@@ -255,7 +259,10 @@ def main():
                 if cur_tile is False:
                     cur_tile = 0
 
-                if cur_tile >> 4:
+                if levels[curlvl - 1].monster_at(j + x_pos, i + y_pos) > 0:
+                    screen.blit(graphics[17],(j*16, i * 16))
+                elif cur_tile >> 4:
+                #if cur_tile >> 4:
                     screen.blit(graphics[16],(j*16, i * 16))
                 else:
                     screen.blit(graphics[cur_tile % 16], (j * 16, i * 16))
