@@ -42,8 +42,10 @@ from constants import *
 #       If it is not a multiple of 4 then it gives animations, but they're offset. Also, the monsters
 #       in such cases do not die (or not always?)
 #   W - 0 always?
-#   X - x position
+#   X - x position:
+#       Well, sort of. If Y is even, then this is exactly the x position. if Y is odd, then X + 256 is the x position.
 #   Y - y position
+#       Close enough. Y / 2 is the y position.
 #
 #
 # It is worth noting that it appears that the animation, thus, is hard-coded... sort of.
