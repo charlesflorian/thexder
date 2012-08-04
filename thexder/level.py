@@ -33,7 +33,7 @@ class Level(object):
         content = data.default_data_manager().load_file("BUGDB{0:0>2}.BIN".format(n))
 
         # Ignore the header info for now...
-        i = 0x140
+        i = BUGDB_HEADER_SIZE
         buglist = []
 
         while i < len(content):
@@ -47,7 +47,7 @@ class Level(object):
             if (bug_offset != 0) or (bug_x != 0) or (bug_y !=0):
                 buglist.append((bug_offset, bug_x, bug_y))
 
-            i += 0x0c
+            i += BUGDB_ENTRY_LENGTH
 
         bugdict = dict([((x[1], x[2]), x[0]) for x in buglist])
 

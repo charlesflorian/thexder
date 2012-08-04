@@ -95,6 +95,7 @@ class Animation(object):
             return self.tiles[n]
         raise IOError
 
+
 class TileArray(object):
     """
     This will be a class that contains a collection of tiles which fit into some array.
@@ -129,10 +130,10 @@ class TileArray(object):
             tile_y = y / TILE_HEIGHT
             px_x = x % TILE_WIDTH
             px_y = y % TILE_HEIGHT
-            return self.tile(tile_x,tile_y).pixel(px_x,px_y)
+            return self.part(tile_x,tile_y).pixel(px_x,px_y)
         return False
 
-    def tile(self, x, y):
+    def part(self, x, y):
         """
         This should return the sub-tile which makes the picture up.
         """
@@ -145,6 +146,12 @@ class TileArray(object):
 
     def height(self):
         return self.px_height
+
+    def render(self):
+        pass
+
+    def tile(self):
+        pass
 
 class Tile(object):
     """
@@ -173,6 +180,8 @@ class Tile(object):
 
         self.offset = offset
 
+        self.graphic = self.render()
+
 
 
     def pixel(self,x,y):
@@ -191,6 +200,12 @@ class Tile(object):
     def height(self):
         # Same here.
         return len(self.tile_data)
+
+    def render(self):
+        return False
+
+    def tile(self):
+        return self.graphic
 
 if __name__ == "__main__":
     print "This should not be loaded by itself."

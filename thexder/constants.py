@@ -16,12 +16,20 @@ NUM_TILES = 8
 TILE_HEIGHT = 0x08
 TILE_WIDTH = 0x08
 
+# pixel size, since we aren't doing a 1--1 pixel.
+PX_SIZE = 0x02
+
 # This is the size of a pointer bit in EGAPTRXX.BIN
 PTR_SIZE = 0x08
 
 MAX_ENEMIES = 0x20
 
 MAX_LEVELS = 16
+
+#
+
+BUGDB_HEADER_SIZE = 0x140
+BUGDB_ENTRY_LENGTH = 0x0c
 
 
 COLORS = [pygame.Color(0,0,0), #Black

@@ -12,6 +12,7 @@ from . import config
 from . import thx_map
 from . import level
 from . import animation
+from . import graphics
 
 from constants import *
 
@@ -48,7 +49,7 @@ def display_init(width, height):
     pygame.key.set_repeat(120,30)
     return pygame.display.set_mode((width,height))
 
-def render_tiles(tiles, lower, upper):
+def render_lvl_tiles(tiles, lower, upper):
     """
     This should take as input a set of tiles and return as output an array of game tiles. These
     will be pygame.Surface objects.
@@ -57,7 +58,7 @@ def render_tiles(tiles, lower, upper):
     graphics = []
     #for k in range(0, len(tiles)):
     for k in range(lower, upper):
-        graphics.append(draw_tile(tiles[k],2))
+        graphics.append(render_tile(tiles[k],2))
 
     graphics.append(pygame.Surface((16,16)))
 
@@ -99,7 +100,7 @@ def show_tiles(raw_tiles, raw_pointers):
     while going:
         # This is probably not too efficient (it re-renders the tile each time), but considering how few I need to
         # render each time (i.e. 1), it doesn't matter.
-        screen.blit(draw_tile(monsters[cur_monster].tile(cur_tile)),(0,0))
+        screen.blit(render_tile(monsters[cur_monster].tile(cur_tile)),(0,0))
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -127,16 +128,16 @@ def show_tiles(raw_tiles, raw_pointers):
                     going = False
 
 
-def draw_tile(tile, size = 20):
+def render_tile(tile, px_size = 20):
     """
     This just draws a tile onto a new pygame.Surface object, and returns that object.
 
     The surface object it returns is automatically the correct size.
     """
-    output = pygame.Surface((size * tile.width(), size * tile.height()))
+    output = pygame.Surface((px_size * tile.width(), px_size * tile.height()))
     for i in range(0, tile.height()):
         for j in range(0, tile.width()):
-            pygame.draw.rect(output,COLORS[tile.pixel(j,i)],(j*size,i*size,(j+1)*size,(i+1)*size),0)
+            pygame.draw.rect(output,COLORS[tile.pixel(j,i)],(j*px_size,i*px_size,(j+1)*px_size,(i+1)*px_size),0)
 
     return output
 
@@ -246,7 +247,7 @@ def main():
 
     screen = display_init(SCR_WIDTH, SCR_HEIGHT)
 
-    graphics = render_tiles(lvl_tiles, lower_tile, upper_tile)
+    lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
 
     x_pos = 0
     y_pos = 0
@@ -259,13 +260,17 @@ def main():
                 if cur_tile is False:
                     cur_tile = 0
 
-                if levels[curlvl - 1].monster_at(j + x_pos, i + y_pos) > 0:
-                    screen.blit(graphics[17],(j*16, i * 16))
+                monster = levels[curlvl - 1].monster_at(j + x_pos, i + y_pos)
+
+                if monster > 0:
+                    screen.blit(lvl_graphics[17],(j*16, i * 16))
+                    screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (255,255,255)),(j*16, i * 16))
                 elif cur_tile >> 4:
                 #if cur_tile >> 4:
-                    screen.blit(graphics[16],(j*16, i * 16))
+                    screen.blit(lvl_graphics[16],(j*16, i * 16))
+                    #screen.blit(pygame.font.Font(None, 15).render("%x" % (cur_tile >> 4), False, (255,255,255)),(j*16, i * 16))
                 else:
-                    screen.blit(graphics[cur_tile % 16], (j * 16, i * 16))
+                    screen.blit(lvl_graphics[cur_tile % 16], (j * 16, i * 16))
 
         pygame.display.update()
 
@@ -291,7 +296,7 @@ def main():
                         curlvl = 16
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
-                    graphics = render_tiles(lvl_tiles, lower_tile, upper_tile)
+                    lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
 
                     x_pos = 0
                 elif keys[K_n]:
@@ -300,7 +305,7 @@ def main():
                         curlvl = 1
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
-                    graphics = render_tiles(lvl_tiles, lower_tile, upper_tile)
+                    lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
 
                     x_pos = 0
 
