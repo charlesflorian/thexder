@@ -1,4 +1,5 @@
 from constants import *
+import graphics
 
 #############################################################################################
 #
@@ -121,6 +122,8 @@ class TileArray(object):
         self.px_width = self.tiles_width * TILE_WIDTH
         self.px_height = self.tiles_height * TILE_HEIGHT
 
+        #self.graphic = self.render()
+
     def pixel(self, x, y):
         """
         This should treat the tile_array as a whole picture, and return the pixel at (x,y).
@@ -147,8 +150,16 @@ class TileArray(object):
     def height(self):
         return self.px_height
 
-    def render(self):
-        pass
+    def render(self, px_size=PX_SIZE):
+        output = pygame.Surface((px_size * self.width(), px_size * self.height()))
+        for i in range(0, self.width()):
+            for j in range(0, self.height()):
+                tile = self.part(i, j)
+                # This is a little sloppy; it is assuming all sub-tiles are the same height. Perhaps this is assumed
+                # by the very nature of this class? I should think about this...
+                output.blit(tile.tile(),(i * tile.width() * px_size, j * tile.height() * px.size))
+
+        return output
 
     def tile(self):
         pass
@@ -180,7 +191,7 @@ class Tile(object):
 
         self.offset = offset
 
-        self.graphic = self.render()
+        #self.graphic = self.render()
 
 
 
@@ -201,8 +212,8 @@ class Tile(object):
         # Same here.
         return len(self.tile_data)
 
-    def render(self):
-        return False
+    def render(self, px_size=PX_SIZE):
+        return graphics.render_tile(self.tile_data, px_size)
 
     def tile(self):
         return self.graphic
