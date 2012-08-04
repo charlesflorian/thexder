@@ -83,7 +83,8 @@ class Animation(object):
                        ord(pointers[n * PTR_SIZE + i * 0x100 + 2]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 3])],
                       [ord(pointers[n * PTR_SIZE + i * 0x100 + 4]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 5]),
                        ord(pointers[n * PTR_SIZE + i * 0x100 + 6]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 7])]]
-            offsets.append(offset)
+            if offset != [[0,0],[0,0]]:
+                offsets.append(offset)
 
         # There are 8 tiles.
         self.tiles = []

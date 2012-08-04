@@ -55,15 +55,26 @@ def load_monsters(raw_tiles, raw_pointers):
 
     monsters = []
 
-    #monsters.append([])
-    #for j in range(0, MAX_ENEMIES): # For each monster...
-    #    monsters[0].append(animation.Animation(j,raw_tiles[0],raw_pointers[0]))
-
-
-    for i in range(0, len(raw_tiles)): # For each level...
+    if (SPEED):
         monsters.append([])
         for j in range(0, MAX_ENEMIES): # For each monster...
-            monsters[i].append(animation.Animation(j,raw_tiles[i],raw_pointers[i]))
+            monsters[0].append(animation.Animation(j,raw_tiles[0],raw_pointers[0]))
+
+        # This just copies all the enemy graphics from the first level for all of them.    
+        for j in range(1, len(raw_tiles)):
+            monsters.append(monsters[-1])
+
+    # As it stands, this is incredibly slow on loading. A few solutions could be:
+    #
+    # 1. Load them on each level instead of all at once.
+    # 2. Figure out why this is so slow. My guess is that it's doing a lot of junk loading due
+    #   to all of the empty space that is in each data file.
+
+    else:
+        for i in range(0, len(raw_tiles)): # For each level...
+            monsters.append([])
+            for j in range(0, MAX_ENEMIES): # For each monster...
+                monsters[i].append(animation.Animation(j,raw_tiles[i],raw_pointers[i]))
 
     return monsters
 
@@ -183,6 +194,8 @@ def main():
     x_pos = 0
     y_pos = 0
 
+    monst_frame = 0
+
     going = True
     while going:
         for j in range(0,SCR_WIDTH / 16):
@@ -196,7 +209,7 @@ def main():
                 if monster > 0:
                     #screen.blit(lvl_graphics[17],(j*16, i * 16))
                     #screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (255,255,255)),(j*16, i * 16))
-                    screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(0), (j*16, i * 16))
+                    screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
                     
                 elif cur_tile >> 4:
                     # I actually should maybe do something with this, but I don't know what.
@@ -211,6 +224,9 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
+                monst_frame += 1
+                if monst_frame >= NUM_TILES:
+                    monst_frame = 0
                 keys = pygame.key.get_pressed()
 
                 # These are the basic motion; for the time being, up/down skip you through the level

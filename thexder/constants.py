@@ -49,3 +49,6 @@ COLORS = [pygame.Color(0,0,0), #Black
           pygame.Color(130,130,160), #Blue-Gray
           pygame.Color(255,255,255)] #White
 
+# Debug stuff.
+
+SPEED = False
