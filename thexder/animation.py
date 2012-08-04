@@ -93,7 +93,7 @@ class Animation(object):
 
     def tile(self, n):
         if 0 <= n < len(self.tiles):
-            return self.tiles[n]
+            return self.tiles[n].tile()
         raise IOError
 
 
@@ -122,7 +122,7 @@ class TileArray(object):
         self.px_width = self.tiles_width * TILE_WIDTH
         self.px_height = self.tiles_height * TILE_HEIGHT
 
-        #self.graphic = self.render()
+        self.graphic = self.render()
 
     def pixel(self, x, y):
         """
@@ -152,17 +152,17 @@ class TileArray(object):
 
     def render(self, px_size=PX_SIZE):
         output = pygame.Surface((px_size * self.width(), px_size * self.height()))
-        for i in range(0, self.width()):
-            for j in range(0, self.height()):
+        for i in range(0, self.tiles_width):
+            for j in range(0, self.tiles_height):
                 tile = self.part(i, j)
                 # This is a little sloppy; it is assuming all sub-tiles are the same height. Perhaps this is assumed
                 # by the very nature of this class? I should think about this...
-                output.blit(tile.tile(),(i * tile.width() * px_size, j * tile.height() * px.size))
+                output.blit(tile.tile(),(i * tile.width() * px_size, j * tile.height() * px_size))
 
         return output
 
     def tile(self):
-        pass
+        return self.graphic
 
 class Tile(object):
     """
@@ -191,7 +191,7 @@ class Tile(object):
 
         self.offset = offset
 
-        #self.graphic = self.render()
+        self.graphic = self.render()
 
 
 

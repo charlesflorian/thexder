@@ -50,59 +50,24 @@ def display_init(width, height):
     return pygame.display.set_mode((width,height))
 
 
-
-def show_tiles(raw_tiles, raw_pointers):
-    """
-    This is intended to be a function for switching into the mode of showing tiles instead of the level.
-    It needs to have w, the window, passed, as well as the current level to look at.
-
-    Also, the raw tile data is passed. I'm not sure quite yet how I want to use it.
-    """
+def load_monsters(raw_tiles, raw_pointers):
     global MAX_ENEMIES, NUM_TILES
 
     monsters = []
-    for i in range(0,MAX_ENEMIES):
-        monsters.append(animation.Animation(i,raw_tiles,raw_pointers))
 
-    cur_tile = 0
-    cur_monster = 0
-
-
-    pygame.init()
-    pygame.key.set_repeat(120,60)
-    screen = pygame.display.set_mode((320,320))
+    #monsters.append([])
+    #for j in range(0, MAX_ENEMIES): # For each monster...
+    #    monsters[0].append(animation.Animation(j,raw_tiles[0],raw_pointers[0]))
 
 
-    going = True
-    while going:
-        # This is probably not too efficient (it re-renders the tile each time), but considering how few I need to
-        # render each time (i.e. 1), it doesn't matter.
-        screen.blit(render_tile(monsters[cur_monster].tile(cur_tile)),(0,0))
-        pygame.display.update()
+    for i in range(0, len(raw_tiles)): # For each level...
+        monsters.append([])
+        for j in range(0, MAX_ENEMIES): # For each monster...
+            monsters[i].append(animation.Animation(j,raw_tiles[i],raw_pointers[i]))
 
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                keys = pygame.key.get_pressed()
+    return monsters
 
-                if keys[K_UP]:
-                    cur_monster -= 1
-                    if cur_monster < 0:
-                        cur_monster = 0
-                elif keys[K_DOWN]:
-                    cur_monster += 1
-                    if cur_monster >= MAX_ENEMIES:
-                        cur_monster = MAX_ENEMIES - 1
-                elif keys[K_RIGHT]:
-                    cur_tile += 1
-                    if cur_tile >= NUM_TILES:
-                        cur_tile = 0
-                elif keys[K_LEFT]:
-                    cur_tile -= 1
-                    if cur_tile < 0:
-                        cur_tile = NUM_TILES - 1
-                else:
-                    #pygame.display.quit()
-                    going = False
+
 
 
 def load_raw_tiles():
@@ -196,9 +161,12 @@ def main():
 
     # Load all the tile data.
     (raw_tiles, raw_pointers) = load_raw_animation_data()
+    monsters = load_monsters(raw_tiles, raw_pointers)
+
     lvl_tiles = load_raw_tiles()
 
     levels = load_levels()
+
 
     (lower_tile, upper_tile) = tile_bounds()
 
@@ -210,7 +178,7 @@ def main():
 
     screen = display_init(SCR_WIDTH, SCR_HEIGHT)
 
-    lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
+    lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
     x_pos = 0
     y_pos = 0
@@ -226,14 +194,18 @@ def main():
                 monster = levels[curlvl - 1].monster_at(j + x_pos, i + y_pos)
 
                 if monster > 0:
-                    screen.blit(lvl_graphics[17],(j*16, i * 16))
-                    screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (255,255,255)),(j*16, i * 16))
+                    #screen.blit(lvl_graphics[17],(j*16, i * 16))
+                    #screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (255,255,255)),(j*16, i * 16))
+                    screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(0), (j*16, i * 16))
+                    
                 elif cur_tile >> 4:
+                    # I actually should maybe do something with this, but I don't know what.
+                    pass
                 #if cur_tile >> 4:
-                    screen.blit(lvl_graphics[16],(j*16, i * 16))
+                    #screen.blit(lvl_graphics[16],(j*16, i * 16))
                     #screen.blit(pygame.font.Font(None, 15).render("%x" % (cur_tile >> 4), False, (255,255,255)),(j*16, i * 16))
                 else:
-                    screen.blit(lvl_graphics[cur_tile % 16], (j * 16, i * 16))
+                    screen.blit(lvl_graphics[cur_tile % 16].tile(), (j * 16, i * 16))
 
         pygame.display.update()
 
@@ -259,7 +231,8 @@ def main():
                         curlvl = 16
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
-                    lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
+                    #lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
+                    lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
                     x_pos = 0
                 elif keys[K_n]:
@@ -268,13 +241,11 @@ def main():
                         curlvl = 1
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
-                    lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
+                    #lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
+                    lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
                     x_pos = 0
 
-                # This is to look at the monster tiles.
-                elif keys[K_t]:
-                    show_tiles(raw_tiles[curlvl-1], raw_pointers[curlvl - 1])
                 else:
                     pygame.display.quit()
                     going = False

@@ -26,16 +26,33 @@ def render_lvl_tiles(tiles, lower, upper):
     return output
 
 
+#def render_tile(tile, px_size = 20):
+#    """
+#    This just draws a tile onto a new pygame.Surface object, and returns that object.
+##
+#    The surface object it returns is automatically the correct size.
+#    """
+#    output = pygame.Surface((px_size * tile.width(), px_size * tile.height()))
+#    for i in range(0, tile.height()):
+#        for j in range(0, tile.width()):
+#            pygame.draw.rect(output,COLORS[tile.pixel(j,i)],(j*px_size,i*px_size,(j+1)*px_size,(i+1)*px_size),0)
+#
+#    return output
+
 def render_tile(tile, px_size = 20):
     """
     This just draws a tile onto a new pygame.Surface object, and returns that object.
 
     The surface object it returns is automatically the correct size.
+
+    The input is a list of lists.
     """
-    output = pygame.Surface((px_size * tile.width(), px_size * tile.height()))
-    for i in range(0, tile.height()):
-        for j in range(0, tile.width()):
-            pygame.draw.rect(output,COLORS[tile.pixel(j,i)],(j*px_size,i*px_size,(j+1)*px_size,(i+1)*px_size),0)
+    width = len(tile[0])
+    height = len(tile)
+    output = pygame.Surface((px_size * width, px_size * height))
+    for i in range(0, height):
+        for j in range(0, width):
+            pygame.draw.rect(output,COLORS[tile[i][j]],(j*px_size,i*px_size,(j+1)*px_size,(i+1)*px_size),0)
 
     return output
 
