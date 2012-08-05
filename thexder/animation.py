@@ -93,11 +93,17 @@ class Animation(object):
             
 
     def raw(self, n):
+        """
+        This returns raw tile data (i.e. a rank two array) for the n-th frame.
+        """
         if 0 <= n < len(self.tiles):
             return self.tiles[n].tile_raw()
         raise IOError
 
     def tile(self, n):
+        """
+        This returns the rendered tile data, as a pygame.Surface object.
+        """
         if 0 <= n < len(self.tiles):
             return self.tiles[n].tile()
         raise IOError
@@ -131,8 +137,9 @@ class TileArray(object):
         self.px_width = self.tiles_width * TILE_WIDTH
         self.px_height = self.tiles_height * TILE_HEIGHT
 
-        self.graphic = self.render()
         self.raw_tile_data = self.make_raw()
+
+        self.graphic = self.render()
 
     def pixel(self, x, y):
         """
@@ -161,6 +168,9 @@ class TileArray(object):
         return self.px_height
 
     def make_raw(self):
+        """
+        This will make an array consisting of all of the tile data together.
+        """
         output = []
         for i in range(0, self.tiles_height):
             for j in range(0, self.part(0,i).height()):
@@ -173,15 +183,7 @@ class TileArray(object):
         return self.raw_tile_data
 
     def render(self, px_size=PX_SIZE):
-        output = pygame.Surface((px_size * self.width(), px_size * self.height()))
-        for i in range(0, self.tiles_width):
-            for j in range(0, self.tiles_height):
-                tile = self.part(i, j)
-                # This is a little sloppy; it is assuming all sub-tiles are the same height. Perhaps this is assumed
-                # by the very nature of this class? I should think about this...
-                output.blit(tile.tile(),(i * tile.width() * px_size, j * tile.height() * px_size))
-
-        return output
+        return graphics.render_tile(self.tile_raw(), PX_SIZE)
 
     def tile(self):
         return self.graphic

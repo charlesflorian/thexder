@@ -239,6 +239,19 @@ def main():
 
                 monster = levels[curlvl - 1].monster_at(j + x_pos, i + y_pos)
 
+                # So there are two sources of how the enemies are shown in this game. One is that
+                # the high bits of a tile signify that an enemy will be located there. In such a case,
+                # I admit that I have no idea what the low bits signify.
+                #
+                # To see this, one should use the checking for "cur_tile >> 4".
+                #
+                # Alternatively, in the BUGDBXX.BIN file, there is data showing where monsters are.
+                # This is what the "monster > 0" part checks.
+                #
+                # Specifically, it returns the offset part of the file which sort of seems to say
+                # what the monster is, but it isn't 100% accurate (I'm not really sure what the system
+                # there is, either.                
+
                 if monster > 0:
                     #screen.blit(lvl_graphics[17],(j*16, i * 16))
                     screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
