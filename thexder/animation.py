@@ -90,12 +90,20 @@ class Animation(object):
         self.tiles = []
         for i in range(0,len(offsets)):
             self.tiles.append(TileArray(raw_tiles,offsets[i]))
+            
 
+    def raw(self, n):
+        if 0 <= n < len(self.tiles):
+            return self.tiles[n].tile_raw()
+        raise IOError
 
     def tile(self, n):
         if 0 <= n < len(self.tiles):
             return self.tiles[n].tile()
         raise IOError
+
+    def is_not_blank(self):
+        return len(self.tiles) > 0
 
 
 class TileArray(object):
@@ -124,6 +132,7 @@ class TileArray(object):
         self.px_height = self.tiles_height * TILE_HEIGHT
 
         self.graphic = self.render()
+        self.raw_tile_data = self.make_raw()
 
     def pixel(self, x, y):
         """
@@ -150,6 +159,18 @@ class TileArray(object):
 
     def height(self):
         return self.px_height
+
+    def make_raw(self):
+        output = []
+        for i in range(0, self.tiles_height):
+            for j in range(0, self.part(0,i).height()):
+                output.append([])
+                for k in range(0, self.tiles_width):
+                    output[j + i * TILE_HEIGHT].extend(self.part(k,i).tile_raw()[j])
+        return output
+
+    def tile_raw(self):
+        return self.raw_tile_data
 
     def render(self, px_size=PX_SIZE):
         output = pygame.Surface((px_size * self.width(), px_size * self.height()))

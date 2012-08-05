@@ -74,7 +74,9 @@ def load_monsters(raw_tiles, raw_pointers):
         for i in range(0, len(raw_tiles)): # For each level...
             monsters.append([])
             for j in range(0, MAX_ENEMIES): # For each monster...
-                monsters[i].append(animation.Animation(j,raw_tiles[i],raw_pointers[i]))
+                new_monster = animation.Animation(j,raw_tiles[i],raw_pointers[i])
+                if new_monster.is_not_blank():
+                    monsters[i].append(new_monster)
 
     return monsters
 
@@ -119,12 +121,14 @@ def load_raw_animation_data():
             # open the next file
             tiles = dm.load_file("TANBIT{0:0>2}.BIN".format(i+1))
             # if it isn't as long as the previous set of tiles, then we need to borrow from that set.
+            #print "Level %d tiles has length %x\n" % (i + 1, len(tiles))
             if len(tiles) < len(output[-1]):
-                tiles += output[-1][len(tiles):]
+                tiles = tiles + output[-1][len(tiles):]
             output.append(tiles)
         except ValueError:
             # alternatively, if the file just doesn't exist (e.g. TANBIT03.BIN) then we just use the previous
             # tiles.
+            #print "level %d has no graphics.\n" % (i+1)
             output.append(output[-1])
 
     pointers = []
@@ -164,6 +168,35 @@ def load_levels():
         levels.append(level.Level(i+1))
 
     return levels
+
+
+def view_enemies(screen,monsters):
+    which_monster = 0
+    frame = 0
+    going = True
+    while going:
+        screen.blit(graphics.render_tile(monsters[which_monster].raw(frame),20),(0,0))
+        text = pygame.font.Font(None, 20).render("Enemy: %x, Frame: %x" % (which_monster, frame), False, (100,255,100))
+        pygame.draw.rect(screen,(0,0,0),(10,330,200,40),0)
+        screen.blit(text,(20, 340))
+
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                keys = pygame.key.get_pressed()
+
+                if keys[K_RIGHT]:
+                    frame += 1
+                    if frame >= 8:
+                        frame = 0
+                elif keys[K_DOWN]:
+                    which_monster += 1
+                    if which_monster >= len(monsters):
+                        which_monster = 0
+                elif keys[K_q]:
+                    going = False
+
 
 #And here is the main function.
 def main():
@@ -208,8 +241,8 @@ def main():
 
                 if monster > 0:
                     #screen.blit(lvl_graphics[17],(j*16, i * 16))
-                    #screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (255,255,255)),(j*16, i * 16))
                     screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
+                    screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
                     
                 elif cur_tile >> 4:
                     # I actually should maybe do something with this, but I don't know what.
@@ -261,6 +294,10 @@ def main():
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
                     x_pos = 0
+
+                elif keys[K_t]:
+                    # I still want to be able to look over the enemy tiles, since this seems to be an issue...
+                    view_enemies(screen, monsters[curlvl - 1])
 
                 else:
                     pygame.display.quit()
