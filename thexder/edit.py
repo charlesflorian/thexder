@@ -27,7 +27,7 @@ from constants import *
 
 
 #Which level are we editing?
-curlvl = 1
+curlvl = 4
 
 
 
@@ -56,9 +56,10 @@ def load_monsters(raw_tiles, raw_pointers):
     monsters = []
 
     if (SPEED):
+        speed_lvl = 3
         monsters.append([])
         for j in range(0, MAX_ENEMIES): # For each monster...
-            monsters[0].append(animation.Animation(j,raw_tiles[0],raw_pointers[0]))
+            monsters[0].append(animation.Animation(j,raw_tiles[speed_lvl - 1],raw_pointers[speed_lvl - 1]))
 
         # This just copies all the enemy graphics from the first level for all of them.    
         for j in range(1, len(raw_tiles)):
@@ -121,14 +122,16 @@ def load_raw_animation_data():
             # open the next file
             tiles = dm.load_file("TANBIT{0:0>2}.BIN".format(i+1))
             # if it isn't as long as the previous set of tiles, then we need to borrow from that set.
-            #print "Level %d tiles has length %x\n" % (i + 1, len(tiles))
+#            print "Level %d tiles has length %x\n" % (i + 1, len(tiles))
             if len(tiles) < len(output[-1]):
+#                while len(tiles) < len(output[-1]):
+#                    tiles += chr(0x60) * (len(output[-1]) - len(tiles))
                 tiles = tiles + output[-1][len(tiles):]
             output.append(tiles)
         except ValueError:
             # alternatively, if the file just doesn't exist (e.g. TANBIT03.BIN) then we just use the previous
             # tiles.
-            #print "level %d has no graphics.\n" % (i+1)
+#            print "level %d has no graphics.\n" % (i+1)
             output.append(output[-1])
 
     pointers = []
