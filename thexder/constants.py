@@ -49,6 +49,11 @@ COLORS = [pygame.Color(0,0,0), #Black
           pygame.Color(130,130,160), #Blue-Gray
           pygame.Color(255,255,255)] #White
 
+# Events
+
+TIME_EVENT = pygame.USEREVENT + 1
+
+
 # Debug stuff.
 
 SPEED = False

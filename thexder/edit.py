@@ -229,6 +229,8 @@ def main():
 
     monst_frame = 0
 
+    pygame.time.set_timer(TIME_EVENT, 100)
+    
     going = True
     while going:
         for j in range(0,SCR_WIDTH / 16):
@@ -270,9 +272,6 @@ def main():
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                monst_frame += 1
-                if monst_frame >= NUM_TILES:
-                    monst_frame = 0
                 keys = pygame.key.get_pressed()
 
                 # These are the basic motion; for the time being, up/down skip you through the level
@@ -320,7 +319,11 @@ def main():
                     x_pos = 0
                 elif x_pos >= 512:
                     x_pos = 511
-
+            elif event.type == TIME_EVENT:
+                monst_frame += 1
+                if monst_frame >= NUM_TILES:
+                    monst_frame = 0
+            
 ##############################
 
 
