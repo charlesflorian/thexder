@@ -36,12 +36,10 @@ import graphics
 # Type, x-, y-positions.
 #
 # A typical one looks like ZWXY where
-#   Z - Seems to be an offset into... something?
-#       This seems to need to be a multiple of 4, starting at 80.
-#       If it goes past the number of monsters (? How does it know?) then it gives junk.
-#       If it is less than 80, then it seems to just be tiles.
-#       If it is not a multiple of 4 then it gives animations, but they're offset. Also, the monsters
-#       in such cases do not die (or not always?)
+#   Z - This tells us the type of the enemy. That is, (Z - 0x80)/4 tells us which enemy (starting at the
+#       beginning of this file) to use. However, it isn't clear how it is correlated with the graphics;
+#       starting at level 4, there is definitely some discrepancy between this use and what comes from
+#       EGAPTRXX.BIN.
 #   W - 0 always?
 #   X - x position:
 #       Well, sort of. If Y is even, then this is exactly the x position. if Y is odd, then X + 256 is the x position.

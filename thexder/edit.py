@@ -193,10 +193,18 @@ def view_enemies(screen,monsters):
                     frame += 1
                     if frame >= 8:
                         frame = 0
+                elif keys[K_LEFT]:
+                    frame -= 1
+                    if frame < 0:
+                        frame = 7
                 elif keys[K_DOWN]:
                     which_monster += 1
                     if which_monster >= len(monsters):
                         which_monster = 0
+                elif keys[K_UP]:
+                    which_monster -= 1
+                    if which_monster < 0:
+                        which_monster = len(monsters) - 1
                 elif keys[K_q]:
                     going = False
 
@@ -260,7 +268,7 @@ def main():
                 if monster > 0:
                     #screen.blit(lvl_graphics[17],(j*16, i * 16))
                     screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
-                    screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
+                    #screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
                     
                 elif cur_tile >> 4:
                     # I actually should maybe do something with this, but I don't know what.
@@ -313,10 +321,12 @@ def main():
                 elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
                     view_enemies(screen, monsters[curlvl - 1])
-
-                else:
+                
+                elif keys[K_q]:
                     pygame.display.quit()
                     going = False
+                else:
+                    pass
 
                 if x_pos < 0:
                     x_pos = 0
