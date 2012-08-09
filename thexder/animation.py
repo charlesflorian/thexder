@@ -93,7 +93,7 @@ class Animation(object):
         # There are 8 tiles.
         self.tiles = []
         for i in range(0,len(offsets)):
-            self.tiles.append(TileNew(raw_tiles,offsets[i]))
+            self.tiles.append(Tile(raw_tiles,offsets[i]))
             
 
     def raw(self, n):
@@ -116,138 +116,8 @@ class Animation(object):
         return len(self.tiles) > 0
 
 
-class TileArray(object):
-    """
-    This will be a class that contains a collection of tiles which fit into some array.
-    """
-    def __init__(self, raw_tile_string, offsets):
-        """
-        This should take as input a string which will be the raw tile data e.g. the contents
-        of one of the files TANBITXX.BIN, as well as an array (of arrays) of offsets
-
-        One change I might like to implement is to allow for offsets to just be an array as well,
-        but for now this is easier.
-        """
-        global TILE_WIDTH, TILE_HEIGHT
-
-        self.tiles = []
-        for i in range(0, len(offsets)):
-            self.tiles.append([])
-            for j in range(0, len(offsets[i])):
-                self.tiles[i].append(Tile(raw_tile_string, offsets[i][j]))
-
-        self.tiles_width = len(offsets[0])
-        self.tiles_height = len(offsets)
-        self.px_width = self.tiles_width * TILE_WIDTH
-        self.px_height = self.tiles_height * TILE_HEIGHT
-
-        self.raw_tile_data = self.make_raw()
-
-        self.graphic = self.render()
-
-    def pixel(self, x, y):
-        """
-        This should treat the tile_array as a whole picture, and return the pixel at (x,y).
-        """
-        if 0 <= x < self.px_width and 0 <= y < self.px_height:
-            tile_x = x / TILE_WIDTH
-            tile_y = y / TILE_HEIGHT
-            px_x = x % TILE_WIDTH
-            px_y = y % TILE_HEIGHT
-            return self.part(tile_x,tile_y).pixel(px_x,px_y)
-        return False
-
-    def part(self, x, y):
-        """
-        This should return the sub-tile which makes the picture up.
-        """
-        if 0 <= x < self.tiles_width and 0 <= y < self.tiles_height:
-            return self.tiles[y][x]
-        return False
-
-    def width(self):
-        return self.px_width
-
-    def height(self):
-        return self.px_height
-
-    def make_raw(self):
-        """
-        This will make an array consisting of all of the tile data together.
-        """
-        output = []
-        for i in range(0, self.tiles_height):
-            for j in range(0, self.part(0,i).height()):
-                output.append([])
-                for k in range(0, self.tiles_width):
-                    output[j + i * TILE_HEIGHT].extend(self.part(k,i).tile_raw()[j])
-        return output
-
-    def tile_raw(self):
-        return self.raw_tile_data
-
-    def render(self, px_size=PX_SIZE):
-        return graphics.render_tile(self.tile_raw(), PX_SIZE)
-
-    def tile(self):
-        return self.graphic
 
 class Tile(object):
-    """
-    This will be the class for tile data, specifically an 8x8 tile.
-    """
-    def __init__(self, tiles, offset):
-        """
-        This has as input the level from which one should load the tile, and start, the offset.
-        Then it will just read in the next few bytes.
-        """
-        global TILE_SIZE
-        global TILE_HEIGHT
-
-        cur_tile = tiles[offset : offset + TILE_SIZE]
-
-        # Here we read in the string into an 8x8 array of pixel data.
-        self.tile_data = []
-        for i in range(0,TILE_HEIGHT):
-            self.tile_data.append([])
-            for j in range(0,TILE_WIDTH/2):
-                # Get the high and low bits, separate them into separate pixels.
-                ch = ord(cur_tile[i * 4 + j])
-                low = ch % 0x10
-                high = ch >> 4
-                self.tile_data[i].extend([high, low])
-
-        self.offset = offset
-
-        self.graphic = self.render()
-
-
-
-    def pixel(self,x,y):
-        return self.tile_data[y][x]
-
-
-    def tile_raw(self):
-        return self.tile_data
-
-
-    def width(self):
-        # This should always return the number 8
-        return len(self.tile_data[0])
-
-
-    def height(self):
-        # Same here.
-        return len(self.tile_data)
-
-    def render(self, px_size=PX_SIZE):
-        return graphics.render_tile(self.tile_data, px_size)
-
-    def tile(self):
-        return self.graphic
-
-
-class TileNew(object):
 
     def __init__(self, raw_tile_data, offsets):
         """
@@ -277,7 +147,7 @@ class TileNew(object):
                     raise TypeError
 
                 for j in range(0, len(offsets[i])):
-                    cur_tile = TileNew(raw_tile_data,offsets[i][j])
+                    cur_tile = Tile(raw_tile_data,offsets[i][j])
                     self.graphic.blit(cur_tile.tile(), (j * PX_SIZE * TILE_WIDTH, i * PX_SIZE * TILE_HEIGHT))
 
                     # This is just to produce the raw tile data.
