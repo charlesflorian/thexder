@@ -97,7 +97,7 @@ def load_raw_tiles():
     output = []
 
     for i in range(0, len(content) / TILE_SIZE ):
-        output.append(animation.Tile(content,i * TILE_SIZE ))
+        output.append(animation.TileNew(content,i * TILE_SIZE ))
 
     return output
 

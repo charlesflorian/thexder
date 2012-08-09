@@ -51,7 +51,13 @@ import graphics
 #
 ##############################################################################################
 
-
+##############################################################################################
+#
+# TODO: Merge the TileArray and Tile classes into one class. This would involve carefully going
+#       over what data should go into the constructor, and to allow it to take either the normal
+#       input, or an array of Tile objects, from which it would make a bigger Tile.
+#
+##############################################################################################
 
 class Monster(object):
     """
@@ -87,7 +93,7 @@ class Animation(object):
         # There are 8 tiles.
         self.tiles = []
         for i in range(0,len(offsets)):
-            self.tiles.append(TileArray(raw_tiles,offsets[i]))
+            self.tiles.append(TileNew(raw_tiles,offsets[i]))
             
 
     def raw(self, n):
@@ -239,6 +245,78 @@ class Tile(object):
 
     def tile(self):
         return self.graphic
+
+
+class TileNew(object):
+
+    def __init__(self, raw_tile_data, offsets):
+        """
+        raw_tile_data: a string consisting of the raw tile data e.g. that of TANBITXX.BIN or TNCHRS.BIN.
+
+        offsets: This can be one of two things: either a specific offset into raw_tile_data from which we
+                 are to draw a single 8x8 tile, or an array (necessarily rank 2!) from which we will build 
+                 an array of tiles.
+
+                 TODO: I should add in some way to check that we actually get a rectangle out of this, or to
+                 verify that the offsets[i] are themselves lists...
+
+                 I think that for now I will assume that no empty data will be passed to this, although I
+                 feel a little dirty doing that.
+        """
+        global TILE_SIZE, PX_SIZE, TILE_WIDTH
+        
+        if type(offsets) is list:
+
+            height = len(offsets) * PX_SIZE * TILE_HEIGHT
+            width = len(offsets[0]) * PX_SIZE * TILE_WIDTH
+            self.graphic = pygame.Surface((width, height))
+
+            self.raw_data = []
+            for i in range(0, len(offsets)):
+                if not type(offsets[i]) is list:
+                    raise TypeError
+
+                for j in range(0, len(offsets[i])):
+                    cur_tile = TileNew(raw_tile_data,offsets[i][j])
+                    self.graphic.blit(cur_tile.tile(), (j * PX_SIZE * TILE_WIDTH, i * PX_SIZE * TILE_HEIGHT))
+
+                    # This is just to produce the raw tile data.
+                    for k in range(0, TILE_HEIGHT):
+                        if j == 0:
+                            self.raw_data.append([])
+                        self.raw_data[k + i * TILE_HEIGHT].extend(cur_tile.tile_raw()[k])
+
+        else:
+            cur_tile = raw_tile_data[offsets : offsets + TILE_SIZE]
+
+            # Here we read in the string into an 8x8 array of pixel data.
+            self.raw_data = []
+            for i in range(0,TILE_HEIGHT):
+                self.raw_data.append([])
+                for j in range(0,TILE_WIDTH/2):
+                    # Get the high and low bits, separate them into separate pixels.
+                    ch = ord(cur_tile[i * 4 + j])
+                    low = ch % 0x10
+                    high = ch >> 4
+                    self.raw_data[i].extend([high, low])
+
+            self.graphic = graphics.render_tile(self.raw_data, PX_SIZE)
+
+    def tile_raw(self):
+        return self.raw_data
+
+    def pixel(self, x, y):
+        return self.raw_data[y][x]
+
+    def tile(self):
+        return self.graphic
+
+    def width(self):
+        return len(self.raw_data[0])
+
+    def height(self):
+        return len(self.raw_data)
+
 
 if __name__ == "__main__":
     print "This should not be loaded by itself."
