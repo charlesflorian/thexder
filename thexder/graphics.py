@@ -38,8 +38,8 @@ def render_tile(tile, px_size = 20):
     height = len(tile)
     output = pygame.Surface((px_size * width, px_size * height))
     for i in range(0, height):
-        for j in range(0, width):
-            pygame.draw.rect(output,COLORS[tile[i][j]],(j*px_size,i*px_size,(j+1)*px_size,(i+1)*px_size),0)
+        for j in range(0, width):   
+            output.fill(COLORS[tile[i][j]], pygame.Rect(j*px_size,i*px_size,(j+1)*px_size,(i+1)*px_size))
 
     return output
 

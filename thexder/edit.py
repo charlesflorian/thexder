@@ -18,27 +18,12 @@ from constants import *
 
 # for debugging: import pdb; pdb.set_trace()
 
-
-###################################################
-#
-# This is a list of global constants and variables.
-#
-###################################################
-
+import time
 
 #Which level are we editing?
 curlvl = 4
 
 
-
-##########################################################################################
-#
-# This displays what the tiles look like, four at a time. As it turns out, the tiles are
-# all 16 x 16 arrays, and it seems that for levels 1--4 it uses tiles 0x20--0x2F
-# while for levels 5--8 it uses tiles 0x10--0x1F. The mapping is exactly what you expect.
-#
-# Consequently, this should make it very easy to display the level!
-#
 ##########################################################################################
 
 def display_init(width, height):
@@ -214,6 +199,9 @@ def main():
     global SCR_HEIGHT, SCR_WIDTH, LVL_HEIGHT
     global curlvl
 
+    #t1 = time.time()
+
+
     # Load all the tile data.
     (raw_tiles, raw_pointers) = load_raw_animation_data()
     monsters = load_monsters(raw_tiles, raw_pointers)
@@ -225,11 +213,15 @@ def main():
 
     (lower_tile, upper_tile) = tile_bounds()
 
+    #t2 = time.time()
+    #print "%f seconds\n" % (t2 - t1)
+
 ##########################
 #
 # This was a separate function before. For now it is included in main(), but this could change.
 #
 ##########################
+
 
     screen = display_init(SCR_WIDTH, SCR_HEIGHT)
 

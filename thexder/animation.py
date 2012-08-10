@@ -53,9 +53,11 @@ import graphics
 
 ##############################################################################################
 #
-# TODO: Merge the TileArray and Tile classes into one class. This would involve carefully going
-#       over what data should go into the constructor, and to allow it to take either the normal
-#       input, or an array of Tile objects, from which it would make a bigger Tile.
+# It appears that the issue with the graphics is not in any way related to EGAPTRXX.BIN, but
+# instead that when we load new tiles over the old ones, that we need to be more choosy somehow
+# in how they overwrite old tiles. I may just have to do this by hand, sadly... For example,
+# when level 4 is loaded it should overwrite tiles not for the _first_ enemy (which is the
+# default), but something a bit later.
 #
 ##############################################################################################
 
