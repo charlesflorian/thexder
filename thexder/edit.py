@@ -21,7 +21,7 @@ from constants import *
 import time
 
 #Which level are we editing?
-curlvl = 4
+curlvl = 13
 
 
 ##########################################################################################
@@ -104,19 +104,40 @@ def load_raw_animation_data():
 
     for i in range(1, MAX_LEVELS):
         try:
-            # open the next file
-            tiles = dm.load_file("TANBIT{0:0>2}.BIN".format(i+1))
-            # if it isn't as long as the previous set of tiles, then we need to borrow from that set.
-#            print "Level %d tiles has length %x\n" % (i + 1, len(tiles))
-            if len(tiles) < len(output[-1]):
-#                while len(tiles) < len(output[-1]):
-#                    tiles += chr(0x60) * (len(output[-1]) - len(tiles))
-                tiles = tiles + output[-1][len(tiles):]
+            new_tiles = dm.load_file("TANBIT{0:0>2}.BIN".format(i+1))
+
+            tiles = output[-1]
+
+            # This is sort of annoying, but it seems that when the tiles are loaded they should overlap the old tiles
+            # from the previous level at somewhat random (?) spots, so this is all determined by trial and error.
+            #
+            # At least this is somewhat consistent in terms of how this works, I guess?
+            #
+            # The only ones that I'm not 100% certain about are levels 14--16, since I don't quite recall what
+            # enemy is where in those, but the animations at least look correct, and most of it looks reasonable.
+            
+            where = 0
+
+            if i == (4 - 1):
+                where = 2
+            elif i == (5 - 1):
+                where = 1
+            elif i == (8 - 1):
+                where = 2
+            elif i == (9 - 1):
+                where = 2
+            elif i == (12 - 1):
+                where = 1
+            elif i == (13 - 1):
+                where = 1
+
+            tiles = raw_tiles_insert(tiles, new_tiles, where)
+
             output.append(tiles)
         except ValueError:
             # alternatively, if the file just doesn't exist (e.g. TANBIT03.BIN) then we just use the previous
             # tiles.
-#            print "level %d has no graphics.\n" % (i+1)
+
             output.append(output[-1])
 
     pointers = []
@@ -124,6 +145,14 @@ def load_raw_animation_data():
         pointers.append(dm.load_file("EGAPTR{0:0>2}.BIN".format(i+1)))
 
     return (output, pointers)
+
+
+def raw_tiles_insert(old_tiles, new_tiles, where):
+    global TILE_SIZE, NUM_TILES
+
+    length = TILE_SIZE * 4 * NUM_TILES
+
+    return old_tiles[: length * where] + new_tiles + old_tiles[length * where + len(new_tiles):]
 
 def tile_bounds(level=1):
     """
