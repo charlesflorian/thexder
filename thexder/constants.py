@@ -57,3 +57,4 @@ TIME_EVENT = pygame.USEREVENT + 1
 # Debug stuff.
 
 SPEED = False
+NO_MONSTERS = False

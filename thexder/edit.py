@@ -21,7 +21,7 @@ from constants import *
 import time
 
 #Which level are we editing?
-curlvl = 13
+curlvl = 1
 
 
 ##########################################################################################
@@ -105,7 +105,12 @@ def load_raw_animation_data():
     for i in range(1, MAX_LEVELS):
         try:
             new_tiles = dm.load_file("TANBIT{0:0>2}.BIN".format(i+1))
+        except ValueError:
+            # alternatively, if the file just doesn't exist (e.g. TANBIT03.BIN) then we just use the previous
+            # tiles.
 
+            output.append(output[-1])
+        else:
             tiles = output[-1]
 
             # This is sort of annoying, but it seems that when the tiles are loaded they should overlap the old tiles
@@ -134,11 +139,6 @@ def load_raw_animation_data():
             tiles = raw_tiles_insert(tiles, new_tiles, where)
 
             output.append(tiles)
-        except ValueError:
-            # alternatively, if the file just doesn't exist (e.g. TANBIT03.BIN) then we just use the previous
-            # tiles.
-
-            output.append(output[-1])
 
     pointers = []
     for i in range(0, MAX_LEVELS):
@@ -153,6 +153,7 @@ def raw_tiles_insert(old_tiles, new_tiles, where):
     length = TILE_SIZE * 4 * NUM_TILES
 
     return old_tiles[: length * where] + new_tiles + old_tiles[length * where + len(new_tiles):]
+
 
 def tile_bounds(level=1):
     """
@@ -225,7 +226,7 @@ def view_enemies(screen,monsters):
 
 #And here is the main function.
 def main():
-    global SCR_HEIGHT, SCR_WIDTH, LVL_HEIGHT
+    global SCR_HEIGHT, SCR_WIDTH, LVL_HEIGHT, NO_MONSTERS
     global curlvl
 
     #t1 = time.time()
@@ -233,7 +234,8 @@ def main():
 
     # Load all the tile data.
     (raw_tiles, raw_pointers) = load_raw_animation_data()
-    monsters = load_monsters(raw_tiles, raw_pointers)
+    if not NO_MONSTERS:
+        monsters = load_monsters(raw_tiles, raw_pointers)
 
     lvl_tiles = load_raw_tiles()
 
@@ -287,16 +289,15 @@ def main():
                 # there is, either.                
 
                 if monster > 0:
-                    #screen.blit(lvl_graphics[17],(j*16, i * 16))
-                    screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
-                    #screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
+                    if NO_MONSTERS:
+                        screen.blit(lvl_graphics[0].tile(),(j*16, i * 16))
+                        screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
+                    else:
+                        screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
                     
                 elif cur_tile >> 4:
-                    # I actually should maybe do something with this, but I don't know what.
-                    pass
-                #if cur_tile >> 4:
-                    #screen.blit(lvl_graphics[16],(j*16, i * 16))
-                    #screen.blit(pygame.font.Font(None, 15).render("%x" % (cur_tile >> 4), False, (255,255,255)),(j*16, i * 16))
+                    if NO_MONSTERS:
+                        screen.blit(lvl_graphics[0].tile(),(j*16, i * 16))
                 else:
                     screen.blit(lvl_graphics[cur_tile % 16].tile(), (j * 16, i * 16))
 
@@ -324,7 +325,6 @@ def main():
                         curlvl = 16
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
-                    #lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
                     x_pos = 0
@@ -334,7 +334,6 @@ def main():
                         curlvl = 1
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
-                    #lvl_graphics = graphics.render_lvl_tiles(lvl_tiles, lower_tile, upper_tile)
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
                     x_pos = 0
