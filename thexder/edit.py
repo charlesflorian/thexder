@@ -191,6 +191,9 @@ def load_levels():
 def view_enemies(screen,monsters):
     which_monster = 0
     frame = 0
+
+    pygame.time.set_timer(TIME_EVENT, 100)
+
     going = True
     while going:
         screen.blit(graphics.render_tile(monsters[which_monster].raw(frame),20),(0,0))
@@ -199,29 +202,27 @@ def view_enemies(screen,monsters):
         screen.blit(text,(20, 340))
 
         pygame.display.update()
+
+
         
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 keys = pygame.key.get_pressed()
 
                 if keys[K_RIGHT]:
-                    frame += 1
-                    if frame >= 8:
-                        frame = 0
-                elif keys[K_LEFT]:
-                    frame -= 1
-                    if frame < 0:
-                        frame = 7
-                elif keys[K_DOWN]:
                     which_monster += 1
                     if which_monster >= len(monsters):
                         which_monster = 0
-                elif keys[K_UP]:
+                elif keys[K_LEFT]:
                     which_monster -= 1
                     if which_monster < 0:
                         which_monster = len(monsters) - 1
                 elif keys[K_q]:
                     going = False
+            elif event.type == TIME_EVENT:
+                frame += 1
+                if frame >= NUM_TILES:
+                    frame = 0
 
 
 #And here is the main function.
