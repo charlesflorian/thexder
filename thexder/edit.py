@@ -69,15 +69,13 @@ def load_monsters(raw_tiles, raw_pointers):
 
 
 
-def load_raw_tiles():
+def load_raw_tiles(filename="TNCHRS.BIN"):
     """
-    This, similar to the function below, will load all of the tiles from the file
-
-    TNCHRS.BIN
+    This will load all the tiles from the named file.
     """
     global TILE_SIZE
 
-    content = data.default_data_manager().load_file("TNCHRS.BIN")
+    content = data.default_data_manager().load_file(filename)
 
     output = []
 
@@ -86,6 +84,32 @@ def load_raw_tiles():
 
     return output
 
+#######################################################################################################
+#
+# The idea: Simply load every tile, much the same way the level tiles are loaded. Then use the EGAPTRXX
+# files to choose which tiles to load.
+#
+#######################################################################################################
+
+def load_raw_pointers():
+    global MAX_LEVELS
+    
+    dm = data.default_data_manager()
+    pointers = []
+    
+    for i in range(0, MAX_LEVELS):
+        pointers.append(dm.load_file("EGAPTR{0:0>2}.BIN".format(i+1)))
+        
+    return pointers
+
+def load_animation_tiles():
+    global MAX_LEVELS
+    output = []
+
+    for i in range(0, MAX_LEVELS):
+        output.append(load_raw_tiles("TANBIT{0:0>2}.BIN".format(i+1)))
+
+    return output
 
 def load_raw_animation_data():
     """
@@ -140,10 +164,8 @@ def load_raw_animation_data():
 
             output.append(tiles)
 
-    pointers = []
-    for i in range(0, MAX_LEVELS):
-        pointers.append(dm.load_file("EGAPTR{0:0>2}.BIN".format(i+1)))
-
+    pointers = load_raw_pointers()
+    
     return (output, pointers)
 
 
