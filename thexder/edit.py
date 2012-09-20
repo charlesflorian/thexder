@@ -35,27 +35,7 @@ def display_init(width, height):
     return pygame.display.set_mode((width,height))
 
 
-def load_monsters(raw_tiles, raw_pointers):
-    global MAX_ENEMIES, NUM_TILES
-
-    monsters = []
-
-    # As it stands, this is incredibly slow on loading. A few solutions could be:
-    #
-    # 1. Load them on each level instead of all at once.
-    # 2. Figure out why this is so slow. My guess is that it's doing a lot of junk loading due
-    #   to all of the empty space that is in each data file.
-
-    for i in range(0, len(raw_tiles)): # For each level...
-        monsters.append([])
-        for j in range(0, MAX_ENEMIES): # For each monster...
-            new_monster = animation.Animation(j,raw_tiles[i],raw_pointers[i])
-            if new_monster.is_not_blank():
-                monsters[i].append(new_monster)
-
-    return monsters
-
-def load_monsters_B(tiles, pointers):
+def load_monsters(tiles, pointers):
     global MAX_ENEMIES, NUM_TILES
 
     monsters = []
@@ -95,17 +75,6 @@ def load_raw_tiles(filename="TNCHRS.BIN"):
 #######################################################################################################
 
 def load_raw_pointers():
-    global MAX_LEVELS
-    
-    dm = data.default_data_manager()
-    pointers = []
-    
-    for i in range(0, MAX_LEVELS):
-        pointers.append(dm.load_file("EGAPTR{0:0>2}.BIN".format(i+1)))
-        
-    return pointers
-
-def load_raw_pointers_B():
     """
     This just loads the raw pointers, and converts them from hex offsets to integer
     ones.
@@ -173,10 +142,14 @@ def process_raw_pointers(pointers):
         tile_range = (shift * length, shift * length + TANBIT_SIZE[i])
 
         for j in range(0, len(pointers[i])):
-            #if tile_range[0] <= j < tile_range[1]:
             if tile_range[0] <= pointers[i][j] < tile_range[1]:
                 output[i].append((i, pointers[i][j] - shift * length))
             else:
+                # This is somehow the issue. It gets all of the new stuff just fine, but how it reads the
+                # Old ones... is wrong.
+
+                # The problem is that we want to take the _tiles_ from the previous levels, but this takes
+                # the _pointer_ from that level.
                 output[i].append(output[i-1][j])
 
     return output
@@ -216,57 +189,6 @@ def load_animation_tiles():
             output.append(tiles)
 
     return output
-
-def load_raw_animation_data():
-    """
-    This will just load the raw tiles from the TANBITXX.BIN files.
-    This is needed due to the fact that some of the EGAPTRXX.BIN files have pointers
-    which go past the end of the corresponding TANBIT file; my guess is that it then reads
-    from the previous file.
-    """
-    global MAX_LEVELS
-    output = []
-
-    dm = data.default_data_manager()
-
-    # Get the first set of tiles.
-    output.append(dm.load_file("TANBIT01.BIN"))
-
-    for i in range(1, MAX_LEVELS):
-        try:
-            new_tiles = dm.load_file("TANBIT{0:0>2}.BIN".format(i+1))
-        except ValueError:
-            # alternatively, if the file just doesn't exist (e.g. TANBIT03.BIN) then we just use the previous
-            # tiles.
-            output.append(output[-1])
-        else:
-            tiles = output[-1]
-
-            # This is sort of annoying, but it seems that when the tiles are loaded they should overlap the old tiles
-            # from the previous level at somewhat random (?) spots, so this is all determined by trial and error.
-            #
-            # At least this is somewhat consistent in terms of how this works, I guess?
-            #
-            # The only ones that I'm not 100% certain about are levels 14--16, since I don't quite recall what
-            # enemy is where in those, but the animations at least look correct, and most of it looks reasonable.
-            
-            where = get_shift(i)
-
-            tiles = raw_tiles_insert(tiles, new_tiles, where)
-
-            output.append(tiles)
-
-    pointers = load_raw_pointers()
-    
-    return (output, pointers)
-
-
-def raw_tiles_insert(old_tiles, new_tiles, where):
-    global TILE_SIZE, NUM_TILES
-
-    length = TILE_SIZE * 4 * NUM_TILES
-
-    return old_tiles[: length * where] + new_tiles + old_tiles[length * where + len(new_tiles):]
 
 
 def tile_bounds(level=1):
@@ -348,14 +270,10 @@ def main():
 
 
     # Load all the tile data.
-    #(raw_tiles, raw_pointers) = load_raw_animation_data()
-    #if not NO_MONSTERS:
-    #    monsters = load_monsters(raw_tiles, raw_pointers)
-
     raw_tiles = load_animation_tiles()
-    raw_pointers = load_raw_pointers_B()
+    raw_pointers = load_raw_pointers()
 
-    monsters = load_monsters_B(raw_tiles, raw_pointers)
+    monsters = load_monsters(raw_tiles, raw_pointers)
 
     lvl_tiles = load_raw_tiles()
 
