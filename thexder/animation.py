@@ -79,7 +79,7 @@ class Animation(object):
         global NUM_TILES, PTR_SIZE, MAX_ENEMIES
 
         if n < 0 or n >= MAX_ENEMIES:
-            return False
+            raise IndexError
 
         offsets = []
 

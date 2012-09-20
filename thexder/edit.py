@@ -40,15 +40,25 @@ def load_monsters(raw_tiles, raw_pointers):
 
     monsters = []
 
-    if (SPEED):
-        speed_lvl = 3
+    # As it stands, this is incredibly slow on loading. A few solutions could be:
+    #
+    # 1. Load them on each level instead of all at once.
+    # 2. Figure out why this is so slow. My guess is that it's doing a lot of junk loading due
+    #   to all of the empty space that is in each data file.
+
+    for i in range(0, len(raw_tiles)): # For each level...
         monsters.append([])
         for j in range(0, MAX_ENEMIES): # For each monster...
-            monsters[0].append(animation.Animation(j,raw_tiles[speed_lvl - 1],raw_pointers[speed_lvl - 1]))
+            new_monster = animation.Animation(j,raw_tiles[i],raw_pointers[i])
+            if new_monster.is_not_blank():
+                monsters[i].append(new_monster)
 
-        # This just copies all the enemy graphics from the first level for all of them.    
-        for j in range(1, len(raw_tiles)):
-            monsters.append(monsters[-1])
+    return monsters
+
+def load_monsters_B(tiles, pointers):
+    global MAX_ENEMIES, NUM_TILES
+
+    monsters = []
 
     # As it stands, this is incredibly slow on loading. A few solutions could be:
     #
@@ -56,16 +66,14 @@ def load_monsters(raw_tiles, raw_pointers):
     # 2. Figure out why this is so slow. My guess is that it's doing a lot of junk loading due
     #   to all of the empty space that is in each data file.
 
-    else:
-        for i in range(0, len(raw_tiles)): # For each level...
-            monsters.append([])
-            for j in range(0, MAX_ENEMIES): # For each monster...
-                new_monster = animation.Animation(j,raw_tiles[i],raw_pointers[i])
-                if new_monster.is_not_blank():
-                    monsters[i].append(new_monster)
+    for i in range(0, len(tiles)): # For each level...
+        monsters.append([])
+        for j in range(0, MAX_ENEMIES): # For each monster...
+            new_monster = animation.Animation(j,tiles,pointers[i])
+            if new_monster.is_not_blank():
+                monsters[i].append(new_monster)
 
     return monsters
-
 
 
 
@@ -102,6 +110,103 @@ def load_raw_pointers():
         
     return pointers
 
+def load_raw_pointers_B():
+    """
+    This just loads the raw pointers, and converts them from hex offsets to integer
+    ones.
+    """
+    global MAX_ENEMIES, MAX_LEVELS, PTR_SIZE
+    
+    dm = data.default_data_manager()
+    pointers = []
+    
+    for i in range(0, MAX_LEVELS):
+        pointers.append([])
+
+        ptrs = dm.load_file("EGAPTR{0:0>2}.BIN".format(i+1))
+        for k in range(0, len(ptrs) / PTR_SIZE):
+            ptr = ptrs[k * PTR_SIZE, (k + 1) * PTR_SIZE]
+            ptr = convert_raw_ptrs(ptr)
+
+            pointers[i].extend(ptrs)
+            
+    return process_raw_pointers(pointers)
+
+def convert_raw_ptrs(pointer):
+    """
+    All that this does is convert them from a hex number which tells you the offset
+    of the tile within the TANBITXX file to an integer telling you which tile in the
+    list of tiles it should be. There is nothing fancy here.
+    """
+    global TILE_SIZE
+    offset = [(ord(pointer[0]) + 0x0100 * ord(pointer[1]))/TILE_SIZE,
+              (ord(pointer[2]) + 0x0100 * ord(pointer[3]))/TILE_SIZE,
+              (ord(pointer[4]) + 0x0100 * ord(pointer[5]))/TILE_SIZE,
+              (ord(pointer[6]) + 0x0100 * ord(pointer[7]))/TILE_SIZE]
+    return offset
+
+def process_raw_pointers(pointers):
+    """
+    This will be the function which will take all the converted pointers (which are lists of
+    integers at this point) and does all of the fancy magic to turn them into something that
+    is useful, i.e. which will allow us to draw the monster data out of it.
+
+    It takes as input all the converted pointers, from which it will work its magic.
+
+    What this should do: Shift all the pointers that need to be shifted, and append a level
+    number onto it to tell it from which level tileset it needs to take it.
+
+    The output format for a pointer is:
+
+    (level_from_which_to_load_tile, tile_number_within_that_tileset)
+    """
+    global MAX_LEVELS, TANBIT_SIZE
+    global NUM_TILES
+
+    length = 4 * NUM_TILES
+    
+    output = [[]]
+    # Get the ones from the first level...
+    for i in range(0, len(pointers[0])):
+        output[0].append((0,pointers[0][i]))
+
+    # Now, get the rest.
+    for i in range(1, MAX_LEVELS):
+        output.append([])
+        
+        shift = get_shift(i)
+        tile_range = (shift * length, shift * length + TANBIT_SIZE[i])
+        
+        for j in range(0, len(pointers[i])):
+            if tile_range[0] <= j < tile_range[1]:
+                output[i].append((i, pointers[i][j - shift]))
+            else:
+                output[i].append(output[i-1][j])
+
+    return output
+
+
+def get_shift(i):
+    """
+    This just gets the shifting that you need to do to properly view the tiles. 
+    """
+    shift = 0
+
+    if i == (4 - 1): # The (4 - 1) is just to make clear that this is for level 4, etc.
+        shift = 2
+    elif i == (5 - 1):
+        shift = 1
+    elif i == (8 - 1):
+        shift = 2
+    elif i == (9 - 1):
+        shift = 2
+    elif i == (12 - 1):
+        shift = 1
+    elif i == (13 - 1):
+        shift = 1
+
+    return shift
+    
 def load_animation_tiles():
     global MAX_LEVELS
     output = []
@@ -132,7 +237,6 @@ def load_raw_animation_data():
         except ValueError:
             # alternatively, if the file just doesn't exist (e.g. TANBIT03.BIN) then we just use the previous
             # tiles.
-
             output.append(output[-1])
         else:
             tiles = output[-1]
@@ -145,20 +249,7 @@ def load_raw_animation_data():
             # The only ones that I'm not 100% certain about are levels 14--16, since I don't quite recall what
             # enemy is where in those, but the animations at least look correct, and most of it looks reasonable.
             
-            where = 0
-
-            if i == (4 - 1):
-                where = 2
-            elif i == (5 - 1):
-                where = 1
-            elif i == (8 - 1):
-                where = 2
-            elif i == (9 - 1):
-                where = 2
-            elif i == (12 - 1):
-                where = 1
-            elif i == (13 - 1):
-                where = 1
+            where = get_shift(i)
 
             tiles = raw_tiles_insert(tiles, new_tiles, where)
 
