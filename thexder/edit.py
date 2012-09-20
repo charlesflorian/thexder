@@ -69,7 +69,8 @@ def load_monsters_B(tiles, pointers):
     for i in range(0, len(tiles)): # For each level...
         monsters.append([])
         for j in range(0, MAX_ENEMIES): # For each monster...
-            new_monster = animation.Animation(j,tiles,pointers[i])
+            tiles = Animation.raw_animation(j,tiles,pointers)
+            new_monster = animation.Animation(tiles)
             if new_monster.is_not_blank():
                 monsters[i].append(new_monster)
 

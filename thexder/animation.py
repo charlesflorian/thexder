@@ -117,6 +117,25 @@ class Animation(object):
     def is_not_blank(self):
         return len(self.tiles) > 0
 
+    @classmethod
+    def raw_animation(n, tiles, pointers):
+        """
+        This will take all of the raw tiles and raw pointers, and output an array of tiles that will
+        be the animation you care about (the n-th monster).
+        """
+        global NUM_TILES, MAX_ENEMIES
+
+        if n < 0 or n >= MAX_ENEMIES:
+            raise IndexError
+
+        output = []
+        for i in range(0, NUM_TILES):
+            output.append([])
+            for j in range(0, 4):
+                ptr = pointers[i * 0x80 + n * 4 + j]
+                output[i].append(tiles[ptr[0]][ptr[1]])
+
+        return output
 
 
 class Tile(object):
