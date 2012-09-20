@@ -134,6 +134,10 @@ def process_raw_pointers(pointers):
     for i in range(0, len(pointers[0])):
         output[0].append((0,pointers[0][i]))
 
+    # This is just to keep track of the last time we re-updated a given tile, so that we know from which
+    # level we should take it.
+    last_seen = [0] * TANBIT_SIZE[0]
+
     # Now, get the rest.
     for i in range(1, MAX_LEVELS):
         output.append([])
@@ -144,13 +148,10 @@ def process_raw_pointers(pointers):
         for j in range(0, len(pointers[i])):
             if tile_range[0] <= pointers[i][j] < tile_range[1]:
                 output[i].append((i, pointers[i][j] - shift * length))
+                last_seen[pointers[i][j]] = i
             else:
-                # This is somehow the issue. It gets all of the new stuff just fine, but how it reads the
-                # Old ones... is wrong.
-
-                # The problem is that we want to take the _tiles_ from the previous levels, but this takes
-                # the _pointer_ from that level.
-                output[i].append(output[i-1][j])
+                prev_lvl = last_seen[pointers[i][j]]
+                output[i].append((prev_lvl, pointers[i][j] - get_shift(prev_lvl) * length))
 
     return output
 
