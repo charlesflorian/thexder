@@ -60,17 +60,11 @@ def load_monsters_B(tiles, pointers):
 
     monsters = []
 
-    # As it stands, this is incredibly slow on loading. A few solutions could be:
-    #
-    # 1. Load them on each level instead of all at once.
-    # 2. Figure out why this is so slow. My guess is that it's doing a lot of junk loading due
-    #   to all of the empty space that is in each data file.
-
     for i in range(0, len(tiles)): # For each level...
         monsters.append([])
         for j in range(0, MAX_ENEMIES): # For each monster...
-            tiles = Animation.raw_animation(j,tiles,pointers)
-            new_monster = animation.Animation(tiles)
+            cur_tiles = animation.Animation.raw_animation(j,tiles,pointers[i])
+            new_monster = animation.Animation(cur_tiles)
             if new_monster.is_not_blank():
                 monsters[i].append(new_monster)
 
@@ -126,10 +120,10 @@ def load_raw_pointers_B():
 
         ptrs = dm.load_file("EGAPTR{0:0>2}.BIN".format(i+1))
         for k in range(0, len(ptrs) / PTR_SIZE):
-            ptr = ptrs[k * PTR_SIZE, (k + 1) * PTR_SIZE]
+            ptr = ptrs[k * PTR_SIZE: (k + 1) * PTR_SIZE]
             ptr = convert_raw_ptrs(ptr)
 
-            pointers[i].extend(ptrs)
+            pointers[i].extend(ptr)
             
     return process_raw_pointers(pointers)
 
@@ -177,10 +171,11 @@ def process_raw_pointers(pointers):
         
         shift = get_shift(i)
         tile_range = (shift * length, shift * length + TANBIT_SIZE[i])
-        
+
         for j in range(0, len(pointers[i])):
-            if tile_range[0] <= j < tile_range[1]:
-                output[i].append((i, pointers[i][j - shift]))
+            #if tile_range[0] <= j < tile_range[1]:
+            if tile_range[0] <= pointers[i][j] < tile_range[1]:
+                output[i].append((i, pointers[i][j] - shift * length))
             else:
                 output[i].append(output[i-1][j])
 
@@ -213,7 +208,12 @@ def load_animation_tiles():
     output = []
 
     for i in range(0, MAX_LEVELS):
-        output.append(load_raw_tiles("TANBIT{0:0>2}.BIN".format(i+1)))
+        try:
+            tiles = load_raw_tiles("TANBIT{0:0>2}.BIN".format(i+1))
+        except ValueError:
+            output.append([])
+        else:
+            output.append(tiles)
 
     return output
 
@@ -348,9 +348,14 @@ def main():
 
 
     # Load all the tile data.
-    (raw_tiles, raw_pointers) = load_raw_animation_data()
-    if not NO_MONSTERS:
-        monsters = load_monsters(raw_tiles, raw_pointers)
+    #(raw_tiles, raw_pointers) = load_raw_animation_data()
+    #if not NO_MONSTERS:
+    #    monsters = load_monsters(raw_tiles, raw_pointers)
+
+    raw_tiles = load_animation_tiles()
+    raw_pointers = load_raw_pointers_B()
+
+    monsters = load_monsters_B(raw_tiles, raw_pointers)
 
     lvl_tiles = load_raw_tiles()
 

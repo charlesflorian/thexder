@@ -75,27 +75,34 @@ class Animation(object):
     n refers to which monster it should load, which will be some number
     between 0 and the largest number of monsters in that level.
     """
-    def __init__(self, n, raw_tiles, pointers):
-        global NUM_TILES, PTR_SIZE, MAX_ENEMIES
+    def __init__(self, tiles):
 
-        if n < 0 or n >= MAX_ENEMIES:
-            raise IndexError
-
-        offsets = []
-
-        for i in range(0, NUM_TILES):
-            # This arcane formula just gets the offset numbers from the file.
-            offset = [[ord(pointers[n * PTR_SIZE + i * 0x100]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 1]),
-                       ord(pointers[n * PTR_SIZE + i * 0x100 + 2]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 3])],
-                      [ord(pointers[n * PTR_SIZE + i * 0x100 + 4]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 5]),
-                       ord(pointers[n * PTR_SIZE + i * 0x100 + 6]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 7])]]
-            if offset != [[0,0],[0,0]]:
-                offsets.append(offset)
-
-        # There are 8 tiles.
         self.tiles = []
-        for i in range(0,len(offsets)):
-            self.tiles.append(Tile(raw_tiles,offsets[i]))
+        for i in range(0, len(tiles)):
+            self.tiles.append(Tile([[tiles[i][0], tiles[i][1]],[tiles[i][2], tiles[i][3]]]))
+    
+
+#    def __init__(self, n, raw_tiles, pointers):
+#        global NUM_TILES, PTR_SIZE, MAX_ENEMIES
+#
+#        if n < 0 or n >= MAX_ENEMIES:
+#            raise IndexError
+#
+#        offsets = []
+#
+#        for i in range(0, NUM_TILES):
+#            # This arcane formula just gets the offset numbers from the file.
+#            offset = [[ord(pointers[n * PTR_SIZE + i * 0x100]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 1]),
+#                       ord(pointers[n * PTR_SIZE + i * 0x100 + 2]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 3])],
+#                      [ord(pointers[n * PTR_SIZE + i * 0x100 + 4]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 5]),
+#                       ord(pointers[n * PTR_SIZE + i * 0x100 + 6]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 7])]]
+#            if offset != [[0,0],[0,0]]:
+#                offsets.append(offset)
+#
+#        # There are 8 tiles.
+#        self.tiles = []
+#        for i in range(0,len(offsets)):
+#            self.tiles.append(Tile(raw_tiles,offsets[i]))
             
 
     def raw(self, n):
@@ -118,7 +125,7 @@ class Animation(object):
         return len(self.tiles) > 0
 
     @classmethod
-    def raw_animation(n, tiles, pointers):
+    def raw_animation(self,n, tiles, pointers):
         """
         This will take all of the raw tiles and raw pointers, and output an array of tiles that will
         be the animation you care about (the n-th monster).
@@ -140,7 +147,7 @@ class Animation(object):
 
 class Tile(object):
 
-    def __init__(self, raw_tile_data, offsets):
+    def __init__(self, raw_tile_data, offsets=None):
         """
         raw_tile_data: a string consisting of the raw tile data e.g. that of TANBITXX.BIN or TNCHRS.BIN.
 
@@ -156,19 +163,20 @@ class Tile(object):
         """
         global TILE_SIZE, PX_SIZE, TILE_WIDTH
         
-        if type(offsets) is list:
+#        if type(offsets) is list:
+        if offsets is None:
 
-            height = len(offsets) * PX_SIZE * TILE_HEIGHT
-            width = len(offsets[0]) * PX_SIZE * TILE_WIDTH
+            height = len(raw_tile_data) * PX_SIZE * TILE_HEIGHT
+            width = len(raw_tile_data[0]) * PX_SIZE * TILE_WIDTH
             self.graphic = pygame.Surface((width, height))
 
             self.raw_data = []
-            for i in range(0, len(offsets)):
-                if not type(offsets[i]) is list:
+            for i in range(0, len(raw_tile_data)):
+                if not type(raw_tile_data[i]) is list:
                     raise TypeError
 
-                for j in range(0, len(offsets[i])):
-                    cur_tile = Tile(raw_tile_data,offsets[i][j])
+                for j in range(0, len(raw_tile_data[i])):
+                    cur_tile = raw_tile_data[i][j]
                     self.graphic.blit(cur_tile.tile(), (j * PX_SIZE * TILE_WIDTH, i * PX_SIZE * TILE_HEIGHT))
 
                     # This is just to produce the raw tile data.
