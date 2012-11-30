@@ -214,20 +214,24 @@ def tile_bounds(level=1):
     return (lower_tile, upper_tile)
 
 
-def load_levels():
+def load_levels(animation):
     """
     This function will return an array consisting of all 16 levels.
     """
     levels = []
     for i in range(0, 16):
-        levels.append(level.Level(i+1))
+        levels.append(level.Level(i+1, animation[i]))
 
     return levels
 
 
-def view_enemies(screen,monsters):
+def view_enemies(screen,lvl):
     which_monster = 0
     frame = 0
+
+    monsters = []
+    for i in range(0, lvl.num_monsters()):
+        monsters.append(lvl.monsters(i))
 
     pygame.time.set_timer(TIME_EVENT, 100)
 
@@ -279,7 +283,7 @@ def main():
 
     lvl_tiles = load_raw_tiles()
 
-    levels = load_levels()
+    levels = load_levels(monsters)
 
 
     (lower_tile, upper_tile) = tile_bounds()
@@ -333,7 +337,8 @@ def main():
                         screen.blit(lvl_graphics[0].tile(),(j*16, i * 16))
                         screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
                     else:
-                        screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
+#                        screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
+                        screen.blit(levels[curlvl-1].monsters((monster - 0x80)/4).tile(monst_frame), (j*16, i * 16))
                     
                 elif cur_tile >> 4:
                     if NO_MONSTERS:
@@ -380,7 +385,8 @@ def main():
 
                 elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
-                    view_enemies(screen, monsters[curlvl - 1])
+#                    view_enemies(screen, monsters[curlvl - 1])
+                    view_enemies(screen, levels[curlvl - 1])
 
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation.

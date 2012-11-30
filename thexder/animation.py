@@ -65,8 +65,19 @@ class Monster(object):
     """
     This will be the underlying class of a monster. I don't know what to do with this.
     """
-    def __init__(self):
-        pass
+    def __init__(self, animation, health_gain, enmax_gain, points_gain, motion, health):
+        self.animation = animation
+        self.health_gain = health_gain
+        self.enmax_gain = enmax_gain
+        self.points_gain = points_gain
+        self.motion = motion
+        self.health = health
+
+    def tile(self, n):
+        return self.animation.tile(n)
+
+    def raw(self, n):
+        return self.animation.raw(n)
 
 class Animation(object):
     """
