@@ -26,6 +26,10 @@ MAX_ENEMIES = 0x20
 
 MAX_LEVELS = 16
 
+# Animation constants
+
+FRAME_LENGTH_MS = 100
+
 #
 
 BUGDB_HEADER_SIZE = 0x140

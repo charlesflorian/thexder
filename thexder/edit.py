@@ -270,10 +270,11 @@ def main():
     #t1 = time.time()
 
 
-    # Load all the tile data.
+    # Load all the tile data; this just loads raw, unprocessed data.
     raw_tiles = load_animation_tiles()
     raw_pointers = load_raw_pointers()
 
+    # Now we process it.
     monsters = load_monsters(raw_tiles, raw_pointers)
 
     lvl_tiles = load_raw_tiles()
@@ -302,7 +303,7 @@ def main():
 
     monst_frame = 0
 
-    pygame.time.set_timer(TIME_EVENT, 100)
+    pygame.time.set_timer(TIME_EVENT, FRAME_LENGTH_MS)
     
     going = True
     while going:
@@ -380,6 +381,10 @@ def main():
                 elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
                     view_enemies(screen, monsters[curlvl - 1])
+
+                elif keys[K_r]:
+                    # This should load and display the thexder robot animation.
+                    pass
                 
                 elif keys[K_q]:
                     pygame.display.quit()

@@ -22,6 +22,9 @@ class Level(object):
     def tile(self, x, y):
         return self.map.tile(x,y)
 
+    def monsters(self,which):
+        pass
+
     def monster_at(self, x, y):
         try:
             monster =  self.monsters[(x, y)]
