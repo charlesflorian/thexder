@@ -61,6 +61,14 @@ import graphics
 #
 ##############################################################################################
 
+##############################################################################################
+#
+# It turns out that despite all of the TANXXX.BIN files being in the same format (i.e. a series
+# of 8x8 tiles), ROBOT.BIN is different. It is (very likely) a series of images the size of the
+# Thexder robot itself. This means that I need to come up with a new tile-loading algorithm...
+#
+##############################################################################################
+
 class Monster(object):
     """
     This will be the underlying class of a monster. I don't know what to do with this.
@@ -173,7 +181,7 @@ class Animation(object):
 
 class Tile(object):
 
-    def __init__(self, raw_tile_data, offsets=None):
+    def __init__(self, raw_tile_data, offsets=None, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT):
         """
         raw_tile_data: a string consisting of the raw tile data e.g. that of TANBITXX.BIN or TNCHRS.BIN.
 
@@ -212,15 +220,16 @@ class Tile(object):
                         self.raw_data[k + i * TILE_HEIGHT].extend(cur_tile.tile_raw()[k])
 
         else:
-            cur_tile = raw_tile_data[offsets : offsets + TILE_SIZE]
+            #cur_tile = raw_tile_data[offsets : offsets + TILE_SIZE]
+            cur_tile = raw_tile_data[offsets : offsets + tile_width * tile_height / 2]
 
             # Here we read in the string into an 8x8 array of pixel data.
             self.raw_data = []
-            for i in range(0,TILE_HEIGHT):
+            for i in range(0,tile_height):
                 self.raw_data.append([])
-                for j in range(0,TILE_WIDTH/2):
+                for j in range(0,tile_width/2):
                     # Get the high and low bits, separate them into separate pixels.
-                    ch = ord(cur_tile[i * 4 + j])
+                    ch = ord(cur_tile[i * tile_width/2 + j])
                     low = ch % 0x10
                     high = ch >> 4
                     self.raw_data[i].extend([high, low])

@@ -35,24 +35,24 @@ def display_init(width, height):
     return pygame.display.set_mode((width,height))
 
 
-def load_monsters(tiles, pointers):
+def load_animations(tiles, pointers):
     global MAX_ENEMIES, NUM_TILES
 
-    monsters = []
+    animations = []
 
     for i in range(0, len(tiles)): # For each level...
-        monsters.append([])
+        animations.append([])
         for j in range(0, MAX_ENEMIES): # For each monster...
             cur_tiles = animation.Animation.raw_animation(j,tiles,pointers[i])
             new_monster = animation.Animation(cur_tiles)
             if new_monster.is_not_blank():
-                monsters[i].append(new_monster)
+                animations[i].append(new_monster)
 
-    return monsters
+    return animations
 
 
 
-def load_raw_tiles(filename="TNCHRS.BIN"):
+def load_raw_tiles(filename="TNCHRS.BIN", tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT):
     """
     This will load all the tiles from the named file.
     """
@@ -62,8 +62,10 @@ def load_raw_tiles(filename="TNCHRS.BIN"):
 
     output = []
 
-    for i in range(0, len(content) / TILE_SIZE ):
-        output.append(animation.Tile(content,i * TILE_SIZE ))
+    tile_size = tile_width * tile_height /2
+
+    for i in range(0, len(content) / tile_size ):
+        output.append(animation.Tile(content,i * tile_size, tile_width, tile_height))
 
     return output
 
@@ -224,14 +226,36 @@ def load_levels():
     raw_pointers = load_raw_pointers()
 
     # Now we process it.
-    monsters = load_monsters(raw_tiles, raw_pointers)
+    animations = load_animations(raw_tiles, raw_pointers)
 
     levels = []
     for i in range(0, 16):
-        levels.append(level.Level(i+1, monsters[i]))
+        levels.append(level.Level(i+1, animations[i]))
 
     return levels
 
+
+def show_tiles(screen, tileset, anim=False):
+    global TILE_WIDTH, TILE_HEIGHT
+    robot_frame = 0
+    going = True
+    while going:
+    
+        screen.blit(graphics.render_tile(tileset[robot_frame].tile_raw(),20),(0,0))
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                keys = pygame.key.get_pressed()
+                if keys[K_RIGHT]:
+                    robot_frame += 1
+                elif keys[K_LEFT]:
+                    robot_frame -= 1
+                    if robot_frame < 0:
+                        robot_frame = 0
+                elif keys[K_q]:
+                    going = False
 
 def view_enemies(screen,lvl):
     which_monster = 0
@@ -399,8 +423,13 @@ def main():
                     view_enemies(screen, levels[curlvl - 1])
 
                 elif keys[K_r]:
-                    # This should load and display the thexder robot animation.
-                    pass
+                    # This should load and display the thexder robot animation. 
+                    # 
+                    # At the moment, this only partially works. It loads the robot graphics as if
+                    # each frame is 3x4. However, only 24 frames are like that.
+                    # The rest of them are 3x3.
+                    robot = load_raw_tiles("ROBOT.BIN", TILE_WIDTH * 3, TILE_HEIGHT * 4)
+                    show_tiles(screen, robot)
                 
                 elif keys[K_q]:
                     pygame.display.quit()
