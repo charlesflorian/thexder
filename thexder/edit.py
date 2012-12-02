@@ -13,6 +13,7 @@ from . import thx_map
 from . import level
 from . import animation
 from . import graphics
+from . import robot
 
 from constants import *
 
@@ -56,7 +57,6 @@ def load_raw_tiles(filename="TNCHRS.BIN", tile_width=TILE_WIDTH, tile_height=TIL
     """
     This will load all the tiles from the named file.
     """
-    global TILE_SIZE
 
     content = data.default_data_manager().load_file(filename)
 

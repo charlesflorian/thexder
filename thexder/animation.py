@@ -105,39 +105,16 @@ class Monster(object):
 class Animation(object):
     """
     This will be the class for an animation; it will consist of a collection of tiles.
-    As usual, it takes as input a level number.
-    n refers to which monster it should load, which will be some number
-    between 0 and the largest number of monsters in that level.
     """
-    def __init__(self, tiles):
+    def __init__(self, tiles, robot=False):
+        """
+        tiles: An array of arrays (n x 4) of Tile objects, one for each frame of the animation.
+        """
 
         self.tiles = []
         for i in range(0, len(tiles)):
             self.tiles.append(Tile([[tiles[i][0], tiles[i][1]],[tiles[i][2], tiles[i][3]]]))
-    
-
-#    def __init__(self, n, raw_tiles, pointers):
-#        global NUM_TILES, PTR_SIZE, MAX_ENEMIES
-#
-#        if n < 0 or n >= MAX_ENEMIES:
-#            raise IndexError
-#
-#        offsets = []
-#
-#        for i in range(0, NUM_TILES):
-#            # This arcane formula just gets the offset numbers from the file.
-#            offset = [[ord(pointers[n * PTR_SIZE + i * 0x100]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 1]),
-#                       ord(pointers[n * PTR_SIZE + i * 0x100 + 2]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 3])],
-#                      [ord(pointers[n * PTR_SIZE + i * 0x100 + 4]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 5]),
-#                       ord(pointers[n * PTR_SIZE + i * 0x100 + 6]) + 0x0100 * ord(pointers[n * PTR_SIZE + i * 0x100 + 7])]]
-#            if offset != [[0,0],[0,0]]:
-#                offsets.append(offset)
-#
-#        # There are 8 tiles.
-#        self.tiles = []
-#        for i in range(0,len(offsets)):
-#            self.tiles.append(Tile(raw_tiles,offsets[i]))
-            
+                
 
     def raw(self, n):
         """
