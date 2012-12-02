@@ -214,13 +214,21 @@ def tile_bounds(level=1):
     return (lower_tile, upper_tile)
 
 
-def load_levels(animation):
+def load_levels():
     """
-    This function will return an array consisting of all 16 levels.
+    This function will return an array consisting of all 16 levels. It also loads all of the animation
+    and monster data.
     """
+    # This loads the animation data.
+    raw_tiles = load_animation_tiles()
+    raw_pointers = load_raw_pointers()
+
+    # Now we process it.
+    monsters = load_monsters(raw_tiles, raw_pointers)
+
     levels = []
     for i in range(0, 16):
-        levels.append(level.Level(i+1, animation[i]))
+        levels.append(level.Level(i+1, monsters[i]))
 
     return levels
 
@@ -239,8 +247,18 @@ def view_enemies(screen,lvl):
     while going:
         screen.blit(graphics.render_tile(monsters[which_monster].raw(frame),20),(0,0))
         text = pygame.font.Font(None, 20).render("Enemy: %x, Frame: %x" % (which_monster, frame), False, (100,255,100))
-        pygame.draw.rect(screen,(0,0,0),(10,330,200,40),0)
+        pygame.draw.rect(screen,(0,0,0),(10,330,220,50),0)
         screen.blit(text,(20, 340))
+
+#########################
+#
+# TODO: Put stat shower in here.
+#
+#########################
+        text = pygame.font.Font(None, 20).render("HG: %x, EG: %x, P: %x, M: %x, H: %x" % (monsters[which_monster].get_health_gain(), monsters[which_monster].get_enmax_gain(), monsters[which_monster].get_points(), monsters[which_monster].get_motion(), monsters[which_monster].get_health()), False, (100,255,100))
+        #pygame.draw.rect(screen,(0,0,0),(10,330,200,40),0)
+        screen.blit(text,(20, 360))
+
 
         pygame.display.update()
 
@@ -273,17 +291,11 @@ def main():
 
     #t1 = time.time()
 
-
-    # Load all the tile data; this just loads raw, unprocessed data.
-    raw_tiles = load_animation_tiles()
-    raw_pointers = load_raw_pointers()
-
-    # Now we process it.
-    monsters = load_monsters(raw_tiles, raw_pointers)
-
     lvl_tiles = load_raw_tiles()
 
-    levels = load_levels(monsters)
+    # This loads all of the levels and animation tiles. The Level class contains a map, as
+    # well as all the of animation/monster data.
+    levels = load_levels()
 
 
     (lower_tile, upper_tile) = tile_bounds()
@@ -337,7 +349,6 @@ def main():
                         screen.blit(lvl_graphics[0].tile(),(j*16, i * 16))
                         screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
                     else:
-#                        screen.blit(monsters[curlvl - 1][(monster - 0x80)/4].tile(monst_frame), (j*16, i * 16))
                         screen.blit(levels[curlvl-1].monsters((monster - 0x80)/4).tile(monst_frame), (j*16, i * 16))
                     
                 elif cur_tile >> 4:
@@ -385,7 +396,6 @@ def main():
 
                 elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
-#                    view_enemies(screen, monsters[curlvl - 1])
                     view_enemies(screen, levels[curlvl - 1])
 
                 elif keys[K_r]:
