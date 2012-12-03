@@ -276,19 +276,10 @@ def view_enemies(screen,lvl):
         pygame.draw.rect(screen,(0,0,0),(10,330,220,50),0)
         screen.blit(text,(20, 340))
 
-#########################
-#
-# TODO: Put stat shower in here.
-#
-#########################
         text = pygame.font.Font(None, 20).render("HG: %x, EG: %x, P: %x, M: %x, H: %x" % (monsters[which_monster].get_health_gain(), monsters[which_monster].get_enmax_gain(), monsters[which_monster].get_points(), monsters[which_monster].get_motion(), monsters[which_monster].get_health()), False, (100,255,100))
-        #pygame.draw.rect(screen,(0,0,0),(10,330,200,40),0)
         screen.blit(text,(20, 360))
 
-
         pygame.display.update()
-
-
         
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -426,12 +417,7 @@ def main():
 
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation. 
-                    # 
-                    # At the moment, this only partially works. It loads the robot graphics as if
-                    # each frame is 3x4. However, only 24 frames are like that.
-                    # The rest of them are 3x3.
                     thx = robot.Robot()
-#                    robot = load_raw_tiles("ROBOT.BIN", TILE_WIDTH * 3, TILE_HEIGHT * 4)
                     show_tiles(screen, thx.get_plane_animation())
                 
                 elif keys[K_q]:

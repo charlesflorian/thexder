@@ -51,21 +51,31 @@ class Robot(object):
         for i in range(0, len(small_frames_raw) / small_frame_bits):
             self.small_frames.append(animation.Tile(small_frames_raw, i * small_frame_bits, 3 * TILE_WIDTH, 3 * TILE_HEIGHT))
 
+        self.flying = False
+#        self.animation_left = None
+#        self.animation_right = None
+#        self.animation_plane = None
+#        self.animation_turning = None
+#        self.animation_landing_left = None
+#        self.animation_landing_right = None
+#        self.animation_transform_right = None
+#        self.animation_transform_left = None
 
-        self.animation_left = None
-        self.animation_right = None
-        self.animation_plane = None
-        self.animation_turning = None
-        self.animation_landing_left = None
-        self.animation_landing_right = None
-        self.animation_transform_right = None
-        self.animation_transform_left = None
+    def get_next_frame(self):
+        pass
+
+    def is_flying(self):
+        return self.flying
 
     def get_left_animation(self):
+        """
+        For now, all of these simply return the portion of the array of frames which correspond to the desired animation.
+        This should probably be wrapped in an animation class.
+        """
         return self.big_frames[0x00:0x08]
 
     def get_right_animation(self):
         return self.big_frames[0x08:0x10]
 
     def get_plane_animation(self):
-        return self.small_frames
+        return self.small_frames[0x08:0x18]
