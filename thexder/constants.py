@@ -1,10 +1,6 @@
 import pygame
 from pygame.locals import *
 
-#These are the screen dimensions (Constants!)
-SCR_HEIGHT = 704
-SCR_WIDTH = 880
-
 #These are the level dimensions. There is no reason for me to have a fixed width. Also constant.
 LVL_HEIGHT = 44
 
@@ -17,7 +13,18 @@ TILE_HEIGHT = 0x08
 TILE_WIDTH = 0x08
 
 # pixel size, since we aren't doing a 1--1 pixel.
-PX_SIZE = 0x02
+PX_SIZE = 0x03
+
+# Display parameters
+#
+# It should be noted that the values for the game display size are 22 x 40
+#
+DISPLAY_HEIGHT = 22
+DISPLAY_WIDTH = 40
+
+#These are the screen dimensions (Constants!)
+SCR_HEIGHT = PX_SIZE * TILE_HEIGHT * DISPLAY_HEIGHT
+SCR_WIDTH = PX_SIZE * TILE_WIDTH * DISPLAY_WIDTH
 
 # This is the size of a pointer bit in EGAPTRXX.BIN
 PTR_SIZE = 0x08
@@ -28,7 +35,7 @@ MAX_LEVELS = 16
 
 # Animation constants
 
-FRAME_LENGTH_MS = 100
+FRAME_LENGTH_MS = 80
 
 #
 

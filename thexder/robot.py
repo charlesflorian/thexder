@@ -52,21 +52,67 @@ class Robot(object):
             self.small_frames.append(animation.Tile(small_frames_raw, i * small_frame_bits, 3 * TILE_WIDTH, 3 * TILE_HEIGHT))
 
         self.flying = False
-#        self.animation_left = None
-#        self.animation_right = None
-#        self.animation_plane = None
-#        self.animation_turning = None
-#        self.animation_landing_left = None
-#        self.animation_landing_right = None
-#        self.animation_transform_right = None
-#        self.animation_transform_left = None
+        self.left_facing = False
+        self.frame_no = 0
+        self.turning = False
 
-    def get_next_frame(self):
+# Animations.
+    def get_frame(self):
+        if self.is_flying():
+            return self.get_plane_animation()[0].tile()
+        else:
+            if self.is_turning():
+                if self.is_facing_left():
+                    return self.big_frames[0x13 - self.frame_no].tile()
+                else:
+                    return self.big_frames[0x12 + self.frame_no].tile()
+            else:
+                if self.left_facing:
+                    return self.get_left_animation()[self.frame_no].tile()
+                else:
+                    return self.get_right_animation()[self.frame_no].tile()
+
+    def step(self):
+        if not self.is_flying():
+            if self.is_turning():
+                self.frame_no += 1
+                if self.frame_no >= 2:
+                    self.frame_no = 0 # Not quite right...
+                    self.turning = False
+            else:
+                self.frame_no += 1
+                if self.frame_no >= 8:
+                    self.frame_no = 0
+
+# Actions
+
+    def transform(self):
         pass
+
+    def jump(self):
+        pass
+
+    def turn(self):
+        self.frame_no = 0
+        self.left_facing = not self.left_facing
+        self.turning = True
+
+
+# Queries:
+    def is_turning(self):
+        return self.turning
 
     def is_flying(self):
         return self.flying
 
+    def is_facing_left(self):
+        return self.left_facing
+
+    def is_grounded(self):
+        return True
+
+
+# These are probably only needed for debugging.
     def get_left_animation(self):
         """
         For now, all of these simply return the portion of the array of frames which correspond to the desired animation.

@@ -21,9 +21,18 @@ from constants import *
 
 import time
 
-#Which level are we editing?
+# Which level are we looking at? Note that 0 <= curlvl < 16, i.e. it is off by one from
+# the actual level number. Trust me, it's better this way.
 curlvl = 0
 
+##########################################################################################
+#
+# Game stuff.
+#
+##########################################################################################
+
+robot_x = 19
+robot_y = 11
 
 ##########################################################################################
 
@@ -31,8 +40,11 @@ def display_init(width, height):
     """
     This just sets up the pygame display.
     """
+    global FRAME_LENGTH_MS
+    
     pygame.init()
-    pygame.key.set_repeat(120,30)
+    #pygame.key.set_repeat(120,30)
+    pygame.key.set_repeat(FRAME_LENGTH_MS, FRAME_LENGTH_MS)
     return pygame.display.set_mode((width,height))
 
 
@@ -303,7 +315,8 @@ def view_enemies(screen,lvl):
 
 #And here is the main function.
 def main():
-    global SCR_HEIGHT, SCR_WIDTH, LVL_HEIGHT, NO_MONSTERS
+    global DISPLAY_HEIGHT, DISPLAY_WIDTH, LVL_HEIGHT, NO_MONSTERS
+    global PX_SIZE, TILE_HEIGHT, TILE_WIDTH
     global curlvl
 
     #t1 = time.time()
@@ -313,6 +326,8 @@ def main():
     # This loads all of the levels and animation tiles. The Level class contains a map, as
     # well as all the of animation/monster data.
     levels = load_levels()
+
+    thx = robot.Robot()
 
 
     (lower_tile, upper_tile) = tile_bounds()
@@ -326,8 +341,9 @@ def main():
 #
 ##########################
 
+    tile_size = PX_SIZE * TILE_HEIGHT
 
-    screen = display_init(SCR_WIDTH, SCR_HEIGHT)
+    screen = display_init(DISPLAY_WIDTH * tile_size, DISPLAY_HEIGHT * tile_size)
 
     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
@@ -340,40 +356,28 @@ def main():
     
     going = True
     while going:
-        for j in range(0,SCR_WIDTH / 16):
-            for i in range(0, SCR_HEIGHT / 16):
+        for j in range(0,DISPLAY_WIDTH):
+            for i in range(0, DISPLAY_HEIGHT):
                 cur_tile = levels[curlvl].tile(j + x_pos, i + y_pos)
                 if cur_tile is False:
                     cur_tile = 0
 
                 monster = levels[curlvl].monster_at(j + x_pos, i + y_pos)
 
-                # So there are two sources of how the enemies are shown in this game. One is that
-                # the high bits of a tile signify that an enemy will be located there. In such a case,
-                # I admit that I have no idea what the low bits signify.
-                #
-                # To see this, one should use the checking for "cur_tile >> 4".
-                #
-                # Alternatively, in the BUGDBXX.BIN file, there is data showing where monsters are.
-                # This is what the "monster > 0" part checks.
-                #
-                # Specifically, it returns the offset part of the file which sort of seems to say
-                # what the monster is, but it isn't 100% accurate (I'm not really sure what the system
-                # there is, either.                
-
                 if monster > 0:
                     if NO_MONSTERS:
-                        screen.blit(lvl_graphics[0].tile(),(j*16, i * 16))
-                        screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
+                        screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
+                        screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j * tile_size, i * tile_size))
                     else:
-                        screen.blit(levels[curlvl].monsters((monster - 0x80)/4).tile(monst_frame), (j*16, i * 16))
+                        screen.blit(levels[curlvl].monsters((monster - 0x80)/4).tile(monst_frame), (j * tile_size, i * tile_size))
                     
                 elif cur_tile >> 4:
                     if NO_MONSTERS:
-                        screen.blit(lvl_graphics[0].tile(),(j*16, i * 16))
+                        screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
                 else:
-                    screen.blit(lvl_graphics[cur_tile % 16].tile(), (j * 16, i * 16))
+                    screen.blit(lvl_graphics[cur_tile % 16].tile(), (j * tile_size, i * tile_size))
 
+        screen.blit(thx.get_frame(), (robot_x * tile_size, robot_y * tile_size))
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -383,13 +387,23 @@ def main():
                 # These are the basic motion; for the time being, up/down skip you through the level
                 # quickly with left/right being one tile at a time.
                 if keys[K_UP]:
-                    x_pos -= 10
+                    if thx.is_grounded():
+                        thx.jump()
                 elif keys[K_DOWN]:
-                    x_pos += 10
+                    if thx.is_grounded():
+                        thx.transform()
                 elif keys[K_RIGHT]:
                     x_pos += 1
+                    if thx.is_facing_left():
+                        thx.turn()
+                    else:
+                        thx.step()
                 elif keys[K_LEFT]:
                     x_pos -= 1
+                    if thx.is_facing_left():
+                        thx.step()
+                    else:
+                        thx.turn()
 
                 # These next two switch from one level to the next.
                 elif keys[K_m]:
@@ -417,7 +431,6 @@ def main():
 
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation. 
-                    thx = robot.Robot()
                     show_tiles(screen, thx.get_plane_animation())
                 
                 elif keys[K_q]:
@@ -434,6 +447,8 @@ def main():
                 monst_frame += 1
                 if monst_frame >= NUM_TILES:
                     monst_frame = 0
+                if thx.is_turning():
+                    thx.step()
             
 ##############################
 
