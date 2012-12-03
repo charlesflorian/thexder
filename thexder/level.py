@@ -14,7 +14,7 @@ class Level(object):
         """
         n: An integer between 1 and 16 which will be the level to load.
         """
-        if n < 1 or n > 16:
+        if n < 0 or n > (16-1):
             return False
 
         self.map = thx_map.Map(n)
@@ -46,7 +46,7 @@ class Level(object):
         return monster
 
     def load_monsters(self,n):
-        content = data.default_data_manager().load_file("BUGDB{0:0>2}.BIN".format(n))
+        content = data.default_data_manager().load_file("BUGDB{0:0>2}.BIN".format(n+1))
 
         # Ignore the header info for now...
         header_data = content[:BUGDB_HEADER_SIZE]

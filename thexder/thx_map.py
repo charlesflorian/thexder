@@ -5,8 +5,8 @@ class Map(object):
     """This will be where the class for storing level data."""
 
     def __init__(self,n):
-        if n < 1 or n > 16:
-            self.curlvl = 1
+        if n < 0 or n > (16-1):
+            self.curlvl = 0
         else:
             self.curlvl = n
         self.open_lvl()
@@ -17,7 +17,7 @@ class Map(object):
         """
         global LVL_HEIGHT
         dm = data.default_data_manager()
-        level_name = "MAP{0:0>2}.BIN".format(self.curlvl)
+        level_name = "MAP{0:0>2}.BIN".format(self.curlvl + 1)
         raw_level_data = dm.load_file(level_name)
         self.ldata = [[]]
         column_count = 0
@@ -68,7 +68,7 @@ class Map(object):
         """
         dm = data.default_data_manager()
 
-        with dm.write("MAP{0:0>2}.BIN".format(self.curlvl)) as f:
+        with dm.write("MAP{0:0>2}.BIN".format(self.curlvl + 1)) as f:
             for i in range(0, self.width()):
                 # Grab the first character from this column.
                 last_char = self.tile(i,0)

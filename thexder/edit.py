@@ -22,7 +22,7 @@ from constants import *
 import time
 
 #Which level are we editing?
-curlvl = 1
+curlvl = 0
 
 
 ##########################################################################################
@@ -194,20 +194,20 @@ def load_animation_tiles():
     return output
 
 
-def tile_bounds(level=1):
+def tile_bounds(level=0):
     """
     This just sets the bounds, as best as I could tell, for the level tiles.
     """
-    if 1 <= curlvl <= 4:
+    if (1-1) <= curlvl <= (4-1):
         lower_tile = 0x20
         upper_tile = 0x30
-    elif 5 <= curlvl <= 7:
+    elif (5-1) <= curlvl <= (7-1):
         lower_tile = 0x10
         upper_tile = 0x20
-    elif 8 <= curlvl <= 11:
+    elif (8-1) <= curlvl <= (11-1):
         lower_tile = 0x60
         upper_tile = 0x70
-    elif 13 <= curlvl <= 15:
+    elif (13-1) <= curlvl <= (15-1):
         lower_tile = 0x70
         upper_tile = 0x80
     else:
@@ -230,7 +230,7 @@ def load_levels():
 
     levels = []
     for i in range(0, 16):
-        levels.append(level.Level(i+1, animations[i]))
+        levels.append(level.Level(i, animations[i]))
 
     return levels
 
@@ -342,11 +342,11 @@ def main():
     while going:
         for j in range(0,SCR_WIDTH / 16):
             for i in range(0, SCR_HEIGHT / 16):
-                cur_tile = levels[curlvl - 1].tile(j + x_pos, i + y_pos)
+                cur_tile = levels[curlvl].tile(j + x_pos, i + y_pos)
                 if cur_tile is False:
                     cur_tile = 0
 
-                monster = levels[curlvl - 1].monster_at(j + x_pos, i + y_pos)
+                monster = levels[curlvl].monster_at(j + x_pos, i + y_pos)
 
                 # So there are two sources of how the enemies are shown in this game. One is that
                 # the high bits of a tile signify that an enemy will be located there. In such a case,
@@ -366,7 +366,7 @@ def main():
                         screen.blit(lvl_graphics[0].tile(),(j*16, i * 16))
                         screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j*16, i * 16))
                     else:
-                        screen.blit(levels[curlvl-1].monsters((monster - 0x80)/4).tile(monst_frame), (j*16, i * 16))
+                        screen.blit(levels[curlvl].monsters((monster - 0x80)/4).tile(monst_frame), (j*16, i * 16))
                     
                 elif cur_tile >> 4:
                     if NO_MONSTERS:
@@ -394,8 +394,8 @@ def main():
                 # These next two switch from one level to the next.
                 elif keys[K_m]:
                     curlvl += 1
-                    if curlvl > 16:
-                        curlvl = 16
+                    if curlvl >= 16:
+                        curlvl = (16-1)
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
@@ -403,8 +403,8 @@ def main():
                     x_pos = 0
                 elif keys[K_n]:
                     curlvl -= 1
-                    if curlvl < 1:
-                        curlvl = 1
+                    if curlvl < 0:
+                        curlvl = 0
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
@@ -413,7 +413,7 @@ def main():
 
                 elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
-                    view_enemies(screen, levels[curlvl - 1])
+                    view_enemies(screen, levels[curlvl])
 
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation. 
