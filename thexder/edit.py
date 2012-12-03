@@ -44,7 +44,7 @@ def display_init(width, height):
     
     pygame.init()
     #pygame.key.set_repeat(120,30)
-    pygame.key.set_repeat(1, FRAME_LENGTH_MS)
+    #pygame.key.set_repeat(1, FRAME_LENGTH_MS)
     return pygame.display.set_mode((width,height))
 
 
@@ -249,11 +249,22 @@ def load_levels():
 
 def show_tiles(screen, tileset, anim=False):
     global TILE_WIDTH, TILE_HEIGHT
+    global DISPLAY_WIDTH, DISPLAY_HEIGHT
+    global PX_SIZE
     robot_frame = 0
     going = True
     while going:
-    
-        screen.blit(graphics.render_tile(tileset[robot_frame].tile_raw(),20),(0,0))
+
+#        for j in range(0, DISPLAY_WIDTH):
+#            for i in range(0, DISPLAY_HEIGHT):
+#                try:
+#                    screen.blit(tileset[i * DISPLAY_HEIGHT + j].tile(), (i * TILE_WIDTH * PX_SIZE,j * TILE_HEIGHT * PX_SIZE))
+#                except IndexError:
+#                    pass
+#                    
+#        screen.blit(graphics.render_tile(tileset[robot_frame].tile_raw(),20),(0,0))
+
+        display_text(screen, "Are you sure you want to quit", tileset)
 
         pygame.display.update()
 
@@ -313,11 +324,18 @@ def view_enemies(screen,lvl):
                     frame = 0
 
 
-def display_text(say_what):
+def display_text(screen, say_what, tiles):
     """
     This will display text in the thexder font.
     """
-    pass
+    global PX_SIZE, TILE_WIDTH, DISPLAY_HEIGHT, DISPLAY_WIDTH
+    say_what = "   " + say_what.upper() + "   "
+
+    tile_size = PX_SIZE * TILE_WIDTH
+
+    for i in range(0, len(say_what)):
+        screen.blit(tiles[ord(say_what[i])].tile(), ((DISPLAY_WIDTH - len(say_what)) / 2 * tile_size +  i * PX_SIZE * TILE_WIDTH, DISPLAY_HEIGHT / 2 * tile_size))
+    
 
 #And here is the main function.
 def main():
@@ -389,9 +407,13 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 keys = pygame.key.get_pressed()
+                # We have to check for certain keys, e.g. quit.
+                if keys[K_q]:
+                    pygame.display.quit()
+                    going = False
 
-                # These are the basic motion; for the time being, up/down skip you through the level
-                # quickly with left/right being one tile at a time.
+            elif event.type == TIME_EVENT:
+                keys = pygame.key.get_pressed()
                 if keys[K_UP]:
                     if thx.is_grounded():
                         thx.jump()
@@ -431,29 +453,21 @@ def main():
 
                     x_pos = 0
 
-                elif keys[K_t]:
+                #elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
-                    view_enemies(screen, levels[curlvl])
+                #    view_enemies(screen, levels[curlvl])
 
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation. 
-                    show_tiles(screen, thx.get_plane_animation())
+                    show_tiles(screen, lvl_tiles)
                 
-                elif keys[K_q]:
-                    pygame.display.quit()
-                    going = False
                 else:
                     pass
 
-                if x_pos < 0:
-                    x_pos = 0
-                elif x_pos >= 512:
-                    x_pos = 511
-            elif event.type == TIME_EVENT:
                 monst_frame += 1
                 if monst_frame >= NUM_TILES:
                     monst_frame = 0
-                if thx.is_turning():
+                if thx.is_turning() or thx.is_transforming():
                     thx.step()
             
 ##############################
