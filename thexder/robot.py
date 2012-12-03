@@ -64,9 +64,9 @@ class Robot(object):
             return self.get_plane_animation()[0].tile()
         elif self.is_turning():
             if self.is_facing_left():
-                return self.big_frames[0x13 - self.frame_no].tile()
+                return self.big_frames[0x14 - self.frame_no].tile()
             else:
-                return self.big_frames[0x12 + self.frame_no].tile()
+                return self.big_frames[0x11 + self.frame_no].tile()
         elif self.is_transforming():
             return self.small_frames[0].tile()
         else:
@@ -79,7 +79,8 @@ class Robot(object):
         if not self.is_flying():
             if self.is_turning():
                 self.frame_no += 1
-                if self.frame_no >= 2:
+                if self.frame_no >= 3: # This is due to an unfortunate off-by-one error that I'm adding in in terms of
+                                       # timing. I don't like it, but I don't know how to fix it.
                     self.frame_no = 0 # Not quite right...
                     self.turning = False
             else:

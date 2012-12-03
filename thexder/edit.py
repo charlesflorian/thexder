@@ -411,6 +411,33 @@ def main():
                 if keys[K_q]:
                     pygame.display.quit()
                     going = False
+                # These next two switch from one level to the next.
+                elif keys[K_m]:
+                    curlvl += 1
+                    if curlvl >= 16:
+                        curlvl = (16-1)
+
+                    (lower_tile, upper_tile) = tile_bounds(curlvl)
+                    lvl_graphics = lvl_tiles[lower_tile:upper_tile]
+
+                    x_pos = 0
+                elif keys[K_n]:
+                    curlvl -= 1
+                    if curlvl < 0:
+                        curlvl = 0
+
+                    (lower_tile, upper_tile) = tile_bounds(curlvl)
+                    lvl_graphics = lvl_tiles[lower_tile:upper_tile]
+
+                    x_pos = 0
+                elif keys[K_r]:
+                    # This should load and display the thexder robot animation. 
+                    show_tiles(screen, lvl_tiles)
+                #elif keys[K_t]:
+                    # I still want to be able to look over the enemy tiles, since this seems to be an issue...
+                #    view_enemies(screen, levels[curlvl])
+                else:
+                    pass
 
             elif event.type == TIME_EVENT:
                 keys = pygame.key.get_pressed()
@@ -431,36 +458,7 @@ def main():
                     if thx.is_facing_left():
                         thx.step()
                     else:
-                        thx.turn()
-
-                # These next two switch from one level to the next.
-                elif keys[K_m]:
-                    curlvl += 1
-                    if curlvl >= 16:
-                        curlvl = (16-1)
-
-                    (lower_tile, upper_tile) = tile_bounds(curlvl)
-                    lvl_graphics = lvl_tiles[lower_tile:upper_tile]
-
-                    x_pos = 0
-                elif keys[K_n]:
-                    curlvl -= 1
-                    if curlvl < 0:
-                        curlvl = 0
-
-                    (lower_tile, upper_tile) = tile_bounds(curlvl)
-                    lvl_graphics = lvl_tiles[lower_tile:upper_tile]
-
-                    x_pos = 0
-
-                #elif keys[K_t]:
-                    # I still want to be able to look over the enemy tiles, since this seems to be an issue...
-                #    view_enemies(screen, levels[curlvl])
-
-                elif keys[K_r]:
-                    # This should load and display the thexder robot animation. 
-                    show_tiles(screen, lvl_tiles)
-                
+                        thx.turn()              
                 else:
                     pass
 
