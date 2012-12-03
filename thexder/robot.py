@@ -55,22 +55,25 @@ class Robot(object):
         self.left_facing = False
         self.frame_no = 0
         self.turning = False
+        self.grounded = True
+        self.transforming = False
 
 # Animations.
     def get_frame(self):
         if self.is_flying():
             return self.get_plane_animation()[0].tile()
-        else:
-            if self.is_turning():
-                if self.is_facing_left():
-                    return self.big_frames[0x13 - self.frame_no].tile()
-                else:
-                    return self.big_frames[0x12 + self.frame_no].tile()
+        elif self.is_turning():
+            if self.is_facing_left():
+                return self.big_frames[0x13 - self.frame_no].tile()
             else:
-                if self.left_facing:
-                    return self.get_left_animation()[self.frame_no].tile()
-                else:
-                    return self.get_right_animation()[self.frame_no].tile()
+                return self.big_frames[0x12 + self.frame_no].tile()
+        elif self.is_transforming():
+            return self.small_frames[0].tile()
+        else:
+            if self.left_facing:
+                return self.get_left_animation()[self.frame_no].tile()
+            else:
+                return self.get_right_animation()[self.frame_no].tile()
 
     def step(self):
         if not self.is_flying():
@@ -85,9 +88,10 @@ class Robot(object):
                     self.frame_no = 0
 
 # Actions
-
     def transform(self):
-        pass
+        self.flying = not self.flying
+        if self.flying:
+            self.grounded = False
 
     def jump(self):
         pass
@@ -109,7 +113,10 @@ class Robot(object):
         return self.left_facing
 
     def is_grounded(self):
-        return True
+        return self.grounded
+
+    def is_transforming(self):
+        return self.transforming
 
 
 # These are probably only needed for debugging.

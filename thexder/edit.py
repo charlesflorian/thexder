@@ -44,7 +44,7 @@ def display_init(width, height):
     
     pygame.init()
     #pygame.key.set_repeat(120,30)
-    pygame.key.set_repeat(FRAME_LENGTH_MS, FRAME_LENGTH_MS)
+    pygame.key.set_repeat(1, FRAME_LENGTH_MS)
     return pygame.display.set_mode((width,height))
 
 
@@ -312,6 +312,12 @@ def view_enemies(screen,lvl):
                 if frame >= NUM_TILES:
                     frame = 0
 
+
+def display_text(say_what):
+    """
+    This will display text in the thexder font.
+    """
+    pass
 
 #And here is the main function.
 def main():
