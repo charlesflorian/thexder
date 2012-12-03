@@ -250,10 +250,12 @@ def show_tiles(screen, tileset, anim=False):
                 keys = pygame.key.get_pressed()
                 if keys[K_RIGHT]:
                     robot_frame += 1
+                    if robot_frame >= len(tileset):
+                        robot_frame = 0
                 elif keys[K_LEFT]:
                     robot_frame -= 1
                     if robot_frame < 0:
-                        robot_frame = 0
+                        robot_frame = len(tileset) - 1
                 elif keys[K_q]:
                     going = False
 
@@ -428,8 +430,9 @@ def main():
                     # At the moment, this only partially works. It loads the robot graphics as if
                     # each frame is 3x4. However, only 24 frames are like that.
                     # The rest of them are 3x3.
-                    robot = load_raw_tiles("ROBOT.BIN", TILE_WIDTH * 3, TILE_HEIGHT * 4)
-                    show_tiles(screen, robot)
+                    thx = robot.Robot()
+#                    robot = load_raw_tiles("ROBOT.BIN", TILE_WIDTH * 3, TILE_HEIGHT * 4)
+                    show_tiles(screen, thx.get_plane_animation())
                 
                 elif keys[K_q]:
                     pygame.display.quit()

@@ -1,5 +1,6 @@
 from constants import *
-import animation
+from . import animation
+from . import data
 
 #################################################################################################
 #
@@ -38,8 +39,18 @@ class Robot(object):
         small_frame_bits = 3 * 3 * TILE_HEIGHT * TILE_WIDTH /2
 
         # This separates it into the large and small frames, which will be processed separately.
-        big_frames = content[:big_frame_bits * 0x18]
-        small_frames = content[big_frame_bits * 0x18:]
+        big_frames_raw = content[:big_frame_bits * 0x18]
+        small_frames_raw = content[big_frame_bits * 0x18:]
+
+        # And now we make them into a bunch of tiles.
+        self.big_frames = []
+        for i in range(0, len(big_frames_raw) / big_frame_bits):
+            self.big_frames.append(animation.Tile(big_frames_raw, i * big_frame_bits, 3 * TILE_WIDTH, 4 * TILE_HEIGHT))
+
+        self.small_frames = []
+        for i in range(0, len(small_frames_raw) / small_frame_bits):
+            self.small_frames.append(animation.Tile(small_frames_raw, i * small_frame_bits, 3 * TILE_WIDTH, 3 * TILE_HEIGHT))
+
 
         self.animation_left = None
         self.animation_right = None
@@ -50,3 +61,11 @@ class Robot(object):
         self.animation_transform_right = None
         self.animation_transform_left = None
 
+    def get_left_animation(self):
+        return self.big_frames[0x00:0x08]
+
+    def get_right_animation(self):
+        return self.big_frames[0x08:0x10]
+
+    def get_plane_animation(self):
+        return self.small_frames
