@@ -246,6 +246,11 @@ def load_levels():
 
     return levels
 
+################################################################################################## 
+#
+# Debug stuff.
+#
+##################################################################################################
 
 def show_tiles(screen, tileset, anim=False):
     global TILE_WIDTH, TILE_HEIGHT
@@ -323,18 +328,36 @@ def view_enemies(screen,lvl):
                 if frame >= NUM_TILES:
                     frame = 0
 
+##################################################################################################
+#
+# End debug stuff.
+#
+##################################################################################################
 
-def display_text(screen, say_what, tiles):
+def pause():
+    going = True
+    while going:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                going = False
+
+def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     """
     This will display text in the thexder font.
     """
     global PX_SIZE, TILE_WIDTH, DISPLAY_HEIGHT, DISPLAY_WIDTH
-    say_what = "   " + say_what.upper() + "   "
+    say_what = " " + say_what.upper() + " "
 
     tile_size = PX_SIZE * TILE_WIDTH
 
+    if center:
+        x = (DISPLAY_WIDTH - len(say_what)) / 2 * tile_size
+        y = DISPLAY_HEIGHT / 2 * tile_size
+
     for i in range(0, len(say_what)):
-        screen.blit(tiles[ord(say_what[i])].tile(), ((DISPLAY_WIDTH - len(say_what)) / 2 * tile_size +  i * PX_SIZE * TILE_WIDTH, DISPLAY_HEIGHT / 2 * tile_size))
+        screen.blit(tiles[ord(say_what[i])].tile(), (x +  i * PX_SIZE * TILE_WIDTH, y))
+
+    pygame.display.update()
     
 
 #And here is the main function.
@@ -432,12 +455,18 @@ def main():
                     x_pos = 0
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation. 
-                    show_tiles(screen, lvl_tiles)
+                    #show_tiles(screen, lvl_tiles)
+                    display_text(screen, "What the what", lvl_tiles)
+                    pause()
+                    
                 #elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
                 #    view_enemies(screen, levels[curlvl])
                 else:
                     pass
+
+# TODO: I need to work out the robot's position stuff.
+# TODO: I also need to work out how to change between the different robot states better.
 
             elif event.type == TIME_EVENT:
                 keys = pygame.key.get_pressed()
