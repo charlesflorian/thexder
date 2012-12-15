@@ -21,7 +21,7 @@ class Level(object):
         (self.monster_positions, header_data) = self.load_monsters(n)
         self.monsters_data = []
         for i in range(0, len(anim)):
-            self.monsters_data.append(animation.Monster(anim[i], ord(header_data[i * 2]), 
+            self.monsters_data.append(animation.MonsterClass(anim[i], ord(header_data[i * 2]), 
                     ord(header_data[0x40 + i * 2]), ord(header_data[0x80 + i * 2]), 
                     ord(header_data[0xc0 + i * 2]), ord(header_data[0x100 + i * 2])))
 

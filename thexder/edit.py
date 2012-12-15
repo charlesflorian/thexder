@@ -345,20 +345,45 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     """
     This will display text in the thexder font.
     """
-    global PX_SIZE, TILE_WIDTH, DISPLAY_HEIGHT, DISPLAY_WIDTH
+    global DISPLAY_HEIGHT, DISPLAY_WIDTH
     say_what = " " + say_what.upper() + " "
 
-    tile_size = PX_SIZE * TILE_WIDTH
-
     if center:
-        x = (DISPLAY_WIDTH - len(say_what)) / 2 * tile_size
-        y = DISPLAY_HEIGHT / 2 * tile_size
+        x = (DISPLAY_WIDTH - len(say_what)) / 2
+        y = DISPLAY_HEIGHT / 2
 
     for i in range(0, len(say_what)):
-        screen.blit(tiles[ord(say_what[i])].tile(), (x +  i * PX_SIZE * TILE_WIDTH, y))
+        display_tile(screen, tiles[ord(say_what[i])].tile(), x + i, y)
 
     pygame.display.update()
     
+
+def display_tile(screen, tile, x, y):
+    global PX_SIZE, TILE_HEIGHT, TILE_WIDTH, DISPLAY_HEIGHT, DISPLAY_WIDTH
+
+    tile_size = PX_SIZE * TILE_HEIGHT
+
+    if (0 <= x < DISPLAY_WIDTH) and (0 <= y < DISPLAY_HEIGHT):
+        screen.blit(tile, (x * tile_size, y * tile_size))
+    else:
+        raise IndexError # Maybe this is a bad idea...
+
+def display_level(screen, level, tiles, x, y):
+    """
+    This will show the level in the main frame, starting at the top right corner (x, y).
+    """
+    global DISPLAY_WIDTH, DISPLAY_HEIGHT
+    
+    for j in range(0, DISPLAY_WIDTH):
+        for i in range(0, DISPLAY_HEIGHT):
+            cur_tile = level.tile(j + x, i + y)
+            if cur_tile is False:
+                cur_tile = 0
+
+            display_tile(screen, tiles[curtile % 16].tile(), j, i)
+
+def display_sprites(screen, x, y):
+    pass
 
 #And here is the main function.
 def main():
@@ -403,6 +428,8 @@ def main():
     
     going = True
     while going:
+#        display_level(screen, levels[curlvl], lvl_tiles, x_pos, y_pos)
+#        display_sprites(screen, x_pos, y_pos)
         for j in range(0,DISPLAY_WIDTH):
             for i in range(0, DISPLAY_HEIGHT):
                 cur_tile = levels[curlvl].tile(j + x_pos, i + y_pos)
@@ -416,15 +443,15 @@ def main():
                         screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
                         screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j * tile_size, i * tile_size))
                     else:
-                        screen.blit(levels[curlvl].monsters((monster - 0x80)/4).tile(monst_frame), (j * tile_size, i * tile_size))
+                        display_tile(screen, levels[curlvl].monsters((monster - 0x80)/4).tile(monst_frame), j, i)
                     
                 elif cur_tile >> 4:
                     if NO_MONSTERS:
                         screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
                 else:
-                    screen.blit(lvl_graphics[cur_tile % 16].tile(), (j * tile_size, i * tile_size))
+                    display_tile(screen, lvl_graphics[cur_tile % 16].tile(), j, i)
 
-        screen.blit(thx.get_frame(), (robot_x * tile_size, robot_y * tile_size))
+        display_tile(screen, thx.get_frame(), robot_x, robot_y)
         pygame.display.update()
 
         for event in pygame.event.get():

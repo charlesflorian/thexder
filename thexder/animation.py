@@ -69,9 +69,11 @@ import graphics
 #
 ##############################################################################################
 
-class Monster(object):
+class MonsterClass(object):
     """
-    This will be the underlying class of a monster. I don't know what to do with this.
+    This will be the underlying class of a monster. It contains the basic data for each type of monster.
+
+    Each instance of a monster will extend this class in some way, I suppose?
     """
     def __init__(self, animation, health_gain, enmax_gain, points, motion, health):
         self.animation = animation
@@ -101,6 +103,11 @@ class Monster(object):
 
     def get_health(self):
         return self.health
+
+class Monster(object):
+
+    def __init__(self, monster_class, x, y):
+        pass
 
 class Animation(object):
     """
