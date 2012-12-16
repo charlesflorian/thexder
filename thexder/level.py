@@ -27,6 +27,13 @@ class Level(object):
     def tile(self, x, y):
         return self.map.tile(x,y)
 
+    def is_empty(self, x, y, width, height):
+        for i in range(0, width):
+            for j in range(0, height):
+                if (self.map.tile(x + i, y + j) % 16) > 0 or self.monster_at(x + i, y + j) != -1:
+                    return False
+        return True
+
     def num_monsters(self):
         return len(self.monsters_data)
 
@@ -89,6 +96,6 @@ class Level(object):
             i += BUGDB_ENTRY_LENGTH
 
 #        bugdict = dict([((x[1], x[2]), (x[0], 1)) for x in buglist])
-        bugdict = dict([((x[1], x[2]), (x[0], health[x[0]])) for x in buglist])
+        bugdict = dict([((x[1], x[2]), animation.Monster(x[0], health[x[0]])) for x in buglist])
 
         return (bugdict, health_gain, enmax_gain, points, motion, health)

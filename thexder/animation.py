@@ -106,11 +106,16 @@ class MonsterClass(object):
 
 class Monster(object):
 
-    def __init__(self, monster_class, x, y):
+    def __init__(self, monster_class, health):
         self.monster_class = monster_class
-        self.x = x
-        self.y = y
-        self.health = 0
+        self.life = health
+        self.frame = 0
+
+    def monster_type(self):
+        return self.monster_class
+
+    def health(self):
+        return self.life
 
 class Animation(object):
     """

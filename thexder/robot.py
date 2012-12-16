@@ -1,6 +1,7 @@
 from constants import *
 from . import animation
 from . import data
+from . import level
 
 #################################################################################################
 #
@@ -57,6 +58,9 @@ class Robot(object):
         self.turning = False
         self.grounded = True
         self.transforming = False
+
+        self.enmax = 100
+        self.heatlh = 100
 
 # Animations.
     def get_frame(self):

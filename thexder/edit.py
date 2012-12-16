@@ -334,6 +334,13 @@ def view_enemies(screen,lvl):
 #
 ##################################################################################################
 
+
+##################################################################################################
+#
+# Display methods.
+#
+##################################################################################################
+
 def pause():
     going = True
     while going:
@@ -390,9 +397,30 @@ def display_sprites(screen, level, frame, x, y):
             monster = level.monster_at(x + j, y + i)
 
             if monster != -1:
-                display_tile(screen, level.monsters(monster[0]).tile(frame), j, i)
+                display_tile(screen, level.monsters(monster.monster_type()).tile(frame), j, i)
 
-#And here is the main function.
+##################################################################################################
+#
+# End display methods.
+#
+##################################################################################################
+
+##################################################################################################
+#
+# Begin interaction methods.
+#
+##################################################################################################
+
+def is_occupied(level, x_1, y_1, x_2, y_2):
+    return False
+
+##################################################################################################
+#
+# End interaction methods.
+#
+##################################################################################################
+
+
 def main():
     global DISPLAY_HEIGHT, DISPLAY_WIDTH, LVL_HEIGHT, NO_MONSTERS
     global PX_SIZE, TILE_HEIGHT, TILE_WIDTH
@@ -414,17 +442,14 @@ def main():
     #t2 = time.time()
     #print "%f seconds\n" % (t2 - t1)
 
-##########################
-#
-# This was a separate function before. For now it is included in main(), but this could change.
-#
-##########################
-
     tile_size = PX_SIZE * TILE_HEIGHT
 
     screen = display_init(DISPLAY_WIDTH * tile_size, DISPLAY_HEIGHT * tile_size)
 
     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
+
+    robot_y = 11 # 11 is the default start.
+    robot_x = 19
 
     x_pos = 0
     y_pos = 0
@@ -435,29 +460,21 @@ def main():
     
     going = True
     while going:
+
+        y_pos = robot_y - 11
+        if y_pos < 0:
+            y_pos = 0
+        elif y_pos > LVL_HEIGHT - DISPLAY_HEIGHT:
+            y_pos = LVL_HEIGHT - DISPLAY_HEIGHT
+
+        x_pos = robot_x - 19
+        if x_pos < 0:
+            x_pos = 0
+
         display_level(screen, levels[curlvl], lvl_graphics, x_pos, y_pos)
         display_sprites(screen, levels[curlvl], monst_frame, x_pos, y_pos)
-#        for j in range(0,DISPLAY_WIDTH):
-#            for i in range(0, DISPLAY_HEIGHT):
-#                cur_tile = levels[curlvl].tile(j + x_pos, i + y_pos)
-#                if cur_tile is False:
-#                    cur_tile = 0
+        display_tile(screen, thx.get_frame(), 19, robot_y - y_pos)
 
-#                monster = levels[curlvl].monster_at(j + x_pos, i + y_pos)
-
-#                if monster >= 0:
-#                    if NO_MONSTERS:
-#                        screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
-#                        screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j * tile_size, i * tile_size))
-#                    else:
-#                        display_tile(screen, levels[curlvl].monsters(monster[0]).tile(monst_frame), j, i)                    
-#                elif cur_tile >> 4:
-#                    if NO_MONSTERS:
-#                        screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
-#                else:
-#                    display_tile(screen, lvl_graphics[cur_tile % 16].tile(), j, i)
-
-        display_tile(screen, thx.get_frame(), robot_x, robot_y)
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -476,7 +493,8 @@ def main():
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
-                    x_pos = 0
+                    robot_x = 19
+                    robot_y = 11
                 elif keys[K_n]:
                     curlvl -= 1
                     if curlvl < 0:
@@ -485,7 +503,8 @@ def main():
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
-                    x_pos = 0
+                    robot_x = 19
+                    robot_y = 11
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation. 
                     #show_tiles(screen, lvl_tiles)
@@ -510,13 +529,15 @@ def main():
                     if thx.is_grounded():
                         thx.transform()
                 elif keys[K_RIGHT]:
-                    x_pos += 1
+                    if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
+                        robot_x += 1
                     if thx.is_facing_left():
                         thx.turn()
                     else:
                         thx.step()
                 elif keys[K_LEFT]:
-                    x_pos -= 1
+                    if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4):
+                        robot_x -= 1
                     if thx.is_facing_left():
                         thx.step()
                     else:
