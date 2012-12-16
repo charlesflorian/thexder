@@ -510,6 +510,8 @@ def main():
                     #show_tiles(screen, lvl_tiles)
                     display_text(screen, "What the what", lvl_tiles)
                     pause()
+                    display_text(screen, "No seriously what", lvl_tiles)
+                    pause()
                     
                 #elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
@@ -521,26 +523,39 @@ def main():
 # TODO: I also need to work out how to change between the different robot states better.
 
             elif event.type == TIME_EVENT:
+                if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+                    if not thx.is_jumping():
+                        thx.fall()
+                        robot_y += 1
+                else:
+                    thx.land()
+                    
                 keys = pygame.key.get_pressed()
                 if keys[K_UP]:
                     if thx.is_grounded():
                         thx.jump()
-                elif keys[K_DOWN]:
+                    if thx.is_jumping():
+                        robot_y -= 1
+                else:
+                    thx.set_jumping(False)
+
+                if keys[K_DOWN]:
                     if thx.is_grounded():
                         thx.transform()
-                elif keys[K_RIGHT]:
+                        
+                if keys[K_RIGHT]:
                     if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
                         robot_x += 1
                     if thx.is_facing_left():
                         thx.turn()
-                    else:
+                    elif thx.is_grounded():
                         thx.step()
                 elif keys[K_LEFT]:
                     if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4):
                         robot_x -= 1
                     if thx.is_facing_left():
                         thx.step()
-                    else:
+                    elif thx.is_grounded():
                         thx.turn()              
                 else:
                     pass
@@ -551,6 +566,8 @@ def main():
                 if thx.is_turning() or thx.is_transforming():
                     thx.step()
             
+                if robot_y < 0:
+                    robot_y = 0
 ##############################
 
 

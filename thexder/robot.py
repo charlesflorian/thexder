@@ -58,6 +58,7 @@ class Robot(object):
         self.turning = False
         self.grounded = True
         self.transforming = False
+        self.jumping = False
 
         self.enmax = 100
         self.heatlh = 100
@@ -94,17 +95,29 @@ class Robot(object):
 
 # Actions
     def transform(self):
+        self.jumping = False
         self.flying = not self.flying
         if self.flying:
             self.grounded = False
 
+    def set_jumping(self, status):
+        self.jumping = status
+
     def jump(self):
-        pass
+        self.jumping = True
 
     def turn(self):
         self.frame_no = 0
         self.left_facing = not self.left_facing
         self.turning = True
+
+    def fall(self):
+        self.frame_no = 0
+        self.grounded = False
+
+    def land(self):
+        self.grounded = True
+        self.jumping = False
 
 
 # Queries:
@@ -122,6 +135,9 @@ class Robot(object):
 
     def is_transforming(self):
         return self.transforming
+
+    def is_jumping(self):
+        return self.jumping
 
 
 # These are probably only needed for debugging.
