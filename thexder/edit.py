@@ -377,13 +377,20 @@ def display_level(screen, level, tiles, x, y):
     for j in range(0, DISPLAY_WIDTH):
         for i in range(0, DISPLAY_HEIGHT):
             cur_tile = level.tile(j + x, i + y)
-            if cur_tile is False:
+            if cur_tile is False or cur_tile >> 4:
                 cur_tile = 0
 
-            display_tile(screen, tiles[curtile % 16].tile(), j, i)
+            display_tile(screen, tiles[cur_tile % 16].tile(), j, i)
 
-def display_sprites(screen, x, y):
-    pass
+def display_sprites(screen, level, frame, x, y):
+    global DISPLAY_WIDTH, DISPLAY_HEIGHT
+
+    for j in range(0, DISPLAY_WIDTH):
+        for i in range(0, DISPLAY_HEIGHT):
+            monster = level.monster_at(x + j, y + i)
+
+            if monster != -1:
+                display_tile(screen, level.monsters(monster[0]).tile(frame), j, i)
 
 #And here is the main function.
 def main():
@@ -428,28 +435,27 @@ def main():
     
     going = True
     while going:
-#        display_level(screen, levels[curlvl], lvl_tiles, x_pos, y_pos)
-#        display_sprites(screen, x_pos, y_pos)
-        for j in range(0,DISPLAY_WIDTH):
-            for i in range(0, DISPLAY_HEIGHT):
-                cur_tile = levels[curlvl].tile(j + x_pos, i + y_pos)
-                if cur_tile is False:
-                    cur_tile = 0
+        display_level(screen, levels[curlvl], lvl_graphics, x_pos, y_pos)
+        display_sprites(screen, levels[curlvl], monst_frame, x_pos, y_pos)
+#        for j in range(0,DISPLAY_WIDTH):
+#            for i in range(0, DISPLAY_HEIGHT):
+#                cur_tile = levels[curlvl].tile(j + x_pos, i + y_pos)
+#                if cur_tile is False:
+#                    cur_tile = 0
 
-                monster = levels[curlvl].monster_at(j + x_pos, i + y_pos)
+#                monster = levels[curlvl].monster_at(j + x_pos, i + y_pos)
 
-                if monster > 0:
-                    if NO_MONSTERS:
-                        screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
-                        screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j * tile_size, i * tile_size))
-                    else:
-                        display_tile(screen, levels[curlvl].monsters((monster - 0x80)/4).tile(monst_frame), j, i)
-                    
-                elif cur_tile >> 4:
-                    if NO_MONSTERS:
-                        screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
-                else:
-                    display_tile(screen, lvl_graphics[cur_tile % 16].tile(), j, i)
+#                if monster >= 0:
+#                    if NO_MONSTERS:
+#                        screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
+#                        screen.blit(pygame.font.Font(None, 15).render("%x" % monster, False, (100,255,100)),(j * tile_size, i * tile_size))
+#                    else:
+#                        display_tile(screen, levels[curlvl].monsters(monster[0]).tile(monst_frame), j, i)                    
+#                elif cur_tile >> 4:
+#                    if NO_MONSTERS:
+#                        screen.blit(lvl_graphics[0].tile(),(j * tile_size, i * tile_size))
+#                else:
+#                    display_tile(screen, lvl_graphics[cur_tile % 16].tile(), j, i)
 
         display_tile(screen, thx.get_frame(), robot_x, robot_y)
         pygame.display.update()
