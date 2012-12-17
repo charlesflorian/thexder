@@ -35,7 +35,7 @@ MAX_LEVELS = 16
 
 # Animation constants
 
-FRAME_LENGTH_MS = 80
+FRAME_LENGTH_MS = 75
 
 #
 
@@ -44,6 +44,13 @@ BUGDB_ENTRY_LENGTH = 0x0c
 
 TANBIT_SIZE = [0x100,0x100,0xe0,0x20,0x80,0x00,0x40,0x40,0xc0,0x00,0x40,0x40,0x80,0x40,0x40,0xf0]
 
+# Thexder constants
+
+JUMP_MAX_HEIGHT = 16 # 16 is the actual max height.
+
+THX_GROUNDED = 0
+THX_FALLING = 1
+THX_JUMPING = 2
 
 COLORS = [pygame.Color(0,0,0), #Black
           pygame.Color(0xfa, 0x55, 0x55), #Salmon?

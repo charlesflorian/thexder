@@ -30,9 +30,12 @@ class Robot(object):
     This will be the class of the Thexder robot. It will include the animation tiles for him,
     at the very least.
     """
+    global THX_GROUNDED, THX_FALLING, THX_JUMPING
 
     def __init__(self, filename="ROBOT.BIN"):   
         global TILE_WIDTH, TILE_HEIGHT
+
+        global THX_GROUNDED, THX_FALLING, THX_JUMPING
         content = data.default_data_manager().load_file(filename)
 
         # The number of bits per frame.
@@ -58,14 +61,21 @@ class Robot(object):
         self.turning = False
         self.grounded = True
         self.transforming = False
-        self.jumping = False
+        self.jumping = 0
+
+        self.state = THX_GROUNDED
 
         self.enmax = 100
         self.heatlh = 100
 
 # Animations.
     def get_frame(self):
-        if self.is_flying():
+        if self.is_jumping():
+            if self.is_facing_left():
+                return self.big_frames[0].tile()
+            else:
+                return self.big_frames[0x08].tile()
+        elif self.is_flying():
             return self.get_plane_animation()[0].tile()
         elif self.is_turning():
             if self.is_facing_left():
@@ -95,7 +105,7 @@ class Robot(object):
 
 # Actions
     def transform(self):
-        self.jumping = False
+        self.jumping = 0
         self.flying = not self.flying
         if self.flying:
             self.grounded = False
@@ -104,7 +114,12 @@ class Robot(object):
         self.jumping = status
 
     def jump(self):
-        self.jumping = True
+        global JUMP_MAX_HEIGHT, THX_JUMPING
+        self.state = THX_JUMPING
+        self.jumping += 1
+        if self.jumping > JUMP_MAX_HEIGHT:
+            self.jumping = 0
+        return self.jumping
 
     def turn(self):
         self.frame_no = 0
@@ -112,15 +127,24 @@ class Robot(object):
         self.turning = True
 
     def fall(self):
+        global THX_FALLING
         self.frame_no = 0
-        self.grounded = False
+        self.state = THX_FALLING
 
     def land(self):
-        self.grounded = True
-        self.jumping = False
+        global THX_GROUNDED
+        self.state = THX_GROUNDED
+        self.jumping = 0
 
+    def set_state(self, state):
+        if state == THX_FALLING:
+            pass
+        self.state = state
 
 # Queries:
+    def get_state(self):
+        return self.state
+        
     def is_turning(self):
         return self.turning
 
@@ -131,13 +155,15 @@ class Robot(object):
         return self.left_facing
 
     def is_grounded(self):
-        return self.grounded
+        global THX_GROUNDED
+        return self.get_state() == THX_GROUNDED
 
     def is_transforming(self):
         return self.transforming
 
     def is_jumping(self):
-        return self.jumping
+        global THX_JUMPING
+        return self.get_state() == THX_JUMPING
 
 
 # These are probably only needed for debugging.

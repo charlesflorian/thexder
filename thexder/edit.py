@@ -357,7 +357,8 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
 
     if center:
         x = (DISPLAY_WIDTH - len(say_what)) / 2
-        y = DISPLAY_HEIGHT / 2
+        #y = DISPLAY_HEIGHT / 2
+        y = 8
 
     for i in range(0, len(say_what)):
         display_tile(screen, tiles[ord(say_what[i])].tile(), x + i, y)
@@ -370,7 +371,8 @@ def display_tile(screen, tile, x, y):
 
     tile_size = PX_SIZE * TILE_HEIGHT
 
-    if (0 <= x < DISPLAY_WIDTH) and (0 <= y < DISPLAY_HEIGHT):
+#    if (0 <= x < DISPLAY_WIDTH) and (0 <= y < DISPLAY_HEIGHT):
+    if (-1 <= x < DISPLAY_WIDTH) and (-1 <= y < DISPLAY_HEIGHT):
         screen.blit(tile, (x * tile_size, y * tile_size))
     else:
         raise IndexError # Maybe this is a bad idea...
@@ -392,8 +394,8 @@ def display_level(screen, level, tiles, x, y):
 def display_sprites(screen, level, frame, x, y):
     global DISPLAY_WIDTH, DISPLAY_HEIGHT
 
-    for j in range(0, DISPLAY_WIDTH):
-        for i in range(0, DISPLAY_HEIGHT):
+    for j in range(-1, DISPLAY_WIDTH):
+        for i in range(-1, DISPLAY_HEIGHT):
             monster = level.monster_at(x + j, y + i)
 
             if monster != -1:
@@ -519,46 +521,75 @@ def main():
                 else:
                     pass
 
-# TODO: I need to work out the robot's position stuff.
 # TODO: I also need to work out how to change between the different robot states better.
 
             elif event.type == TIME_EVENT:
-                if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
-                    if not thx.is_jumping():
+                if thx.is_flying():
+                    pass
+                else:
+#                    if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+#                        if not thx.is_jumping():
+#                            thx.fall()
+#                            robot_y += 1
+#                    else:
+#                        thx.land()
+                    keys = pygame.key.get_pressed()
+
+                    global THX_JUMPING, THX_FALLING, THX_GROUNDED
+
+                    state = thx.get_state()
+                    if state == THX_JUMPING:
+                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            robot_y -= 1
+                        else:
+                            thx.set_state(THX_FALLING)
+                            robot_y += 1
+                    elif state == THX_FALLING:
+                        pass
+                    elif state == THX_GROUNDED:
+                        pass 
+
+                    """
+                    if thx.is_jumping():
+                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            robot_y -= 1
+                        else:
+                            thx.land()
+                            thx.set_jumping(0)
+                            robot_y += 1
+                    elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
                         thx.fall()
                         robot_y += 1
-                else:
-                    thx.land()
-                    
-                keys = pygame.key.get_pressed()
-                if keys[K_UP]:
-                    if thx.is_grounded():
-                        thx.jump()
-                    if thx.is_jumping():
-                        robot_y -= 1
-                else:
-                    thx.set_jumping(False)
+                    else:
+                        if keys[K_UP] and thx.is_grounded() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            thx.set_jumping(0)
+                            thx.jump()
+                            robot_y -= 1
+                        else:
+                            thx.land()
+                    """                           
 
-                if keys[K_DOWN]:
-                    if thx.is_grounded():
-                        thx.transform()
-                        
-                if keys[K_RIGHT]:
-                    if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
-                        robot_x += 1
-                    if thx.is_facing_left():
-                        thx.turn()
-                    elif thx.is_grounded():
-                        thx.step()
-                elif keys[K_LEFT]:
-                    if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4):
-                        robot_x -= 1
-                    if thx.is_facing_left():
-                        thx.step()
-                    elif thx.is_grounded():
-                        thx.turn()              
-                else:
-                    pass
+
+                    if keys[K_DOWN]:
+                        if thx.is_grounded():
+                            thx.transform()
+                            
+                    if keys[K_RIGHT]:
+                        if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
+                            robot_x += 1
+                        if thx.is_facing_left():
+                            thx.turn()
+                        elif thx.is_grounded():
+                            thx.step()
+                    elif keys[K_LEFT]:
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4):
+                            robot_x -= 1
+                        if thx.is_facing_left():
+                            thx.step()
+                        elif thx.is_grounded():
+                            thx.turn()              
+                    else:
+                        pass
 
                 monst_frame += 1
                 if monst_frame >= NUM_TILES:
