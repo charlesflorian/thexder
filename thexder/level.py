@@ -18,7 +18,8 @@ class Level(object):
             return False
 
         self.map = thx_map.Map(n)
-        (self.monster_positions, health_gain, enmax_gain, points, motion, health) = self.load_monsters(n)
+        #(self.monster_positions, health_gain, enmax_gain, points, motion, health) = self.load_monsters(n)
+        (self.monster_dict, health_gain, enmax_gain, points, motion, health) = self.load_monsters(n)
         self.monsters_data = []
         for i in range(0, len(anim)):
             self.monsters_data.append(animation.MonsterClass(anim[i], health_gain[i], 
@@ -28,16 +29,25 @@ class Level(object):
         return self.map.tile(x,y)
 
     def is_empty(self, x, y, width, height):
+        for i in range(-1, width):
+            for j in range(-1, height):
+                if self.monster_at(x + i, y + j) != -1:
+                    return False
+
         for i in range(0, width):
             for j in range(0, height):
-                if (self.map.tile(x + i, y + j) % 16) > 0 or self.monster_at(x + i, y + j) != -1:
+                if (self.map.tile(x + i, y + j) % 16) > 0:
                     return False
+
         return True
 
     def num_monsters(self):
         return len(self.monsters_data)
 
-    def monsters(self,which):
+    def monsters(self):
+        return self.monster_dict
+
+    def monster_data(self,which):
         """
         This should just return the "which" monster in the level. This will function like the old
         array monsters[], but will be tied to the level.
@@ -49,12 +59,10 @@ class Level(object):
         For now, this returns a tuple (a, b), where a is the type of the monster (an integer between 0 and 0x20)
         and b is the current health of the monster at the position (x, y).
         """
-        try:
-            monster =  self.monster_positions[(x, y)]
-        except KeyError:
-            monster = -1
-        return monster
-
+        for monst in self.monster_dict:
+            if self.monster_dict[monst].get_pos() == (x, y):
+                return self.monster_dict[monst]
+        return -1
 
     def load_monsters(self,n):
         content = data.default_data_manager().load_file("BUGDB{0:0>2}.BIN".format(n+1))
@@ -74,11 +82,12 @@ class Level(object):
             points[i] = ord(header_data[0x80 + i * 2])
             motion[i] = ord(header_data[0xc0 + i * 2])
             health[i] = ord(header_data[0x100 + i * 2])
-
         # End processing.
         
         i = BUGDB_HEADER_SIZE
-        buglist = []
+
+        m_count = 0
+        bug_dict = {}
 
         while i < len(content):
             bug_offset = ord(content[i])
@@ -91,11 +100,11 @@ class Level(object):
             if (bug_offset != 0) or (bug_x != 0) or (bug_y !=0):
                 # The (bug_offset - 0x80) / 4 is just a conversion factor due to how the data is stored in
                 # BUGDBXX.BIN.
-                buglist.append(((bug_offset - 0x80)/4, bug_x, bug_y))
+                
+                m_type = (bug_offset - 0x80)/4
+                bug_dict[m_count] = animation.Monster(m_count, m_type, health[m_type], bug_x, bug_y)
+                m_count += 1
 
             i += BUGDB_ENTRY_LENGTH
 
-#        bugdict = dict([((x[1], x[2]), (x[0], 1)) for x in buglist])
-        bugdict = dict([((x[1], x[2]), animation.Monster(x[0], health[x[0]])) for x in buglist])
-
-        return (bugdict, health_gain, enmax_gain, points, motion, health)
+        return (bug_dict, health_gain, enmax_gain, points, motion, health)

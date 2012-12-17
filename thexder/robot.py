@@ -127,12 +127,10 @@ class Robot(object):
         self.turning = True
 
     def fall(self):
-        global THX_FALLING
         self.frame_no = 0
         self.state = THX_FALLING
 
     def land(self):
-        global THX_GROUNDED
         self.state = THX_GROUNDED
         self.jumping = 0
 

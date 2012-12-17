@@ -293,7 +293,7 @@ def view_enemies(screen,lvl):
 
     monsters = []
     for i in range(0, lvl.num_monsters()):
-        monsters.append(lvl.monsters(i))
+        monsters.append(lvl.monster_data(i))
 
     pygame.time.set_timer(TIME_EVENT, 100)
 
@@ -394,12 +394,13 @@ def display_level(screen, level, tiles, x, y):
 def display_sprites(screen, level, frame, x, y):
     global DISPLAY_WIDTH, DISPLAY_HEIGHT
 
-    for j in range(-1, DISPLAY_WIDTH):
-        for i in range(-1, DISPLAY_HEIGHT):
-            monster = level.monster_at(x + j, y + i)
+    monsters = level.monsters()
 
-            if monster != -1:
-                display_tile(screen, level.monsters(monster.monster_type()).tile(frame), j, i)
+    for monst in monsters:
+        sprite = monsters[monst]
+        pos = sprite.get_pos()
+        if (x - 1 <= pos[0]< x + DISPLAY_WIDTH) and (y - 1 <= pos[1]< y + DISPLAY_HEIGHT):
+            display_tile(screen, level.monster_data(sprite.monster_type()).tile(frame), pos[0] - x, pos[1] - y)
 
 ##################################################################################################
 #
@@ -545,9 +546,15 @@ def main():
                             thx.set_state(THX_FALLING)
                             robot_y += 1
                     elif state == THX_FALLING:
-                        pass
+                        if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+                            thx.fall()
+                            robot_y += 1
+                        else:
+                            thx.land()
                     elif state == THX_GROUNDED:
-                        pass 
+                        if keys[K_UP]:
+                            thx.jump()
+                            robot_y -= 1
 
                     """
                     if thx.is_jumping():
