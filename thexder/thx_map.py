@@ -38,7 +38,15 @@ class Map(object):
             # bit being greater than 8. But there's no reason this has to be the case; we can store the data
             # in the ldata array, and use the tiles array when we actually display things.
             if high >= 8:
-                self.ldata[current_column].append((high << 4) + low)
+                #
+                # This is what remembers whether or not there are monsters as stored in the level file.
+                # We should use this if we are actually editing the level files.
+                #
+                #self.ldata[current_column].append((high << 4) + low)
+                #column_count += 1
+
+                # This just ignores them, since we really just load them from BUGDBXX.BIN.
+                self.ldata[current_column].append(0)
                 column_count += 1
             else:
                 if high == 0:

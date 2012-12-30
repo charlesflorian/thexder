@@ -523,17 +523,13 @@ def main():
                     pass
 
 # TODO: I also need to work out how to change between the different robot states better.
+# TODO: Fix animation for turning.
 
             elif event.type == TIME_EVENT:
+                thx.update()
                 if thx.is_flying():
                     pass
                 else:
-#                    if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
-#                        if not thx.is_jumping():
-#                            thx.fall()
-#                            robot_y += 1
-#                    else:
-#                        thx.land()
                     keys = pygame.key.get_pressed()
 
                     global THX_JUMPING, THX_FALLING, THX_GROUNDED
@@ -563,10 +559,10 @@ def main():
                             robot_y += 1
 
 
-
+                    """
                     if keys[K_DOWN]:
-                        if thx.is_grounded():
-                            thx.transform()
+                        thx.transform()
+                    """
                             
                     if keys[K_RIGHT]:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
@@ -578,18 +574,30 @@ def main():
                     elif keys[K_LEFT]:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4):
                             robot_x -= 1
+                        if not thx.is_facing_left():
+                            thx.turn()
+                        elif state == THX_GROUNDED:
+                            thx.step()
+                        """    if state == THX_GROUNDED:
+                                pass
+                            else:
+                                pass
                         if thx.is_facing_left():
                             thx.step()
                         elif thx.is_grounded():
                             thx.turn()              
+                        """
                     else:
                         pass
 
                 monst_frame += 1
                 if monst_frame >= NUM_TILES:
                     monst_frame = 0
-                if thx.is_turning() or thx.is_transforming():
-                    thx.step()
+#                if state == THX_TURNING or state == THX_TRANSFORMING:
+#                    thx.step()
+#                if thx.is_turning() or thx.is_transforming():
+#                    thx.step()
+#                    pass
             
                 if robot_y < 0:
                     robot_y = 0

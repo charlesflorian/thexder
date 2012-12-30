@@ -48,9 +48,22 @@ TANBIT_SIZE = [0x100,0x100,0xe0,0x20,0x80,0x00,0x40,0x40,0xc0,0x00,0x40,0x40,0x8
 
 JUMP_MAX_HEIGHT = 16 # 16 is the actual max height.
 
-THX_GROUNDED = 0
-THX_FALLING = 1
-THX_JUMPING = 2
+THX_GROUNDED         = 0
+THX_FALLING          = 1
+THX_JUMPING          = 2
+THX_TRANSFORMING     = 4
+THX_FLYING           = 5
+
+
+THX_FLYING_E  = (1, 0)
+THX_FLYING_NE = (1, -1)
+THX_FLYING_N  = (0, -1)
+THX_FLYING_NW = (-1, -1)
+THX_FLYING_W  = (-1, 0)
+THX_FLYING_SW = (-1, 1)
+THX_FLYING_S  = (0, 1)
+THX_FLYING_SE = (1, 1)
+
 
 COLORS = [pygame.Color(0,0,0), #Black
           pygame.Color(0xfa, 0x55, 0x55), #Salmon?

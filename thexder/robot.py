@@ -55,18 +55,17 @@ class Robot(object):
         for i in range(0, len(small_frames_raw) / small_frame_bits):
             self.small_frames.append(animation.Tile(small_frames_raw, i * small_frame_bits, 3 * TILE_WIDTH, 3 * TILE_HEIGHT))
 
-        self.flying = False
         self.left_facing = False
         self.frame_no = 0
         self.turning = False
-        self.grounded = True
-        self.transforming = False
-        self.jumping = 0
+        self.jump_height = 0
 
         self.state = THX_GROUNDED
 
         self.enmax = 100
         self.heatlh = 100
+
+        self.turning_frame = 0
 
 # Animations.
     def get_frame(self):
@@ -79,9 +78,9 @@ class Robot(object):
             return self.get_plane_animation()[0].tile()
         elif self.is_turning():
             if self.is_facing_left():
-                return self.big_frames[0x14 - self.frame_no].tile()
+                return self.big_frames[0x13 - self.turning_frame].tile()
             else:
-                return self.big_frames[0x11 + self.frame_no].tile()
+                return self.big_frames[0x12 + self.turning_frame].tile()
         elif self.is_transforming():
             return self.small_frames[0].tile()
         else:
@@ -90,39 +89,35 @@ class Robot(object):
             else:
                 return self.get_right_animation()[self.frame_no].tile()
 
+# TODO: Make this only have to do with walking, and nothing else.
+
     def step(self):
-        if not self.is_flying():
-            if self.is_turning():
-                self.frame_no += 1
-                if self.frame_no >= 3: # This is due to an unfortunate off-by-one error that I'm adding in in terms of
-                                       # timing. I don't like it, but I don't know how to fix it.
-                    self.frame_no = 0 # Not quite right...
-                    self.turning = False
-            else:
-                self.frame_no += 1
-                if self.frame_no >= 8:
-                    self.frame_no = 0
+        self.frame_no += 1
+        if self.frame_no >= 8:
+            self.frame_no = 0
 
 # Actions
     def transform(self):
-        self.jumping = 0
-        self.flying = not self.flying
-        if self.flying:
-            self.grounded = False
+        self.jump_height = 0
+        if self.is_flying():
+            # We have to do something here to make sure things work out correctly.
+            pass            
+        else:
+            self.set_state(THX_FLYING)
 
     def set_jumping(self, status):
-        self.jumping = status
+        self.jump_height = status
 
     def jump(self):
         global JUMP_MAX_HEIGHT, THX_JUMPING
         self.state = THX_JUMPING
-        self.jumping += 1
-        if self.jumping > JUMP_MAX_HEIGHT:
-            self.jumping = 0
-        return self.jumping
+        self.jump_height += 1
+        if self.jump_height > JUMP_MAX_HEIGHT:
+            self.jump_height = 0
+        return self.jump_height
 
     def turn(self):
-        self.frame_no = 0
+        #self.frame_no = 0
         self.left_facing = not self.left_facing
         self.turning = True
 
@@ -132,12 +127,24 @@ class Robot(object):
 
     def land(self):
         self.state = THX_GROUNDED
-        self.jumping = 0
+        self.jump_height = 0
 
     def set_state(self, state):
         if state == THX_FALLING:
             pass
         self.state = state
+
+    def update(self):
+        if self.is_flying():
+            pass
+        elif self.get_state() == THX_TRANSFORMING:
+            pass
+        elif self.is_turning():
+            self.turning_frame += 1
+            if self.turning_frame >= 2:
+                self.turning = False
+                self.turning_frame = 0
+            
 
 # Queries:
     def get_state(self):
@@ -146,22 +153,24 @@ class Robot(object):
     def is_turning(self):
         return self.turning
 
+
     def is_flying(self):
-        return self.flying
+        return self.get_state() == THX_FLYING
 
     def is_facing_left(self):
         return self.left_facing
 
     def is_grounded(self):
-        global THX_GROUNDED
         return self.get_state() == THX_GROUNDED
 
     def is_transforming(self):
-        return self.transforming
+        return self.get_state() == THX_TRANSFORMING
 
     def is_jumping(self):
-        global THX_JUMPING
         return self.get_state() == THX_JUMPING
+
+    def get_facing(self):
+        return self.facing
 
 
 # These are probably only needed for debugging.
