@@ -543,8 +543,11 @@ def main():
                         if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             robot_y -= 1
                         else:
-                            thx.set_state(THX_FALLING)
-                            robot_y += 1
+                            if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+                                thx.set_state(THX_FALLING)
+                                robot_y += 1
+                            else:
+                                thx.set_state(THX_GROUNDED)
                     elif state == THX_FALLING:
                         if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
                             thx.fall()
@@ -552,29 +555,13 @@ def main():
                         else:
                             thx.land()
                     elif state == THX_GROUNDED:
-                        if keys[K_UP]:
+                        if keys[K_UP] and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             thx.jump()
                             robot_y -= 1
-
-                    """
-                    if thx.is_jumping():
-                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
-                            robot_y -= 1
-                        else:
-                            thx.land()
-                            thx.set_jumping(0)
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+                            thx.set_state(THX_FALLING)
                             robot_y += 1
-                    elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
-                        thx.fall()
-                        robot_y += 1
-                    else:
-                        if keys[K_UP] and thx.is_grounded() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
-                            thx.set_jumping(0)
-                            thx.jump()
-                            robot_y -= 1
-                        else:
-                            thx.land()
-                    """                           
+
 
 
                     if keys[K_DOWN]:
