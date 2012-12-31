@@ -259,17 +259,7 @@ def show_tiles(screen, tileset, anim=False):
     robot_frame = 0
     going = True
     while going:
-
-#        for j in range(0, DISPLAY_WIDTH):
-#            for i in range(0, DISPLAY_HEIGHT):
-#                try:
-#                    screen.blit(tileset[i * DISPLAY_HEIGHT + j].tile(), (i * TILE_WIDTH * PX_SIZE,j * TILE_HEIGHT * PX_SIZE))
-#                except IndexError:
-#                    pass
-#                    
-#        screen.blit(graphics.render_tile(tileset[robot_frame].tile_raw(),20),(0,0))
-
-        display_text(screen, "Are you sure you want to quit", tileset)
+        display_tile(screen, tileset[robot_frame].tile(), 0, 0)
 
         pygame.display.update()
 
@@ -342,11 +332,10 @@ def view_enemies(screen,lvl):
 ##################################################################################################
 
 def pause():
-    going = True
-    while going:
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                going = False
+                return pygame.key.get_pressed()
 
 def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     """
@@ -413,9 +402,6 @@ def display_sprites(screen, level, frame, x, y):
 # Begin interaction methods.
 #
 ##################################################################################################
-
-def is_occupied(level, x_1, y_1, x_2, y_2):
-    return False
 
 ##################################################################################################
 #
@@ -511,6 +497,7 @@ def main():
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation. 
                     #show_tiles(screen, lvl_tiles)
+                    show_tiles(screen, thx.get_plane_animation())
                     display_text(screen, "What the what", lvl_tiles)
                     pause()
                     display_text(screen, "No seriously what", lvl_tiles)
@@ -525,10 +512,53 @@ def main():
 # TODO: I also need to work out how to change between the different robot states better.
 # TODO: Fix animation for turning.
 
+# TODO: Make the flying go!
+# TODO: Make the left/right turning while jumping work.
+
+# TODO: Fix animation step glitch at peak of jump
+# TODO: Put in landing animation
+
             elif event.type == TIME_EVENT:
                 thx.update()
                 if thx.is_flying():
-                    pass
+
+                    keys = pygame.key.get_pressed()
+                    if keys[K_UP]:
+                        thx.set_flying_dir(THX_FLYING_N)
+                    elif keys[K_DOWN]:
+                        thx.set_flying_dir(THX_FLYING_S)
+                    elif keys[K_LEFT]:
+                        thx.set_flying_dir(THX_FLYING_W)
+                    elif keys[K_RIGHT]:
+                        thx.set_flying_dir(THX_FLYING_E)
+                
+                    direc = thx.get_flying_dir()
+                    if direc == THX_FLYING_W:
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
+                            robot_x -= 1
+                    elif direc == THX_FLYING_NW:
+                        robot_x -= 1
+                        robot_y -= 1
+                    elif direc == THX_FLYING_N:
+                        if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            robot_y -= 1
+                    elif direc == THX_FLYING_NE:
+                        robot_x += 1
+                        robot_y -= 1
+                    elif direc == THX_FLYING_E:
+                        if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
+                            robot_x += 1
+                    elif direc == THX_FLYING_SE:
+                        robot_x += 1
+                        robot_y += 1
+                    elif direc == THX_FLYING_S:
+                        if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
+                            robot_y += 1
+                    elif direc == THX_FLYING_SW:
+                        robot_x -= 1
+                        robot_y += 1
+
+                    
                 else:
                     keys = pygame.key.get_pressed()
 
@@ -559,10 +589,10 @@ def main():
                             robot_y += 1
 
 
-                    """
+                    
                     if keys[K_DOWN]:
                         thx.transform()
-                    """
+                    
                             
                     if keys[K_RIGHT]:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
@@ -578,26 +608,12 @@ def main():
                             thx.turn()
                         elif state == THX_GROUNDED:
                             thx.step()
-                        """    if state == THX_GROUNDED:
-                                pass
-                            else:
-                                pass
-                        if thx.is_facing_left():
-                            thx.step()
-                        elif thx.is_grounded():
-                            thx.turn()              
-                        """
                     else:
                         pass
 
                 monst_frame += 1
                 if monst_frame >= NUM_TILES:
                     monst_frame = 0
-#                if state == THX_TURNING or state == THX_TRANSFORMING:
-#                    thx.step()
-#                if thx.is_turning() or thx.is_transforming():
-#                    thx.step()
-#                    pass
             
                 if robot_y < 0:
                     robot_y = 0

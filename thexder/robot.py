@@ -67,6 +67,8 @@ class Robot(object):
 
         self.turning_frame = 0
 
+        self.flying_dir = 0
+
 # Animations.
     def get_frame(self):
         if self.is_jumping():
@@ -75,7 +77,7 @@ class Robot(object):
             else:
                 return self.big_frames[0x08].tile()
         elif self.is_flying():
-            return self.get_plane_animation()[0].tile()
+            return self.get_plane_animation()[self.flying_dir].tile()
         elif self.is_turning():
             if self.is_facing_left():
                 return self.big_frames[0x13 - self.turning_frame].tile()
@@ -104,6 +106,10 @@ class Robot(object):
             pass            
         else:
             self.set_state(THX_FLYING)
+            if self.is_facing_left():
+                self.set_flying_dir(THX_FLYING_W)
+            else:
+                self.set_flying_dir(THX_FLYING_E)
 
     def set_jumping(self, status):
         self.jump_height = status
@@ -133,6 +139,9 @@ class Robot(object):
         if state == THX_FALLING:
             pass
         self.state = state
+
+    def set_flying_dir(self, direction):
+        self.flying_dir = direction
 
     def update(self):
         if self.is_flying():
@@ -171,6 +180,9 @@ class Robot(object):
 
     def get_facing(self):
         return self.facing
+
+    def get_flying_dir(self):
+        return self.flying_dir
 
 
 # These are probably only needed for debugging.
