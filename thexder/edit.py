@@ -522,8 +522,18 @@ def main():
                 thx.update()
                 if thx.is_flying():
 
+                    thx_blocked = False
+                    
                     keys = pygame.key.get_pressed()
-                    if keys[K_UP]:
+                    if keys[K_UP] and keys[K_LEFT]:
+                        thx.set_flying_dir(THX_FLYING_NW)
+                    elif keys[K_UP] and keys[K_RIGHT]:
+                        thx.set_flying_dir(THX_FLYING_NE)
+                    elif keys[K_DOWN] and keys[K_LEFT]:
+                        thx.set_flying_dir(THX_FLYING_SW)
+                    elif keys[K_DOWN] and keys[K_RIGHT]:                    
+                        thx.set_flying_dir(THX_FLYING_SE)
+                    elif keys[K_UP]:
                         thx.set_flying_dir(THX_FLYING_N)
                     elif keys[K_DOWN]:
                         thx.set_flying_dir(THX_FLYING_S)
@@ -531,33 +541,83 @@ def main():
                         thx.set_flying_dir(THX_FLYING_W)
                     elif keys[K_RIGHT]:
                         thx.set_flying_dir(THX_FLYING_E)
-                
+
+# TODO: Fix the diagonal motion, obviously. It sends you flying through walls.                
                     direc = thx.get_flying_dir()
                     if direc == THX_FLYING_W:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
                             robot_x -= 1
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2):
+                            robot_x -= 1
+                            robot_y -= 1
+                            thx.set_flying_dir(THX_FLYING_NW)
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 2):
+                            robot_x -= 1
+                            robot_y += 1
+                            thx.set_flying_dir(THX_FLYING_SW)
+                        else:
+                            thx_blocked = True
                     elif direc == THX_FLYING_NW:
                         robot_x -= 1
                         robot_y -= 1
                     elif direc == THX_FLYING_N:
                         if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             robot_y -= 1
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 1, 2):
+                            robot_x -= 1
+                            robot_y -= 1
+                            thx.set_flying_dir(THX_FLYING_NW)
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 1, 2):
+                            robot_x += 1
+                            robot_y -= 1
+                            thx.set_flying_dir(THX_FLYING_NE)
+                        else:
+                            thx_blocked = True
                     elif direc == THX_FLYING_NE:
                         robot_x += 1
                         robot_y -= 1
                     elif direc == THX_FLYING_E:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
                             robot_x += 1
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2):
+                            robot_x += 1
+                            robot_y -= 1
+                            thx.set_flying_dir(THX_FLYING_NE)
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2):
+                            robot_x += 1
+                            robot_y += 1
+                            thx.set_flying_dir(THX_FLYING_SE)
+                        else:
+                            thx_blocked = True
                     elif direc == THX_FLYING_SE:
                         robot_x += 1
                         robot_y += 1
                     elif direc == THX_FLYING_S:
                         if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
                             robot_y += 1
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 1, 2):
+                            robot_x -= 1
+                            robot_y += 1
+                            thx.set_flying_dir(THX_FLYING_SW)
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 1, 2):
+                            robot_x += 1
+                            robot_y += 1
+                            thx.set_flying_dir(THX_FLYING_SE)
+                        else:
+                            thx_blocked = True
                     elif direc == THX_FLYING_SW:
                         robot_x -= 1
                         robot_y += 1
 
+                    if thx_blocked:
+                        # Try to transform back; if not, turn around.
+                        if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
+                            pass
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            pass
+                        else:
+                            # Turn around
+                            pass
                     
                 else:
                     keys = pygame.key.get_pressed()

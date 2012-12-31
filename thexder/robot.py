@@ -142,6 +142,10 @@ class Robot(object):
 
     def set_flying_dir(self, direction):
         self.flying_dir = direction
+        if direction > THX_FLYING_N and direction < THX_FLYING_S:
+            self.left_facing = False
+        elif direction < THX_FLYING_N or direction > THX_FLYING_S:
+            self.left_facing = True
 
     def update(self):
         if self.is_flying():
