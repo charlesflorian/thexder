@@ -78,8 +78,6 @@ class Robot(object):
 
 # Animations.
 
-# TODO: Fix the fact that you always end up facing left when you become a robot again.
-
     def get_frame(self):
         if self.is_transforming():
         
@@ -156,7 +154,9 @@ class Robot(object):
             self.state = state
             if state > THX_FLYING_N and state < THX_FLYING_S:
                 self.left_facing = False
-            elif state < THX_FLYING_N or state > THX_FLYING_S:
+# This is a little bit kludge-y. I'm not sure if I like this, but it's my own fault for using .state to refer to as many things as I
+# am.
+            elif (state < THX_FLYING_N or state > THX_FLYING_S) and state < THX_TRANSFORMING:
                 self.left_facing = True
         else:
             if state == THX_FALLING:

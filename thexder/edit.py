@@ -510,7 +510,6 @@ def main():
                     pass
 
 # TODO: I also need to work out how to change between the different robot states better.
-# TODO: Fix animation for turning.
 
 # TODO: Make the flying go!
 # TODO: Make the left/right turning while jumping work.
