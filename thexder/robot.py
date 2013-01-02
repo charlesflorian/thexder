@@ -55,6 +55,7 @@ class Robot(object):
         for i in range(0, len(small_frames_raw) / small_frame_bits):
             self.small_frames.append(animation.Tile(small_frames_raw, i * small_frame_bits, 3 * TILE_WIDTH, 3 * TILE_HEIGHT))
 
+        # Collect the frames for the transformation sequence together.
         self.transform_frames = []
         self.transform_frames.extend(self.big_frames[0x14:0x16])
         self.transform_frames.extend(self.small_frames[0x00:0x04])
@@ -77,18 +78,22 @@ class Robot(object):
 
 # Animations.
 
+# TODO: Fix the fact that you always end up facing left when you become a robot again.
+
     def get_frame(self):
-        if self.is_transforming():    
-            if self.is_facing_left():
-                if self.is_jet():
+        if self.is_transforming():
+        
+            if self.is_jet():
+                if self.is_facing_left():
                     return self.transform_frames[self.transition_frame].tile()
                 else:
-                    return self.transform_frames[6 - self.transition_frame].tile()
-            else:
-                if self.is_jet():
                     return self.transform_frames[6 + self.transition_frame].tile()
+            else:
+                if self.is_facing_left():
+                    return self.transform_frames[5 - self.transition_frame].tile()
                 else:
-                    return self.transform_frames[12 - self.transition_frame].tile()
+                    return self.transform_frames[11 - self.transition_frame].tile()
+                    
         elif self.is_jet():
             return self.get_plane_animation()[self.state].tile()
         elif self.is_jumping():
@@ -116,24 +121,11 @@ class Robot(object):
 
 # Actions
 
-# TODO: Make this run the animation
     def transform(self):
         self.set_state(THX_TRANSFORMING)
         self.transition_frame = 0
         self.jump_height = 0
         self.jet = not self.jet
-#        if self.is_jet():  
-#            self.jet = False
-#            self.set_state(THX_FALLING)
-#            self.jump_height = 0
-#        else:
-#            self.jump_height = 0
-#            self.jet = True
-#            if self.is_facing_left():
-#                self.set_state(THX_FLYING_W)
-#            else:
-#                self.set_state(THX_FLYING_E)
-
 
     def set_jumping(self, status):
         self.jump_height = status
