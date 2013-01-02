@@ -55,6 +55,12 @@ class Robot(object):
         for i in range(0, len(small_frames_raw) / small_frame_bits):
             self.small_frames.append(animation.Tile(small_frames_raw, i * small_frame_bits, 3 * TILE_WIDTH, 3 * TILE_HEIGHT))
 
+        self.transform_frames = []
+        self.transform_frames.extend(self.big_frames[0x14:0x16])
+        self.transform_frames.extend(self.small_frames[0x00:0x04])
+        self.transform_frames.extend(self.big_frames[0x16:0x18])
+        self.transform_frames.extend(self.small_frames[0x04:0x08])
+
         self.left_facing = False
         self.frame_no = 0
         self.turning = False
@@ -65,26 +71,36 @@ class Robot(object):
         self.enmax = 100
         self.heatlh = 100
 
-        self.turning_frame = 0
+        self.transition_frame = 0
 
-        self.flying_dir = 0
+        self.jet = False
 
 # Animations.
+
     def get_frame(self):
-        if self.is_jumping():
+        if self.is_transforming():    
             if self.is_facing_left():
-                return self.big_frames[0].tile()
+                if self.is_jet():
+                    return self.transform_frames[self.transition_frame].tile()
+                else:
+                    return self.transform_frames[6 - self.transition_frame].tile()
             else:
-                return self.big_frames[0x08].tile()
-        elif self.is_flying():
-            return self.get_plane_animation()[self.flying_dir].tile()
+                if self.is_jet():
+                    return self.transform_frames[6 + self.transition_frame].tile()
+                else:
+                    return self.transform_frames[12 - self.transition_frame].tile()
+        elif self.is_jet():
+            return self.get_plane_animation()[self.state].tile()
+        elif self.is_jumping():
+            if self.is_facing_left():
+                return self.big_frames[0x06].tile()
+            else:
+                return self.big_frames[0x0a].tile()
         elif self.is_turning():
             if self.is_facing_left():
-                return self.big_frames[0x13 - self.turning_frame].tile()
+                return self.big_frames[0x13 - self.transition_frame].tile()
             else:
-                return self.big_frames[0x12 + self.turning_frame].tile()
-        elif self.is_transforming():
-            return self.small_frames[0].tile()
+                return self.big_frames[0x12 + self.transition_frame].tile()
         else:
             if self.left_facing:
                 return self.get_left_animation()[self.frame_no].tile()
@@ -99,17 +115,25 @@ class Robot(object):
             self.frame_no = 0
 
 # Actions
+
+# TODO: Make this run the animation
     def transform(self):
+        self.set_state(THX_TRANSFORMING)
+        self.transition_frame = 0
         self.jump_height = 0
-        if self.is_flying():
-            # We have to do something here to make sure things work out correctly.
-            pass            
-        else:
-            self.set_state(THX_FLYING)
-            if self.is_facing_left():
-                self.set_flying_dir(THX_FLYING_W)
-            else:
-                self.set_flying_dir(THX_FLYING_E)
+        self.jet = not self.jet
+#        if self.is_jet():  
+#            self.jet = False
+#            self.set_state(THX_FALLING)
+#            self.jump_height = 0
+#        else:
+#            self.jump_height = 0
+#            self.jet = True
+#            if self.is_facing_left():
+#                self.set_state(THX_FLYING_W)
+#            else:
+#                self.set_state(THX_FLYING_E)
+
 
     def set_jumping(self, status):
         self.jump_height = status
@@ -136,39 +160,48 @@ class Robot(object):
         self.jump_height = 0
 
     def set_state(self, state):
-        if state == THX_FALLING:
-            pass
-        self.state = state
+        if self.is_jet():
+            self.state = state
+            if state > THX_FLYING_N and state < THX_FLYING_S:
+                self.left_facing = False
+            elif state < THX_FLYING_N or state > THX_FLYING_S:
+                self.left_facing = True
+        else:
+            if state == THX_FALLING:
+                pass
+            self.state = state
 
-    def set_flying_dir(self, direction):
-        self.flying_dir = direction
-        if direction > THX_FLYING_N and direction < THX_FLYING_S:
-            self.left_facing = False
-        elif direction < THX_FLYING_N or direction > THX_FLYING_S:
-            self.left_facing = True
+
 
     def update(self):
-        if self.is_flying():
-            pass
-        elif self.get_state() == THX_TRANSFORMING:
-            pass
+#        if self.is_jet():
+#            pass
+#        elif self.get_state() == THX_TRANSFORMING:
+        if self.get_state() == THX_TRANSFORMING:
+            self.transition_frame += 1
+            if self.transition_frame >= 6:
+                self.transition_frame = 0
+                if self.is_jet():
+                    if self.is_facing_left():
+                        self.set_state(THX_FLYING_W)
+                    else:
+                        self.set_state(THX_FLYING_E)
+                else:
+                    self.set_state(THX_FALLING)
         elif self.is_turning():
-            self.turning_frame += 1
-            if self.turning_frame >= 2:
+            self.transition_frame += 1
+            if self.transition_frame >= 2:
                 self.turning = False
-                self.turning_frame = 0
+                self.transition_frame = 0
             
 
 # Queries:
-    def get_state(self):
-        return self.state
-        
     def is_turning(self):
         return self.turning
 
 
-    def is_flying(self):
-        return self.get_state() == THX_FLYING
+    def is_jet(self):
+        return self.jet
 
     def is_facing_left(self):
         return self.left_facing
@@ -182,12 +215,9 @@ class Robot(object):
     def is_jumping(self):
         return self.get_state() == THX_JUMPING
 
-    def get_facing(self):
-        return self.facing
-
-    def get_flying_dir(self):
-        return self.flying_dir
-
+    def get_state(self):
+        return self.state
+        
 
 # These are probably only needed for debugging.
     def get_left_animation(self):

@@ -51,7 +51,7 @@ JUMP_MAX_HEIGHT = 16 # 16 is the actual max height.
 THX_GROUNDED         = 0
 THX_FALLING          = 1
 THX_JUMPING          = 2
-THX_TRANSFORMING     = 4
+THX_TRANSFORMING     = 0x100
 THX_FLYING           = 5
 
 

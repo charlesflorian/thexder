@@ -520,41 +520,52 @@ def main():
 
             elif event.type == TIME_EVENT:
                 thx.update()
-                if thx.is_flying():
+                if thx.get_state() == THX_TRANSFORMING:
+                    # do nothing
+                    pass
+                elif thx.is_jet():
 
                     thx_blocked = False
                     
                     keys = pygame.key.get_pressed()
                     if keys[K_UP] and keys[K_LEFT]:
-                        thx.set_flying_dir(THX_FLYING_NW)
+                        thx.set_state(THX_FLYING_NW)
                     elif keys[K_UP] and keys[K_RIGHT]:
-                        thx.set_flying_dir(THX_FLYING_NE)
+                        thx.set_state(THX_FLYING_NE)
                     elif keys[K_DOWN] and keys[K_LEFT]:
-                        thx.set_flying_dir(THX_FLYING_SW)
+                        thx.set_state(THX_FLYING_SW)
                     elif keys[K_DOWN] and keys[K_RIGHT]:                    
-                        thx.set_flying_dir(THX_FLYING_SE)
+                        thx.set_state(THX_FLYING_SE)
                     elif keys[K_UP]:
-                        thx.set_flying_dir(THX_FLYING_N)
+                        thx.set_state(THX_FLYING_N)
                     elif keys[K_DOWN]:
-                        thx.set_flying_dir(THX_FLYING_S)
+                        thx.set_state(THX_FLYING_S)
                     elif keys[K_LEFT]:
-                        thx.set_flying_dir(THX_FLYING_W)
+                        if thx.get_state() == THX_FLYING_E:
+                            # Try transform
+                            thx_blocked = True
+                        else:
+                            thx.set_state(THX_FLYING_W)
                     elif keys[K_RIGHT]:
-                        thx.set_flying_dir(THX_FLYING_E)
+                        if thx.get_state() == THX_FLYING_W:
+                            # Try transform
+                            thx_blocked = True
+                        else:
+                            thx.set_state(THX_FLYING_E)
 
 # TODO: Fix the diagonal motion, obviously. It sends you flying through walls.                
-                    direc = thx.get_flying_dir()
+                    direc = thx.get_state()
                     if direc == THX_FLYING_W:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
                             robot_x -= 1
                         elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2):
                             robot_x -= 1
                             robot_y -= 1
-                            thx.set_flying_dir(THX_FLYING_NW)
+                            thx.set_state(THX_FLYING_NW)
                         elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 2):
                             robot_x -= 1
                             robot_y += 1
-                            thx.set_flying_dir(THX_FLYING_SW)
+                            thx.set_state(THX_FLYING_SW)
                         else:
                             thx_blocked = True
                     elif direc == THX_FLYING_NW:
@@ -566,11 +577,11 @@ def main():
                         elif levels[curlvl].is_empty(robot_x, robot_y - 1, 1, 2):
                             robot_x -= 1
                             robot_y -= 1
-                            thx.set_flying_dir(THX_FLYING_NW)
+                            thx.set_state(THX_FLYING_NW)
                         elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 1, 2):
                             robot_x += 1
                             robot_y -= 1
-                            thx.set_flying_dir(THX_FLYING_NE)
+                            thx.set_state(THX_FLYING_NE)
                         else:
                             thx_blocked = True
                     elif direc == THX_FLYING_NE:
@@ -582,11 +593,11 @@ def main():
                         elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2):
                             robot_x += 1
                             robot_y -= 1
-                            thx.set_flying_dir(THX_FLYING_NE)
+                            thx.set_state(THX_FLYING_NE)
                         elif levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2):
                             robot_x += 1
                             robot_y += 1
-                            thx.set_flying_dir(THX_FLYING_SE)
+                            thx.set_state(THX_FLYING_SE)
                         else:
                             thx_blocked = True
                     elif direc == THX_FLYING_SE:
@@ -598,11 +609,11 @@ def main():
                         elif levels[curlvl].is_empty(robot_x, robot_y + 3, 1, 2):
                             robot_x -= 1
                             robot_y += 1
-                            thx.set_flying_dir(THX_FLYING_SW)
+                            thx.set_state(THX_FLYING_SW)
                         elif levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 1, 2):
                             robot_x += 1
                             robot_y += 1
-                            thx.set_flying_dir(THX_FLYING_SE)
+                            thx.set_state(THX_FLYING_SE)
                         else:
                             thx_blocked = True
                     elif direc == THX_FLYING_SW:
@@ -612,17 +623,16 @@ def main():
                     if thx_blocked:
                         # Try to transform back; if not, turn around.
                         if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
-                            pass
+                            thx.transform()
                         elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
-                            pass
+                            robot_y -= 1
+                            thx.transform()
                         else:
                             # Turn around
                             pass
                     
                 else:
                     keys = pygame.key.get_pressed()
-
-                    global THX_JUMPING, THX_FALLING, THX_GROUNDED
 
                     state = thx.get_state()
                     if state == THX_JUMPING:
@@ -671,12 +681,17 @@ def main():
                     else:
                         pass
 
+# TODO: This isn't... quite right. This would work very well for all non-hidden monsters.
+#       However, those that are hidden have their tiles change based on when they were set loose,
+#       not a global systems clock.
                 monst_frame += 1
                 if monst_frame >= NUM_TILES:
                     monst_frame = 0
             
                 if robot_y < 0:
                     robot_y = 0
+                if robot_y > LVL_HEIGHT - 4: # This is a little cheeky, since for a plane you _technically_ could be lower than this...
+                    robot_y = LVL_HEIGHT - 4
 ##############################
 
 
