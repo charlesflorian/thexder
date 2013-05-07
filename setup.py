@@ -11,7 +11,7 @@ args = dict(
     author = "Simon Rose",
     author_email = "simon.cfr@gmail.com",
     description = "Port of Thexder to Python",
-    install_requires = ['pygame==1.9.1release'],
+#    install_requires = ['pygame==1.9.1release'],
     license = "BSD",
     keywords = "thexder abandonware pygame game",
     entry_points = {
