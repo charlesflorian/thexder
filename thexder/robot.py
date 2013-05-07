@@ -24,6 +24,18 @@ from . import level
 # The next 16 frames are the 16 possible directions that the robot can fly in.
 #
 # Lastly, there are frames of the robot dying.
+#
+#######################################################################
+
+# The goal is to have a collection of "reels" i.e. of lists of frames. Then when we are supposed
+# to go from state A->B we find our place in the reel and return frames along it...
+
+THX_FLYING_ANIM = [0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2a,0x2b,0x2c,0x2d,0x2e,0x2f]
+THX_WALKING_RIGHT_ANIM = [0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f]
+THX_WALKING_LEFT_ANIM = [0x0,0x01,0x02,0x03,0x04,0x05,0x06,0x07]
+THX_TRANSFORMING_RIGHT_ANIM = [0x16,0x17,0x1c,0x1d,0x1e,0x1f]
+THX_TRANSFORMING_LEFT_ANIM = [0x14,0x15,0x18,0x19,0x1a,0x1b]
+THX_TURNING_ANIM = [0x11,0x12]
 
 class Robot(object):
     """
@@ -209,6 +221,26 @@ class Robot(object):
 
     def get_state(self):
         return self.state
+
+
+
+# New interface
+    def frame(self):
+        pass
+        
+    def tick(self):
+        #if self.cur_frame_no < len(self.reel):
+            #self.cur_frame_no = self_cur_frame_no + 1
+            #self.set_frame(self.frames[self.cur_frame_no])
+        #else:
+            # I'm not quite sure what to do when the reel runs out, unfortunately.
+        pass
+        
+    def push_state(self, state):
+        pass
+        
+    def query_state(self):
+        pass
         
 
 # These are probably only needed for debugging.
