@@ -37,6 +37,11 @@ THX_TRANSFORMING_RIGHT_ANIM = [0x16,0x17,0x1c,0x1d,0x1e,0x1f]
 THX_TRANSFORMING_LEFT_ANIM = [0x14,0x15,0x18,0x19,0x1a,0x1b]
 THX_TURNING_ANIM = [0x11,0x12]
 
+class rState(object):
+    def __init__(self, direction=DIR_E, flags=0):
+        self.direction = direction
+        self.flags = flags
+
 class Robot(object):
     """
     This will be the class of the Thexder robot. It will include the animation tiles for him,
@@ -223,14 +228,15 @@ class Robot(object):
         return self.state
 
 
+# A State should consist of a direction and some flags
 
 # New interface
     def step(self):
         self.step_count += 1
 
     def frame(self):
-        if len(self.reel): #If there is a current animation...
-            return self.frames[self.reel[0]] #... use that frame.
+        if len(self.reel):                   # If there is a current animation...
+            return self.frames[self.reel[0]] # ... use that frame.
         else:
             # Return whatever other frame we should use.
             # This will require a bit of work.

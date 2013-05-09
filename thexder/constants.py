@@ -64,6 +64,15 @@ THX_FLYING_SE = 0x0a
 THX_FLYING_S  = 0x0c
 THX_FLYING_SW = 0x0e
 
+DIR_W  = 0x00
+DIR_NW = 0x02
+DIR_N  = 0x04
+DIR_NE = 0x06
+DIR_E  = 0x08
+DIR_SE = 0x0a
+DIR_S  = 0x0c
+DIR_SW = 0x0e
+
 
 COLORS = [pygame.Color(0,0,0), #Black
           pygame.Color(0xfa, 0x55, 0x55), #Salmon?
