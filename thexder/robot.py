@@ -225,16 +225,23 @@ class Robot(object):
 
 
 # New interface
+    def step(self):
+        self.step_count += 1
+
     def frame(self):
-        pass
+        if len(self.reel): #If there is a current animation...
+            return self.frames[self.reel[0]] #... use that frame.
+        else:
+            # Return whatever other frame we should use.
+            # This will require a bit of work.
+            
+            # Things to consider: Robot/non-robot? Left/right?
+            pass
+        
         
     def tick(self):
-        #if self.cur_frame_no < len(self.reel):
-            #self.cur_frame_no = self_cur_frame_no + 1
-            #self.set_frame(self.frames[self.cur_frame_no])
-        #else:
-            # I'm not quite sure what to do when the reel runs out, unfortunately.
-        pass
+        if len(self.reel):
+            self.reel.pop(0) # This just knocks off one frame in the animation.
         
     def push_state(self, state):
         pass
