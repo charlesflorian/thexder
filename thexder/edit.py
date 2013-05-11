@@ -462,7 +462,8 @@ def main():
 
         display_level(screen, levels[curlvl], lvl_graphics, x_pos, y_pos)
         display_sprites(screen, levels[curlvl], monst_frame, x_pos, y_pos)
-        display_tile(screen, thx.get_frame(), 19, robot_y - y_pos)
+        #display_tile(screen, thx.get_frame(), 19, robot_y - y_pos)
+        display_tile(screen, thx.frame(), 19, robot_y - y_pos)
 
         pygame.display.update()
 
@@ -518,7 +519,8 @@ def main():
 # TODO: Put in landing animation
 
             elif event.type == TIME_EVENT:
-                thx.update()
+                #thx.update()
+                thx.tick()
                 if thx.get_state() == THX_TRANSFORMING:
                     # do nothing
                     pass
@@ -661,6 +663,7 @@ def main():
                     
                     if keys[K_DOWN]:
                         thx.transform()
+                        #thx.push_state(robot.rState(DIR_E, THX_FLAG_JET))
                     
                             
                     if keys[K_RIGHT]:

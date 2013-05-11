@@ -98,7 +98,11 @@ class Robot(object):
         
         # NEW STUFF
         
+        self.frames = self.big_frames
+        self.frames.extend(self.small_frames)
         self.step_count = 0
+        self.reel = []
+        self.thx_state = rState(DIR_E, THX_FLAG_ROBOT)
 
 # Animations.
 
@@ -240,6 +244,12 @@ class Robot(object):
 # New interface
     def direction(self):
         return self.query_state().direction
+        
+    def flags(self):
+        return self.query_state().flags
+        
+    def is_robot(self):
+        return self.flags() & THX_FLAG_ROBOT
 
     def step(self):
         self.step_count += 1
@@ -248,27 +258,32 @@ class Robot(object):
 
     def frame(self):
         if len(self.reel):                   # If there is a current animation...
-            return self.frames[self.reel[0]] # ... use that frame.
+            return self.frames[self.reel[0]].tile() # ... use that frame.
         else:
             # Return whatever other frame we should use.
             # This will require a bit of work.
             
             # Things to consider: Robot/non-robot? Left/right?
             if not self.is_robot(): 
-                return self.frames[THX_FLYING_FRAMES + self.direction()]
+                return self.frames[THX_FLYING_FRAMES + self.direction()].tile()
+            else:
+                if self.direction() == DIR_E:
+                    return self.frames[0x08].tile()
+                else:
+                    return self.frames[0].tile()
         
         
     def tick(self):
         if len(self.reel):
             self.reel.pop(0) # This just knocks off one frame in the animation.
-        
+                
     def push_state(self, state):
         if state.flags & THX_FLAG_JET and self.is_robot(): # Transform to jet
             if self.direction() == DIR_E:
                 self.reel = THX_TRANSFORMING_RIGHT_ANIM
             else:
                 self.reel = THX_TRANSFORMING_LEFT_ANIM
-            self.state = rState(self.direction(), THX_FLAG_JET)
+            self.thx_state = rState(self.direction(), THX_FLAG_JET)
         elif state.flags & THX_FLAG_ROBOT and not self.is_robot(): # Transform to robot
         
             # TODO: This is not quite right. It should 'remember' the previous direction (E/W) you were flying
@@ -280,14 +295,14 @@ class Robot(object):
             else:
                 self.reel = THX_TRANSFORMING_LEFT_ANIM.reverse()
                 direction = DIR_W
-            self.state = rState(direction, THX_FLAG_ROBOT & THX_FLAG_FALL)
+            self.thx_state = rState(direction, THX_FLAG_ROBOT & THX_FLAG_FALL)
         
         # TODO: Add direction change.
         # TODO: Add landing.
         # TODO: Add direction change if in jet form.
         
     def query_state(self):
-        return self.state
+        return self.thx_state
         
 
 # These are probably only needed for debugging.
