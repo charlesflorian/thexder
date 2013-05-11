@@ -54,7 +54,6 @@ THX_JUMPING          = 2
 THX_TRANSFORMING     = 0x100
 THX_FLYING           = 5
 
-
 THX_FLYING_W  = 0x00
 THX_FLYING_NW = 0x02
 THX_FLYING_N  = 0x04
@@ -72,6 +71,13 @@ DIR_E  = 0x08
 DIR_SE = 0x0a
 DIR_S  = 0x0c
 DIR_SW = 0x0e
+
+THX_FLAG_ROBOT  = 0x01
+THX_FLAG_JET    = 0x02
+THX_FLAG_JUMP   = 0x04
+THX_FLAG_FALL   = 0x08
+
+THX_FLYING_FRAMES = 0x20
 
 
 COLORS = [pygame.Color(0,0,0), #Black
