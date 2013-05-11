@@ -151,7 +151,7 @@ class Robot(object):
     def set_state(self, state):
         self.thx_state = state 
 
-    def push_dir(self, direction):
+    def push_direction(self, direction):
         self.push_state(rState(self.flags(), direction))
         
     def push_flags(self, flags):

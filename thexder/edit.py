@@ -543,10 +543,39 @@ def main():
                         pass
 
                 else:
+                    thx_blocked = False # Start by assuming that the jet is not blocked in its direction
+                                        # of motion. If it turns out to be, then it should try transform.
+                    
                     keys = pygame.key.get_pressed()
 
                     if keys[K_UP] and keys[K_LEFT]:
                         thx.push_direction(DIR_NW)
+                    elif keys[K_UP] and keys[K_RIGHT]:
+                        thx.push_direction(DIR_NE)
+                    elif keys[K_DOWN] and keys[K_LEFT]:
+                        thx.push_direction(DIR_SW)
+                    elif keys[K_DOWN] and keys[K_RIGHT]:                    
+                        thx.push_direction(DIR_SE)
+                    elif keys[K_UP]:
+                        thx.push_direction(DIR_N)
+                    elif keys[K_DOWN]:
+                        thx.push_direction(DIR_S)
+                    elif keys[K_LEFT]:
+                        if thx.direction() == DIR_E:
+
+                            thx_blocked = True
+                        else:
+                            thx.push_direction(DIR_W)
+                    elif keys[K_RIGHT]:
+                        if thx.direction() == DIR_W:
+
+                            thx_blocked = True
+                        else:
+                            thx.push_direction(DIR_E)
+                            
+                    if thx_blocked:
+                        # Try transform; if you can't, then turn around.
+                        pass
 
 
 
