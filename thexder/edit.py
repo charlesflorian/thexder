@@ -599,7 +599,12 @@ def main():
                             thx.push_direction(DIR_SW)
                         else:
                             thx_blocked = True
-                        
+                    elif direction == DIR_N:
+                        if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            robot_y -= 1
+                    elif direction == DIR_S:
+                        if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
+                            robot_y += 1
                             
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.

@@ -150,6 +150,12 @@ class Robot(object):
      
     def set_state(self, state):
         self.thx_state = state 
+        
+    def set_flags(self, flags):
+        self.set_state(rState(flags, self.direction()))
+    
+    def set_direction(self, direction):
+        self.set_state(rState(self.flags(), direction))
 
     def push_direction(self, direction):
         self.push_state(rState(self.flags(), direction))
@@ -190,10 +196,12 @@ class Robot(object):
         else:
             # We are a plane, and are trying to change direction.
             if state.direction != self.direction():
+                # TODO: This totally does not work. At all.
                 if state.direction < self.direction():
-                    self.reel = THX_FLYING_ANIM[state.direction:self.direction():-1]
-                else:
                     self.reel = THX_FLYING_ANIM[self.direction():state.direction:-1]
+                else:
+                    self.reel = THX_FLYING_ANIM[state.direction:self.direction():-1]
+                self.set_direction(state.direction)
         
     def query_state(self):
         return self.thx_state
