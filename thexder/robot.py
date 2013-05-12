@@ -142,11 +142,11 @@ class Robot(object):
         return self.flags() & THX_FLAG_TRANSFORMING    
         
     def tick(self):
-#        print self.reel
         if len(self.reel):
             self.reel.pop(0) # This just knocks off one frame in the animation.
         elif self.flags() & THX_FLAG_TRANSFORMING:
             self.clearflag(THX_FLAG_TRANSFORMING)
+#        print self.flags()
      
     def set_state(self, state):
         self.thx_state = state 
@@ -160,10 +160,9 @@ class Robot(object):
     def push_state(self, state):
         if state.flags & THX_FLAG_JET and self.is_robot(): # Transform to jet
             if self.direction() == DIR_E:
-                self.reel = THX_TRANSFORMING_RIGHT_ANIM
-#                self.reel = THX_FLYING_ANIM
+                self.reel = THX_TRANSFORMING_RIGHT_ANIM[:]
             else:
-                self.reel = THX_TRANSFORMING_LEFT_ANIM
+                self.reel = THX_TRANSFORMING_LEFT_ANIM[:]
             self.thx_state = rState(THX_FLAG_JET | THX_FLAG_TRANSFORMING, self.direction())
         elif state.flags & THX_FLAG_ROBOT and not self.is_robot(): # Transform to robot
         
@@ -171,10 +170,10 @@ class Robot(object):
             #       and use that to choose the new direction when you are going up/down. But this is close.
             
             if DIR_N < self.direction() <= DIR_S:
-                self.reel = THX_TRANSFORMING_RIGHT_ANIM.reverse()
+                self.reel = THX_TRANSFORMING_RIGHT_ANIM[::-1]
                 direction = DIR_E
             else:
-                self.reel = THX_TRANSFORMING_LEFT_ANIM.reverse()
+                self.reel = THX_TRANSFORMING_LEFT_ANIM[::-1]
                 direction = DIR_W
             self.thx_state = rState(THX_FLAG_ROBOT | THX_FLAG_TRANSFORMING, direction)
 
@@ -190,7 +189,11 @@ class Robot(object):
                 pass
         else:
             # We are a plane, and are trying to change direction.
-            pass
+            if state.direction != self.direction():
+                if state.direction < self.direction():
+                    self.reel = THX_FLYING_ANIM[state.direction:self.direction():-1]
+                else:
+                    self.reel = THX_FLYING_ANIM[self.direction():state.direction:-1]
         
     def query_state(self):
         return self.thx_state

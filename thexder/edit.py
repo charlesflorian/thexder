@@ -579,18 +579,31 @@ def main():
                         elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2):
                             robot_x += 1
                             robot_y -= 1
-                            thx.set_state(THX_FLYING_NE)
+                            thx.push_direction(DIR_NE)
                         elif levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2):
                             robot_x += 1
                             robot_y += 1
-                            thx.set_state(THX_FLYING_SE)
+                            thx.push_direction(DIR_SE)
+                        else:
+                            thx_blocked = True
+                    elif direction == DIR_W:
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
+                            robot_x -= 1
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2):
+                            robot_x -= 1
+                            robot_y -= 1
+                            thx.push_direction(DIR_NW)
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 2):
+                            robot_x -= 1
+                            robot_y += 1
+                            thx.push_direction(DIR_SW)
                         else:
                             thx_blocked = True
                         
                             
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
-                        pass
+                        thx.transform()
 
 
 
