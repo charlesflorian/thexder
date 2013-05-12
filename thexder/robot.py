@@ -164,7 +164,7 @@ class Robot(object):
 #                self.reel = THX_FLYING_ANIM
             else:
                 self.reel = THX_TRANSFORMING_LEFT_ANIM
-            self.thx_state = rState(THX_FLAG_JET & THX_FLAG_TRANSFORMING, self.direction())
+            self.thx_state = rState(THX_FLAG_JET | THX_FLAG_TRANSFORMING, self.direction())
         elif state.flags & THX_FLAG_ROBOT and not self.is_robot(): # Transform to robot
         
             # TODO: This is not quite right. It should 'remember' the previous direction (E/W) you were flying
@@ -176,7 +176,7 @@ class Robot(object):
             else:
                 self.reel = THX_TRANSFORMING_LEFT_ANIM.reverse()
                 direction = DIR_W
-            self.thx_state = rState(THX_FLAG_ROBOT & THX_FLAG_TRANSFORMING, direction)
+            self.thx_state = rState(THX_FLAG_ROBOT | THX_FLAG_TRANSFORMING, direction)
 
         # TODO: Add direction change.
         # TODO: Add landing.

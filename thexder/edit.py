@@ -522,8 +522,7 @@ def main():
                 #thx.update()
                 thx.tick()
                 if thx.is_transforming():
-#                if thx.get_state() == THX_TRANSFORMING:
-                    # do nothing
+                    # While transforming, nothing should happen.
                     pass
                 elif thx.is_robot():
                     keys = pygame.key.get_pressed()
@@ -572,6 +571,22 @@ def main():
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_E)
+                    
+                    direction = thx.direction()
+                    if direction == DIR_E:
+                        if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
+                            robot_x += 1
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2):
+                            robot_x += 1
+                            robot_y -= 1
+                            thx.set_state(THX_FLYING_NE)
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2):
+                            robot_x += 1
+                            robot_y += 1
+                            thx.set_state(THX_FLYING_SE)
+                        else:
+                            thx_blocked = True
+                        
                             
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
