@@ -602,9 +602,29 @@ def main():
                     elif direction == DIR_N:
                         if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             robot_y -= 1
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 1, 2):
+                            robot_x -= 1
+                            robot_y -= 1
+                            thx.push_direction(DIR_NW)
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 1, 2):
+                            robot_x += 1
+                            robot_y -= 1
+                            thx.push_direction(DIR_NE)
+                        else:
+                            thx_blocked = True
                     elif direction == DIR_S:
                         if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
                             robot_y += 1
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 1, 2):
+                            robot_x -= 1
+                            robot_y += 1
+                            thx.push_direction(DIR_SW)
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 1, 2):
+                            robot_x += 1
+                            robot_y += 1
+                            thx.push_direction(DIR_SE)
+                        else:
+                            thx_blocked = True
                             
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.

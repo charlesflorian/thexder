@@ -30,7 +30,11 @@ from . import level
 # The goal is to have a collection of "reels" i.e. of lists of frames. Then when we are supposed
 # to go from state A->B we find our place in the reel and return frames along it...
 
-THX_FLYING_ANIM = [0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2a,0x2b,0x2c,0x2d,0x2e,0x2f]
+
+# This loops to make things work well.
+THX_FLYING_ANIM = [0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2a,0x2b,0x2c,0x2d,
+                   0x2e,0x2f,0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28]
+                   
 THX_WALKING_RIGHT_ANIM = [0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f]
 THX_WALKING_LEFT_ANIM = [0x0,0x01,0x02,0x03,0x04,0x05,0x06,0x07]
 THX_TRANSFORMING_RIGHT_ANIM = [0x16,0x17,0x1c,0x1d,0x1e,0x1f]
@@ -38,6 +42,15 @@ THX_TRANSFORMING_LEFT_ANIM = [0x14,0x15,0x18,0x19,0x1a,0x1b]
 THX_TURNING_ANIM = [0x11,0x12]
 
 THX_SAME_DIR = 0x100
+
+def turn_animation(dir1, dir2):
+    if abs(dir1 - dir2) <= 8:
+        return THX_FLYING_ANIM[dir1:dir2:cmp(dir2-dir1,0)]
+    else:
+        if dir1 < dir2:
+            return THX_FLYING_ANIM[dir1 + 0x10: dir2:-1]
+        else:
+            return THX_FLYING_ANIM[dir1:dir2 + 0x10]
 
 class rState(object):
     def __init__(self, flags=0, direction=THX_SAME_DIR):
@@ -185,7 +198,6 @@ class Robot(object):
 
         # TODO: Add direction change.
         # TODO: Add landing.
-        # TODO: Add direction change if in jet form.
 
         elif self.is_robot():
             if state.direction == DIR_E:
@@ -196,11 +208,15 @@ class Robot(object):
         else:
             # We are a plane, and are trying to change direction.
             if state.direction != self.direction():
-                # TODO: This totally does not work. At all.
-                if state.direction < self.direction():
-                    self.reel = THX_FLYING_ANIM[self.direction():state.direction:-1]
-                else:
-                    self.reel = THX_FLYING_ANIM[state.direction:self.direction():-1]
+
+                # TODO: This almost works, but it has two problems:
+                #   1. If you rapidly alternate between directions then it just adds those new
+                #       shifts on instead of going from where we are.
+                #
+                #   2. There may be boundary conditions in terms of how quick the rotation
+                #       occurs, but I'm not quite sure.
+
+                self.reel.extend(turn_animation(self.direction(), state.direction))
                 self.set_direction(state.direction)
         
     def query_state(self):
