@@ -530,12 +530,15 @@ def main():
                     if keys[K_RIGHT]:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
                             robot_x += 1
+                        thx.push_direction(DIR_E)
 #                        if thx.is_facing_left():
 #                            thx.turn()
 #                        elif thx.is_grounded():
 #                            thx.step()
                     elif keys[K_LEFT]:
-                        pass
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4):
+                            robot_x -= 1
+                        thx.push_direction(DIR_W)
                     elif keys[K_DOWN]:
                         thx.transform()
                     elif keys[K_UP]:
