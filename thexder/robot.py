@@ -40,6 +40,8 @@ THX_WALKING_LEFT_ANIM = [0x0,0x01,0x02,0x03,0x04,0x05,0x06,0x07]
 THX_TRANSFORMING_RIGHT_ANIM = [0x16,0x17,0x1c,0x1d,0x1e,0x1f]
 THX_TRANSFORMING_LEFT_ANIM = [0x14,0x15,0x18,0x19,0x1a,0x1b]
 THX_TURNING_ANIM = [0x12,0x13]
+THX_LANDING_LEFT_ANIM = [0x10]
+THX_LANDING_RIGHT_ANIM = [0x11]
 
 THX_SAME_DIR = 0x100
 
@@ -145,19 +147,20 @@ class Robot(object):
             self.step_count = 0
 
     def jump(self):
-        self.push_flags(THX_FLAG_JUMP)
+        self.push_flags(THX_FLAG_JUMP | THX_FLAG_ROBOT)
         self.jump_height += 1
         if self.jump_height > JUMP_MAX_HEIGHT:
-            self.push_flags(THX_FLAG_JUMP)
+            self.push_flags(THX_FLAG_FALL | THX_FLAG_ROBOT)
             self.jump_height = 0
         return self.jump_height
         
         
     def land(self):
-        pass
+        self.jump_height = 0
+        self.push_flags(THX_FLAG_ROBOT)
         
     def fall(self):
-        pass
+        self.push_flags(THX_FLAG_ROBOT | THX_FLAG_FALL)
 
     def transform(self):
         if self.is_robot():
@@ -236,6 +239,13 @@ class Robot(object):
                 if self.direction() == DIR_E:
                     self.reel = THX_TURNING_ANIM[::-1]
                 self.set_direction(DIR_W)
+            
+            if self.flags() & THX_FLAG_FALL and state.flags == THX_FLAG_ROBOT:
+                if self.direction() == DIR_E:
+                    self.reel = THX_LANDING_RIGHT_ANIM[:]
+                else:
+                    self.reel = THX_LANDING_LEFT_ANIM[:]
+                self.set_flags(THX_FLAG_ROBOT)
         else:
             # We are a plane, and are trying to change direction.
             if state.direction != self.direction():

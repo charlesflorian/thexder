@@ -512,9 +512,6 @@ def main():
 
 # TODO: I also need to work out how to change between the different robot states better.
 
-# TODO: Make the flying go!
-# TODO: Make the left/right turning while jumping work.
-
 # TODO: Fix animation step glitch at peak of jump
 # TODO: Put in landing animation
 
@@ -530,7 +527,14 @@ def main():
                     keys = pygame.key.get_pressed()
                     
                     if thx.is_jumping():
-                        pass
+                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            robot_y -= 1
+                        else:
+                            if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+                                thx.fall()
+                                robot_y += 1
+                            else:
+                                thx.land()
                     elif thx.is_falling():
                         if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
                             robot_y += 1
@@ -542,7 +546,7 @@ def main():
                             robot_y -= 1
                         elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
                             thx.fall()
-                            robot_y -= 1
+                            robot_y += 1
 
 #                    state = thx.get_state()
 #                    if state == THX_JUMPING:
