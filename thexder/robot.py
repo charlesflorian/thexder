@@ -106,28 +106,58 @@ class Robot(object):
 # Animations.
 
 
+# Queries
 
-# A State should consist of a direction and some flags
-
-# New interface
     def direction(self):
         return self.query_state().direction
         
     def flags(self):
         return self.query_state().flags
-        
-    def clearflag(self, flag):
-        fl = self.flags()
-        if fl & flag:
-            self.set_state(rState(fl - flag, self.direction()))
-        
+
     def is_robot(self):
         return self.flags() & THX_FLAG_ROBOT
+
+    def is_grounded(self):
+        return (self.flags() & (THX_FLAG_FALL | THX_FLAG_JUMP)) == 0
+        
+    def is_jumping(self):
+        return self.flags() & THX_FLAG_JUMP
+        
+    def is_falling(self):
+        return self.flags() & THX_FLAG_FALL
+        
+# Set methods
+
+    def set_state(self, state):
+        self.thx_state = state 
+        
+    def set_flags(self, flags):
+        self.set_state(rState(flags, self.direction()))
+    
+    def set_direction(self, direction):
+        self.set_state(rState(self.flags(), direction))
+
+# Actions
 
     def step(self):
         self.step_count += 1
         if self.step_count >= 8:
             self.step_count = 0
+
+    def jump(self):
+        self.push_flags(THX_FLAG_JUMP)
+        self.jump_height += 1
+        if self.jump_height > JUMP_MAX_HEIGHT:
+            self.push_flags(THX_FLAG_JUMP)
+            self.jump_height = 0
+        return self.jump_height
+        
+        
+    def land(self):
+        pass
+        
+    def fall(self):
+        pass
 
     def transform(self):
         if self.is_robot():
@@ -135,6 +165,23 @@ class Robot(object):
         else:
             self.push_state(rState(THX_FLAG_ROBOT))
 
+    def wait(self):
+        return self.flags() & THX_FLAG_TRANSFORMING 
+        
+    def tick(self):
+        if len(self.reel):
+            self.reel.pop(0) # This just knocks off one frame in the animation.
+        elif self.flags() & THX_FLAG_TRANSFORMING:
+            self.clearflag(THX_FLAG_TRANSFORMING)
+
+
+# New interface
+        
+    def clearflag(self, flag):
+        fl = self.flags()
+        if fl & flag:
+            self.set_state(rState(fl - flag, self.direction()))
+        
     def frame(self):
         if len(self.reel):                   # If there is a current animation...
             return self.frames[self.reel[0]].tile() # ... use that frame.
@@ -151,25 +198,7 @@ class Robot(object):
                 else:
                     return self.frames[0 + self.step_count].tile()
     
-    def is_transforming(self):
-        return self.flags() & THX_FLAG_TRANSFORMING    
-        
-    def tick(self):
-        if len(self.reel):
-            self.reel.pop(0) # This just knocks off one frame in the animation.
-        elif self.flags() & THX_FLAG_TRANSFORMING:
-            self.clearflag(THX_FLAG_TRANSFORMING)
-#        print self.flags()
      
-    def set_state(self, state):
-        self.thx_state = state 
-        
-    def set_flags(self, flags):
-        self.set_state(rState(flags, self.direction()))
-    
-    def set_direction(self, direction):
-        self.set_state(rState(self.flags(), direction))
-
     def push_direction(self, direction):
         self.push_state(rState(self.flags(), direction))
         
@@ -196,7 +225,6 @@ class Robot(object):
                 direction = DIR_W
             self.thx_state = rState(THX_FLAG_ROBOT | THX_FLAG_TRANSFORMING, direction)
 
-        # TODO: Add direction change.
         # TODO: Add landing.
 
         elif self.is_robot():

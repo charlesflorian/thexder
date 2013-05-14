@@ -521,24 +521,65 @@ def main():
             elif event.type == TIME_EVENT:
                 #thx.update()
                 thx.tick()
-                if thx.is_transforming():
+                if thx.wait():
+                
                     # While transforming, nothing should happen.
+                    
                     pass
                 elif thx.is_robot():
                     keys = pygame.key.get_pressed()
                     
+                    if thx.is_jumping():
+                        pass
+                    elif thx.is_falling():
+                        if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+                            robot_y += 1
+                        else:
+                            thx.land()
+                    elif thx.is_grounded():
+                        if keys[K_UP] and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            thx.jump()
+                            robot_y -= 1
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+                            thx.fall()
+                            robot_y -= 1
+
+#                    state = thx.get_state()
+#                    if state == THX_JUMPING:
+#                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+#                            robot_y -= 1
+#                        else:
+#                            if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+#                                thx.set_state(THX_FALLING)
+#                                robot_y += 1
+#                            else:
+#                                thx.set_state(THX_GROUNDED)
+#                    elif state == THX_FALLING:
+#                        if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+#                            thx.fall()
+#                            robot_y += 1
+#                        else:
+#                            thx.land()
+#                    elif state == THX_GROUNDED:
+#                        if keys[K_UP] and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+#                            thx.jump()
+#                            robot_y -= 1
+#                        elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
+#                            thx.set_state(THX_FALLING)
+#                            robot_y += 1
+
                     if keys[K_RIGHT]:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
                             robot_x += 1
                         thx.push_direction(DIR_E)
-#                        if thx.is_facing_left():
-#                            thx.turn()
-#                        elif thx.is_grounded():
-#                            thx.step()
+                        if thx.is_grounded():
+                            thx.step()
                     elif keys[K_LEFT]:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4):
                             robot_x -= 1
                         thx.push_direction(DIR_W)
+                        if thx.is_grounded():
+                            thx.step()
                     elif keys[K_DOWN]:
                         thx.transform()
                     elif keys[K_UP]:
