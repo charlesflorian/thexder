@@ -566,6 +566,8 @@ def main():
                     
                     keys = pygame.key.get_pressed()
 
+# TODO: Should check here whether or not the motion in question works, perhaps?
+
                     if keys[K_UP] and keys[K_LEFT]:
                         thx.push_direction(DIR_NW)
                     elif keys[K_UP] and keys[K_RIGHT]:
@@ -645,26 +647,66 @@ def main():
                             thx.push_direction(DIR_SE)
                         else:
                             thx_blocked = True
+
+# TODO: Make the diagonal animation work properly when you run into a wall.
+#       When you run diagonally into a wall, it pushes the animation for the diagonal
+#       onto the animation stack, which is not what we want to have happen:
+#       if you hold down on the keys while zipping by, it freezes the animation for a
+#       bit. This is part of the general touch-up that needs to be done regarding 
+#       the animation queue for flying...        
+
                     elif direction == DIR_NW:
-                        if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3,
                                 1) and levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2):
                             robot_x -= 1
                             robot_y -= 1
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
+                            robot_x -= 1
+                            thx.push_direction(DIR_W)
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            robot_y -= 1
+                            thx.push_direction(DIR_N)
+                        else:
+                            thx_blocked = True
                     elif direction == DIR_NE:
                         if levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 
                                 1) and levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2):
                             robot_x += 1
                             robot_y -= 1
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
+                            robot_x += 1
+                            thx.push_direction(DIR_E)
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            robot_y -= 1
+                            thx.push_direction(DIR_N)
+                        else:
+                            thx_blocked = True
                     elif direction == DIR_SE:
                         if levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 3, 
                                 1) and levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2):
                             robot_x += 1
                             robot_y += 1
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
+                            robot_x += 1
+                            thx.push_direction(DIR_E)
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
+                            robot_y += 1
+                            thx.push_direction(DIR_S)
+                        else:
+                            thx_blocked = True
                     elif direction == DIR_SW:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y + 3, 3, 
                                 1) and levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 2):
                             robot_x -= 1
                             robot_y += 1
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
+                            robot_x -= 1
+                            thx.push_direction(DIR_W)
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
+                            robot_y += 1
+                            thx.push_direction(DIR_S)
+                        else:
+                            thx_blocked = True
                     
                     # TODO: This doesn't work if you turn around in an enclosed space.
                             
