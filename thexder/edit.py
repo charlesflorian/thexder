@@ -512,11 +512,7 @@ def main():
 
 # TODO: I also need to work out how to change between the different robot states better.
 
-# TODO: Fix animation step glitch at peak of jump
-# TODO: Put in landing animation
-
             elif event.type == TIME_EVENT:
-                #thx.update()
                 thx.tick()
                 if thx.wait():
                 
@@ -548,29 +544,6 @@ def main():
                             thx.fall()
                             robot_y += 1
 
-#                    state = thx.get_state()
-#                    if state == THX_JUMPING:
-#                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
-#                            robot_y -= 1
-#                        else:
-#                            if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
-#                                thx.set_state(THX_FALLING)
-#                                robot_y += 1
-#                            else:
-#                                thx.set_state(THX_GROUNDED)
-#                    elif state == THX_FALLING:
-#                        if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
-#                            thx.fall()
-#                            robot_y += 1
-#                        else:
-#                            thx.land()
-#                    elif state == THX_GROUNDED:
-#                        if keys[K_UP] and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
-#                            thx.jump()
-#                            robot_y -= 1
-#                        elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1):
-#                            thx.set_state(THX_FALLING)
-#                            robot_y += 1
 
                     if keys[K_RIGHT]:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
@@ -607,13 +580,11 @@ def main():
                         thx.push_direction(DIR_S)
                     elif keys[K_LEFT]:
                         if thx.direction() == DIR_E:
-
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_W)
                     elif keys[K_RIGHT]:
                         if thx.direction() == DIR_W:
-
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_E)
@@ -671,10 +642,19 @@ def main():
                             thx.push_direction(DIR_SE)
                         else:
                             thx_blocked = True
+                    
+                    # TODO: This doesn't work if you turn around in an enclosed space.
                             
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
-                        thx.transform()
+                        if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
+                            thx.transform()
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                            robot_y -= 1
+                            thx.transform()
+                        else:
+                            # Turn around
+                            pass
 
 
 

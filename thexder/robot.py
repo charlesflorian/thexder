@@ -45,14 +45,18 @@ THX_LANDING_RIGHT_ANIM = [0x11]
 
 THX_SAME_DIR = 0x100
 
-def turn_animation(dir1, dir2):
-    if abs(dir1 - dir2) <= 8:
-        return THX_FLYING_ANIM[dir1:dir2:cmp(dir2-dir1,0)]
+#
+# This just returns the animation for rotation, given an input and output direction.
+#
+def turn_animation(dir_in, dir_out):
+    shift = cmp(dir_out - dir_in, 0)
+    if abs(dir_in - dir_out) <= 8:
+        return THX_FLYING_ANIM[dir_in + shift:dir_out:shift]
     else:
-        if dir1 < dir2:
-            return THX_FLYING_ANIM[dir1 + 0x10: dir2:-1]
+        if dir_in < dir_out:
+            return THX_FLYING_ANIM[dir_in + 0x10 - 1: dir_out:-1]
         else:
-            return THX_FLYING_ANIM[dir1:dir2 + 0x10]
+            return THX_FLYING_ANIM[dir_in + 1:dir_out + 0x10]
 
 class rState(object):
     def __init__(self, flags=0, direction=THX_SAME_DIR):
@@ -104,6 +108,8 @@ class Robot(object):
         self.step_count = 0
         self.reel = []
         self.thx_state = rState(THX_FLAG_ROBOT, DIR_E)
+        
+        self.aiming = DIR_E
 
 # Animations.
 
@@ -198,10 +204,16 @@ class Robot(object):
             if not self.is_robot(): 
                 return self.frames[THX_FLYING_FRAMES + self.direction()].tile()
             else:
-                if self.direction() == DIR_E:
-                    return self.frames[0x08 + self.step_count].tile()
+                if self.is_grounded():
+                    if self.direction() == DIR_E:
+                        return self.frames[0x08 + self.step_count].tile()
+                    else:
+                        return self.frames[0 + self.step_count].tile()
                 else:
-                    return self.frames[0 + self.step_count].tile()
+                    if self.direction() == DIR_E:
+                        return self.frames[0x0a].tile()
+                    else:
+                        return self.frames[0x06].tile()
     
      
     def push_direction(self, direction):
