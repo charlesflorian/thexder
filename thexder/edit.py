@@ -586,8 +586,6 @@ def main():
                             thx.step()
                     elif keys[K_DOWN]:
                         thx.transform()
-                    elif keys[K_UP]:
-                        pass
 
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
