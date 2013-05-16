@@ -588,6 +588,9 @@ def main():
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_E)
+
+# TODO: There seems to be something funny about flying up/down and how it makes you move
+#       to the NW/SW.
                     
                     direction = thx.direction()
                     if direction == DIR_E:
@@ -642,6 +645,26 @@ def main():
                             thx.push_direction(DIR_SE)
                         else:
                             thx_blocked = True
+                    elif direction == DIR_NW:
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 
+                                1) and levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2):
+                            robot_x -= 1
+                            robot_y -= 1
+                    elif direction == DIR_NE:
+                        if levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 
+                                1) and levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2):
+                            robot_x += 1
+                            robot_y -= 1
+                    elif direction == DIR_SE:
+                        if levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 3, 
+                                1) and levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2):
+                            robot_x += 1
+                            robot_y += 1
+                    elif direction == DIR_SW:
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y + 3, 3, 
+                                1) and levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 2):
+                            robot_x -= 1
+                            robot_y += 1
                     
                     # TODO: This doesn't work if you turn around in an enclosed space.
                             
