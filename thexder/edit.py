@@ -570,6 +570,8 @@ def main():
                     keys = pygame.key.get_pressed()
 
 # TODO: Should check here whether or not the motion in question works, perhaps?
+#       That is, if you are flying next to a wall/floor/roof, you shouldn't be able
+#       to turn into that direction if you press diagonally in that direction.
 
                     if keys[K_UP] and keys[K_LEFT]:
                         thx.push_direction(DIR_NW)
@@ -652,13 +654,6 @@ def main():
                             thx.push_direction(DIR_SE)
                         else:
                             thx_blocked = True
-
-# TODO: Make the diagonal animation work properly when you run into a wall.
-#       When you run diagonally into a wall, it pushes the animation for the diagonal
-#       onto the animation stack, which is not what we want to have happen:
-#       if you hold down on the keys while zipping by, it freezes the animation for a
-#       bit. This is part of the general touch-up that needs to be done regarding 
-#       the animation queue for flying...        
 
                     elif direction == DIR_NW:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3,

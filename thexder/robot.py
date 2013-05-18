@@ -90,21 +90,18 @@ class Robot(object):
         # And now we make them into a bunch of tiles.
         self.big_frames = []
         for i in range(0, len(big_frames_raw) / big_frame_bits):
-            self.big_frames.append(animation.Tile(big_frames_raw, i * big_frame_bits, 3 * TILE_WIDTH, 4 * TILE_HEIGHT))
+            self.big_frames.append(animation.Tile(big_frames_raw, 
+                    i * big_frame_bits, 3 * TILE_WIDTH, 4 * TILE_HEIGHT))
 
         self.small_frames = []
         for i in range(0, len(small_frames_raw) / small_frame_bits):
-            self.small_frames.append(animation.Tile(small_frames_raw, i * small_frame_bits, 3 * TILE_WIDTH, 3 * TILE_HEIGHT))
+            self.small_frames.append(animation.Tile(small_frames_raw,
+                    i * small_frame_bits, 3 * TILE_WIDTH, 3 * TILE_HEIGHT))
 
         self.jump_height = 0
 
-
         self.enmax = 100
         self.heatlh = 100
-
-        
-        
-        # NEW STUFF
         
         self.frames = self.big_frames
         self.frames.extend(self.small_frames)
@@ -265,8 +262,6 @@ class Robot(object):
                 self.reel = THX_TRANSFORMING_LEFT_ANIM[::-1]
                 direction = DIR_W
             self.thx_state = rState(THX_FLAG_ROBOT | THX_FLAG_TRANSFORMING, direction)
-
-        # TODO: Add landing.
 
         elif self.is_robot():
             if state.direction == DIR_E:
