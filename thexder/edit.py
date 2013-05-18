@@ -512,6 +512,9 @@ def main():
 
 # TODO: I also need to work out how to change between the different robot states better.
 
+# TODO: There is a problem if you jump up onto a ledge and don't come _down_ onto it. In
+#       such a case, you never actually land!
+
             elif event.type == TIME_EVENT:
                 thx.tick()
                 if thx.wait():
@@ -591,8 +594,10 @@ def main():
                         else:
                             thx.push_direction(DIR_E)
 
-# TODO: There seems to be something funny about flying up/down and how it makes you move
-#       to the NW/SW.
+# TODO: There is a problem (which I guess I knew about) when you transform back into a
+#       robot from jet if you are moving up/down: you don't keep your original facing.
+#       This is because it takes its L/R direction from the direction the jet is pointing
+#       so up/down map to left/right, resp.
                     
                     direction = thx.direction()
                     if direction == DIR_E:
@@ -624,11 +629,11 @@ def main():
                     elif direction == DIR_N:
                         if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             robot_y -= 1
-                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 1, 2):
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 2, 1):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 1, 2):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 2, 1):
                             robot_x += 1
                             robot_y -= 1
                             thx.push_direction(DIR_NE)
@@ -637,11 +642,11 @@ def main():
                     elif direction == DIR_S:
                         if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
                             robot_y += 1
-                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 1, 2):
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 2, 1):
                             robot_x -= 1
                             robot_y += 1
                             thx.push_direction(DIR_SW)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 1, 2):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 2, 1):
                             robot_x += 1
                             robot_y += 1
                             thx.push_direction(DIR_SE)
