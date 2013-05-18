@@ -48,15 +48,18 @@ THX_SAME_DIR = 0x100
 #
 # This just returns the animation for rotation, given an input and output direction.
 #
+# TODO: The only problem with this is that I think that in your first part of a turn,
+#       it might start one frame late, timing-wise.
+#
 def turn_animation(dir_in, dir_out):
     shift = cmp(dir_out - dir_in, 0)
     if abs(dir_in - dir_out) <= 8:
-        return THX_FLYING_ANIM[dir_in + shift:dir_out:shift]
+        return THX_FLYING_ANIM[dir_in:dir_out:shift]
     else:
         if dir_in < dir_out:
-            return THX_FLYING_ANIM[dir_in + 0x10 - 1: dir_out:-1]
+            return THX_FLYING_ANIM[dir_in + 0x10: dir_out:-1]
         else:
-            return THX_FLYING_ANIM[dir_in + 1:dir_out + 0x10]
+            return THX_FLYING_ANIM[dir_in:dir_out + 0x10]
 
 class rState(object):
     def __init__(self, flags=0, direction=THX_SAME_DIR):
@@ -133,6 +136,22 @@ class Robot(object):
         
     def is_falling(self):
         return self.flags() & THX_FLAG_FALL
+        
+    def facing(self):
+        """
+        This should only be called when in flight mode. It will return the actual
+        direction the jet is facing.
+        
+        This has two uses: One of them is to keep track of animation if you rapidly
+        change direction.
+        
+        The other use is that when eventually I implement the laser, it needs to know
+        which way to fire it...
+        """
+        if not self.is_robot():
+            if len(self.reel):
+                return self.reel[0] - 0x20
+        return self.direction()
         
 # Set methods
 
@@ -267,17 +286,11 @@ class Robot(object):
                 self.set_flags(THX_FLAG_ROBOT)
         else:
             # We are a plane, and are trying to change direction.
-            if state.direction != self.direction():
-
-                # TODO: This almost works, but it has two problems:
-                #   1. If you rapidly alternate between directions then it just adds those new
-                #       shifts on instead of going from where we are.
-                #
-                #   2. There may be boundary conditions in terms of how quick the rotation
-                #       occurs, but I'm not quite sure.
-
-                self.reel.extend(turn_animation(self.direction(), state.direction))
+            if state.direction != self.facing():
+            
+                self.reel = turn_animation(self.facing(), state.direction)
                 self.set_direction(state.direction)
+
         
     def query_state(self):
         return self.thx_state

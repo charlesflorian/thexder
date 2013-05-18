@@ -128,6 +128,9 @@ class Monster(object):
         This will change the (x, y) coordinates of a sprite based on the location of the robot with
         respect to itself, and based on its movement type.
         """
+        if self.monster_class == 0:
+            return False
+        return True
 
 
 class Animation(object):
