@@ -402,21 +402,42 @@ def display_sprites(screen, level, frame, x, y):
 #
 ##################################################################################################
 
-def monster_move(level, old_x, old_y, robot_x, robot_y):
-    new_x = old_x + cmp(robot_x - old_x, 0)
-    new_y = old_y + cmp(robot_y - old_y, 0)
+def monster_move(level, old_x, old_y, robot_x, robot_y, motion_type):
+    """
+    This is the function which will take as input some data (including the motion type)
+    and return the new coordinates based on that input.
+    """
+    
+    # For now, at least until I actually implement the other motions.
+    new_x = old_x
+    new_y = old_y
+    
+    if motion_type == 1:
+        pass
+    elif motion_type == 2: # Falling
+        new_x = old_x
+        new_y = old_y + 1
+    elif motion_type == 3:
+        pass
+    elif motion_type == 4:
+        pass
     
     if level.is_empty(new_x, new_y, 2, 2):
         return (new_x, new_y)
     return (old_x, old_y)
 
 def move_monsters(level, screen_x, screen_y, robot_x, robot_y):
+    """    
+    This just moves all of the monsters using the previous method.
+    """
     monsters = level.monsters()
     
     for monst in monsters:
     
+        motion_type = level.monster_data(monsters[monst].monster_type()).get_motion()
+        
         old_pos = monsters[monst].get_pos()
-        (new_x, new_y) = monster_move(level, old_pos[0], old_pos[1], robot_x, robot_y)
+        (new_x, new_y) = monster_move(level, old_pos[0], old_pos[1], robot_x, robot_y, motion_type)
 
         monsters[monst].move_to(new_x, new_y)
 
@@ -627,11 +648,11 @@ def main():
                     if direction == DIR_E:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
                             robot_x += 1
-                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2):
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
                             robot_x += 1
                             robot_y -= 1
                             thx.push_direction(DIR_NE)
-                        elif levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2):
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 3):
                             robot_x += 1
                             robot_y += 1
                             thx.push_direction(DIR_SE)
@@ -640,11 +661,11 @@ def main():
                     elif direction == DIR_W:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
                             robot_x -= 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 2):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 3):
                             robot_x -= 1
                             robot_y += 1
                             thx.push_direction(DIR_SW)
@@ -653,11 +674,11 @@ def main():
                     elif direction == DIR_N:
                         if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             robot_y -= 1
-                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 2, 1):
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 2, 1):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 1):
                             robot_x += 1
                             robot_y -= 1
                             thx.push_direction(DIR_NE)
@@ -666,11 +687,11 @@ def main():
                     elif direction == DIR_S:
                         if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
                             robot_y += 1
-                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 2, 1):
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
                             robot_x -= 1
                             robot_y += 1
                             thx.push_direction(DIR_SW)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 2, 1):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 3, 1):
                             robot_x += 1
                             robot_y += 1
                             thx.push_direction(DIR_SE)
