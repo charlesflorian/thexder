@@ -430,17 +430,39 @@ def draw_laser(screen, start_x, start_y, direction):
 # TODO: Oh god, this is going to be a pain in the ass to work out. There is so much that is poorly
 #       set up right now.
 
+def collision(frame_1, frame_2):
+    if frame_1.x + frame_1.width < frame_2.x:
+        return False
+    if frame_1.x > frame_2.x + frame_2.width:
+        return False
+    if frame_1.y + frame_1.height < frame_2.y:
+        return False
+    if frame_1.y > frame_2.y + frame_2.height:
+        return False
+    return True
+
+def sprite_collision(monsters, monster):
+    for monst in monsters:
+        if monster.ident() != monsters[monst].ident():
+            if collision(monsters[monst].frame(), monster.frame()):
+                return True
+    return False
+
 def is_on_screen(screen_x, screen_y, x, y):
     if screen_x - 1 < x < screen_x + DISPLAY_WIDTH and screen_y - 1 < y < screen_y + DISPLAY_HEIGHT:
         return True
     return False
 
-def monster_move(level, old_x, old_y, robot_x, robot_y, motion_type, clock):
+def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     """
     This is the function which will take as input some data (including the motion type)
     and return the new coordinates based on that input.
-    """
+    """    
     
+    pos = monst.get_pos()
+    old_x = pos[0]
+    old_y = pos[1]
+
     # For now, at least until I actually implement the other motions.
     new_x = old_x
     new_y = old_y
@@ -449,7 +471,10 @@ def monster_move(level, old_x, old_y, robot_x, robot_y, motion_type, clock):
         pass
     elif motion_type == 2: # Falling
         new_x = old_x
-        new_y = old_y + 1
+        if level.is_empty(old_x, old_y + 2, 2, 1):
+            new_y = old_y + 1
+        else:
+            new_y = old_y
     elif motion_type == 3:
         if clock % 2:
             pass
@@ -457,38 +482,54 @@ def monster_move(level, old_x, old_y, robot_x, robot_y, motion_type, clock):
         pass
     elif motion_type == 5:
         if clock % 2:
-            if level.is_empty(old_x, old_y + 2, 1, 2):
+            if level.is_empty(old_x, old_y + 2, 2, 1):
                 # fall
                 new_y += 1
             else:
                 # move towards the robot.
-                new_x += cmp(robot_x - old_x, 0)
+                if robot_x < old_x:
+                    if level.is_empty(old_x - 1, old_y, 1, 2):
+                        new_x = old_x - 1
+                else:                
+                    if level.is_empty(old_x + 2, old_y, 1, 2):
+                        new_x = old_x + 1
 
 
 # TODO: This is crap. It counts the current enemy as blocking the space, which means that it
 #       never moves... I think that I need to change the level.is_empty method to look for
 #       collisions between entities entirely separately.
     
-    #if level.is_empty(new_x, new_y, 2, 2):
     return (new_x, new_y)
-    return (old_x, old_y)
+
+def get_onscreen_monsters(level, screen_x, screen_y):
+    monsters = level.monsters()
+    
+    out = {}
+    m_count = 0
+   
+    for monst in monsters:
+        pos = monsters[monst].get_pos()
+        
+        if is_on_screen(screen_x, screen_y, pos[0], pos[1]):
+            out[m_count] = monsters[monst]
+            m_count += 1
+    
+    return out
 
 def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
     """    
     This just moves all of the monsters using the previous method.
     """
-    monsters = level.monsters()
+    monsters = get_onscreen_monsters(level, screen_x, screen_y)
     
     for monst in monsters:
-    
-        old_pos = monsters[monst].get_pos()
         
-        if is_on_screen(screen_x, screen_y, old_pos[0], old_pos[1]):
-            motion_type = level.monster_data(monsters[monst].monster_type()).get_motion()
+        motion_type = level.monster_data(monsters[monst].monster_type()).get_motion()
         
-            (new_x, new_y) = monster_move(level, old_pos[0], old_pos[1], robot_x, robot_y, motion_type, clock)
-
-            monsters[monst].move_to(new_x, new_y)
+        (new_x, new_y) = monster_move(level, monsters, monsters[monst], robot_x, robot_y, 
+                motion_type, clock)
+        
+        monsters[monst].move_to(new_x, new_y)
 
 ##################################################################################################
 #
@@ -611,6 +652,7 @@ def main():
                 move_monsters(levels[curlvl], x_pos, y_pos, robot_x, robot_y, game_clock)
                 
                 thx.tick()
+                
                 if thx.wait():
                 
                     # While transforming, nothing should happen.
@@ -699,7 +741,7 @@ def main():
                     if direction == DIR_E:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
                             robot_x += 1
-                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y - 1, 1, 3):
                             robot_x += 1
                             robot_y -= 1
                             thx.push_direction(DIR_NE)
@@ -712,7 +754,7 @@ def main():
                     elif direction == DIR_W:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
                             robot_x -= 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 1, 3):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
@@ -725,7 +767,7 @@ def main():
                     elif direction == DIR_N:
                         if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             robot_y -= 1
-                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 1):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
@@ -738,7 +780,7 @@ def main():
                     elif direction == DIR_S:
                         if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
                             robot_y += 1
-                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 3, 3, 1):
                             robot_x -= 1
                             robot_y += 1
                             thx.push_direction(DIR_SW)

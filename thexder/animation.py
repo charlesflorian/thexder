@@ -68,7 +68,13 @@ import graphics
 # Thexder robot itself. This means that I need to come up with a new tile-loading algorithm...
 #
 ##############################################################################################
-
+class frame(object):
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        
 class MonsterClass(object):
     """
     This will be the underlying class of a monster. It contains the basic data for each type of monster.
@@ -112,9 +118,15 @@ class Monster(object):
         self.ident = ident
         self.x = x
         self.y = y
-        self.frame = 0
+        self.frame = frame(x, y, 2, 2)
         
         self.state = 0
+        
+    def ident(self):
+        return self.ident
+    
+    def frame(self):
+        return self.frame
         
     def monster_type(self):
         return self.monster_class
@@ -134,7 +146,7 @@ class Monster(object):
         This is for motion purposes. It permits the monsters to have states that change
         over time. This will be very important, I think.
         """
-        retun self.state
+        return self.state
 
 
 class Animation(object):
