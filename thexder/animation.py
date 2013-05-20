@@ -106,14 +106,15 @@ class MonsterClass(object):
 
 class Monster(object):
 
-    def __init__(self, ident, monster_class, health, x, y):
+    def __init__(self, ident, monster_class, health, x, y, motion):
         self.monster_class = monster_class
         self.life = health
         self.ident = ident
         self.x = x
         self.y = y
         self.frame = 0
-
+        self.motion = motion
+        
     def monster_type(self):
         return self.monster_class
 
@@ -128,9 +129,17 @@ class Monster(object):
         This will change the (x, y) coordinates of a sprite based on the location of the robot with
         respect to itself, and based on its movement type.
         """
-        if self.monster_class == 0:
-            return False
-        return True
+        self.frame += 1
+        if self.frame % 2:
+            self.x += cmp(robot_x - self.x, 0)
+            self.y += cmp(robot_y - self.y, 0)
+#        if self.motion == 0:
+#            return False
+#        elif self.motion == 1: # Normal slow flying
+#            return True
+#        elif self.motion == 2: # Falling
+#            return True
+#        return True
 
 
 class Animation(object):

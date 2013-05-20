@@ -346,7 +346,6 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
 
     if center:
         x = (DISPLAY_WIDTH - len(say_what)) / 2
-        #y = DISPLAY_HEIGHT / 2
         y = 8
 
     for i in range(0, len(say_what)):
@@ -402,6 +401,12 @@ def display_sprites(screen, level, frame, x, y):
 # Begin interaction methods.
 #
 ##################################################################################################
+
+def move_monsters(level, screen_x, screen_y, robot_x, robot_y):
+    monsters = level.monsters()
+    
+    for monst in monsters:
+        monsters[monst].move(robot_x, robot_y)
 
 ##################################################################################################
 #
@@ -472,6 +477,9 @@ def main():
                 keys = pygame.key.get_pressed()
                 # We have to check for certain keys, e.g. quit.
                 if keys[K_q]:
+#                    display_text(screen, "Are you sure you want",lvl_tiles)
+#                    display_text(screen, "to quit? (Y/N)", lvl_tiles)
+#                    pause()
                     pygame.display.quit()
                     going = False
                 # These next two switch from one level to the next.
@@ -516,6 +524,8 @@ def main():
 #       such a case, you never actually land!
 
             elif event.type == TIME_EVENT:
+            
+                move_monsters(levels[curlvl], x_pos, y_pos, robot_x, robot_y)
                 thx.tick()
                 if thx.wait():
                 
@@ -548,7 +558,9 @@ def main():
                             robot_y += 1
 
 
-                    if keys[K_RIGHT]:
+                    if keys[K_DOWN]:
+                        thx.transform()
+                    elif keys[K_RIGHT]:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4):
                             robot_x += 1
                         thx.push_direction(DIR_E)
@@ -560,8 +572,6 @@ def main():
                         thx.push_direction(DIR_W)
                         if thx.is_grounded():
                             thx.step()
-                    elif keys[K_DOWN]:
-                        thx.transform()
 
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
@@ -655,6 +665,7 @@ def main():
                         else:
                             thx_blocked = True
 
+                    # Diagonals
                     elif direction == DIR_NW:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3,
                                 1) and levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2):
