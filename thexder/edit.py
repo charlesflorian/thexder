@@ -402,11 +402,23 @@ def display_sprites(screen, level, frame, x, y):
 #
 ##################################################################################################
 
+def monster_move(level, old_x, old_y, robot_x, robot_y):
+    new_x = old_x + cmp(robot_x - old_x, 0)
+    new_y = old_y + cmp(robot_y - old_y, 0)
+    
+    if level.is_empty(new_x, new_y, 2, 2):
+        return (new_x, new_y)
+    return (old_x, old_y)
+
 def move_monsters(level, screen_x, screen_y, robot_x, robot_y):
     monsters = level.monsters()
     
     for monst in monsters:
-        monsters[monst].move(robot_x, robot_y)
+    
+        old_pos = monsters[monst].get_pos()
+        (new_x, new_y) = monster_move(level, old_pos[0], old_pos[1], robot_x, robot_y)
+
+        monsters[monst].move_to(new_x, new_y)
 
 ##################################################################################################
 #
