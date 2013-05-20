@@ -114,6 +114,8 @@ class Monster(object):
         self.y = y
         self.frame = 0
         
+        self.state = 0
+        
     def monster_type(self):
         return self.monster_class
 
@@ -126,6 +128,13 @@ class Monster(object):
     def move_to(self, new_x, new_y):
         self.x = new_x
         self.y = new_y
+        
+    def get_state(self):
+        """
+        This is for motion purposes. It permits the monsters to have states that change
+        over time. This will be very important, I think.
+        """
+        retun self.state
 
 
 class Animation(object):

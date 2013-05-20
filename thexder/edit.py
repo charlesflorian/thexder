@@ -390,6 +390,31 @@ def display_sprites(screen, level, frame, x, y):
         if (x - 1 <= pos[0]< x + DISPLAY_WIDTH) and (y - 1 <= pos[1]< y + DISPLAY_HEIGHT):
             display_tile(screen, level.monster_data(sprite.monster_type()).tile(frame), pos[0] - x, pos[1] - y)
 
+def convert_direction(direction):
+    if direction == DIR_W:
+        return (-1, 0)
+    elif direction == DIR_WNW:
+        return (-2, -1)
+    elif direction == DIR_NW:
+        return (-1, -1)
+    elif direction == DIR_NNW:
+        return (-1, -2)
+    elif direction == DIR_N:
+        return (0, -1)
+
+def draw_laser(screen, start_x, start_y, direction):
+    """
+    This should take as input the screen, starting coordinates, and a direction vector.
+    It should try and trace out a line until it hits something that is not black.
+    """
+    x_laz = start_x * TILE_WIDTH + 0x04
+    y_laz = start_y * TILE_HEIGHT + 0x04
+    
+    while screen.get_at((x_laz, y_laz)) == COLORS[0]: # Black
+        x_laz += direction[0]
+        y_laz += direction[1]
+        print x_laz, y_laz
+
 ##################################################################################################
 #
 # End display methods.
@@ -402,7 +427,15 @@ def display_sprites(screen, level, frame, x, y):
 #
 ##################################################################################################
 
-def monster_move(level, old_x, old_y, robot_x, robot_y, motion_type):
+# TODO: Oh god, this is going to be a pain in the ass to work out. There is so much that is poorly
+#       set up right now.
+
+def is_on_screen(screen_x, screen_y, x, y):
+    if screen_x - 1 < x < screen_x + DISPLAY_WIDTH and screen_y - 1 < y < screen_y + DISPLAY_HEIGHT:
+        return True
+    return False
+
+def monster_move(level, old_x, old_y, robot_x, robot_y, motion_type, clock):
     """
     This is the function which will take as input some data (including the motion type)
     and return the new coordinates based on that input.
@@ -418,15 +451,29 @@ def monster_move(level, old_x, old_y, robot_x, robot_y, motion_type):
         new_x = old_x
         new_y = old_y + 1
     elif motion_type == 3:
-        pass
+        if clock % 2:
+            pass
     elif motion_type == 4:
         pass
+    elif motion_type == 5:
+        if clock % 2:
+            if level.is_empty(old_x, old_y + 2, 1, 2):
+                # fall
+                new_y += 1
+            else:
+                # move towards the robot.
+                new_x += cmp(robot_x - old_x, 0)
+
+
+# TODO: This is crap. It counts the current enemy as blocking the space, which means that it
+#       never moves... I think that I need to change the level.is_empty method to look for
+#       collisions between entities entirely separately.
     
-    if level.is_empty(new_x, new_y, 2, 2):
-        return (new_x, new_y)
+    #if level.is_empty(new_x, new_y, 2, 2):
+    return (new_x, new_y)
     return (old_x, old_y)
 
-def move_monsters(level, screen_x, screen_y, robot_x, robot_y):
+def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
     """    
     This just moves all of the monsters using the previous method.
     """
@@ -434,12 +481,14 @@ def move_monsters(level, screen_x, screen_y, robot_x, robot_y):
     
     for monst in monsters:
     
-        motion_type = level.monster_data(monsters[monst].monster_type()).get_motion()
-        
         old_pos = monsters[monst].get_pos()
-        (new_x, new_y) = monster_move(level, old_pos[0], old_pos[1], robot_x, robot_y, motion_type)
+        
+        if is_on_screen(screen_x, screen_y, old_pos[0], old_pos[1]):
+            motion_type = level.monster_data(monsters[monst].monster_type()).get_motion()
+        
+            (new_x, new_y) = monster_move(level, old_pos[0], old_pos[1], robot_x, robot_y, motion_type, clock)
 
-        monsters[monst].move_to(new_x, new_y)
+            monsters[monst].move_to(new_x, new_y)
 
 ##################################################################################################
 #
@@ -481,7 +530,7 @@ def main():
     x_pos = 0
     y_pos = 0
 
-    monst_frame = 0
+    game_clock = 0
 
     pygame.time.set_timer(TIME_EVENT, FRAME_LENGTH_MS)
     
@@ -499,7 +548,7 @@ def main():
             x_pos = 0
 
         display_level(screen, levels[curlvl], lvl_graphics, x_pos, y_pos)
-        display_sprites(screen, levels[curlvl], monst_frame, x_pos, y_pos)
+        display_sprites(screen, levels[curlvl], game_clock % NUM_TILES, x_pos, y_pos)
         #display_tile(screen, thx.get_frame(), 19, robot_y - y_pos)
         display_tile(screen, thx.frame(), 19, robot_y - y_pos)
 
@@ -557,8 +606,10 @@ def main():
 #       such a case, you never actually land!
 
             elif event.type == TIME_EVENT:
+                game_clock += 1
             
-                move_monsters(levels[curlvl], x_pos, y_pos, robot_x, robot_y)
+                move_monsters(levels[curlvl], x_pos, y_pos, robot_x, robot_y, game_clock)
+                
                 thx.tick()
                 if thx.wait():
                 
@@ -752,6 +803,10 @@ def main():
                         else:
                             thx_blocked = True
                     
+                    if keys[K_SPACE]:
+                        laser_dir = thx.facing()
+                        #draw_laser(screen, robot_x + 3, robot_y + 1, (1, 0))
+                    
                     # TODO: This doesn't work if you turn around in an enclosed space.
                             
                     if thx_blocked:
@@ -770,9 +825,6 @@ def main():
 # TODO: This isn't... quite right. This would work very well for all non-hidden monsters.
 #       However, those that are hidden have their tiles change based on when they were set loose,
 #       not a global systems clock.
-                monst_frame += 1
-                if monst_frame >= NUM_TILES:
-                    monst_frame = 0
             
                 if robot_y < 0:
                     robot_y = 0
