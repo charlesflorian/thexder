@@ -122,10 +122,10 @@ class Monster(object):
         
         self.state = 0
         
-    def ident(self):
+    def get_ident(self):
         return self.ident
     
-    def frame(self):
+    def get_frame(self):
         return self.frame
         
     def monster_type(self):
@@ -140,6 +140,7 @@ class Monster(object):
     def move_to(self, new_x, new_y):
         self.x = new_x
         self.y = new_y
+        self.frame = frame(new_x, new_y, 2, 2)
         
     def get_state(self):
         """

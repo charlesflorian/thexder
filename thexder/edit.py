@@ -430,6 +430,9 @@ def draw_laser(screen, start_x, start_y, direction):
 # TODO: Oh god, this is going to be a pain in the ass to work out. There is so much that is poorly
 #       set up right now.
 
+
+# TODO: Fix an off-by-1 error here. Or something. This clearly is the culprit.
+
 def collision(frame_1, frame_2):
     if frame_1.x + frame_1.width < frame_2.x:
         return False
@@ -443,13 +446,16 @@ def collision(frame_1, frame_2):
 
 def sprite_collision(monsters, monster):
     for monst in monsters:
-        if monster.ident() != monsters[monst].ident():
-            if collision(monsters[monst].frame(), monster.frame()):
+        if monster.get_ident() != monsters[monst].get_ident():
+            if collision(monsters[monst].get_frame(), monster.get_frame()):
                 return True
     return False
 
+# TODO: Fix an off-by-1 error here (potential? When sprites fall off-screen, they don't check for
+#       anything below them).
+
 def is_on_screen(screen_x, screen_y, x, y):
-    if screen_x - 1 < x < screen_x + DISPLAY_WIDTH and screen_y - 1 < y < screen_y + DISPLAY_HEIGHT:
+    if screen_x - 1 < x < screen_x + DISPLAY_WIDTH + 1 and screen_y - 1 < y < screen_y + DISPLAY_HEIGHT + 1:
         return True
     return False
 
@@ -467,7 +473,7 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     new_x = old_x
     new_y = old_y
     
-    if motion_type == 1:
+    if motion_type == 5:
         pass
     elif motion_type == 2: # Falling
         new_x = old_x
@@ -475,24 +481,32 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
             new_y = old_y + 1
         else:
             new_y = old_y
-    elif motion_type == 3:
+    elif motion_type == 3: # Slow horizontal motion, no falling.
         if clock % 2:
-            pass
+            if robot_x < old_x - 1:
+                if level.is_empty(old_x - 1, old_y, 1, 2):
+                    new_x = old_x - 1
+            elif robot_x > old_x:
+                if level.is_empty(old_x + 2, old_y, 1, 2):
+                    new_x = old_x + 1
     elif motion_type == 4:
         pass
-    elif motion_type == 5:
+    elif motion_type == 1:
         if clock % 2:
             if level.is_empty(old_x, old_y + 2, 2, 1):
+                if not sprite_collision(monsters, monst):
                 # fall
-                new_y += 1
+                    new_y += 1
             else:
                 # move towards the robot.
-                if robot_x < old_x:
+                if robot_x < old_x - 1:
                     if level.is_empty(old_x - 1, old_y, 1, 2):
-                        new_x = old_x - 1
-                else:                
+                        if not sprite_collision(monsters, monst):
+                            new_x = old_x - 1
+                elif robot_x > old_x:                
                     if level.is_empty(old_x + 2, old_y, 1, 2):
-                        new_x = old_x + 1
+                        if not sprite_collision(monsters, monst):
+                            new_x = old_x + 1
 
 
 # TODO: This is crap. It counts the current enemy as blocking the space, which means that it
