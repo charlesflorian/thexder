@@ -431,33 +431,34 @@ def draw_laser(screen, start_x, start_y, direction):
 #       set up right now.
 
 
-# TODO: Fix an off-by-1 error here. Or something. This clearly is the culprit.
-
 def collision(frame_1, frame_2):
-    if frame_1.x + frame_1.width < frame_2.x:
+    if frame_1.x + frame_1.width <= frame_2.x:
         return False
-    if frame_1.x > frame_2.x + frame_2.width:
+    if frame_1.x >= frame_2.x + frame_2.width:
         return False
-    if frame_1.y + frame_1.height < frame_2.y:
+    if frame_1.y + frame_1.height <= frame_2.y:
         return False
-    if frame_1.y > frame_2.y + frame_2.height:
+    if frame_1.y >= frame_2.y + frame_2.height:
         return False
     return True
 
-def sprite_collision(monsters, monster):
+def sprite_collision(monsters, monster_id, new_frame):
     for monst in monsters:
-        if monster.get_ident() != monsters[monst].get_ident():
-            if collision(monsters[monst].get_frame(), monster.get_frame()):
+        if monster_id != monsters[monst].get_ident():
+            if collision(monsters[monst].get_frame(), new_frame):
                 return True
     return False
 
 # TODO: Fix an off-by-1 error here (potential? When sprites fall off-screen, they don't check for
-#       anything below them).
+#       anything below them). This can cause sprites to overlap and get stuck.
 
 def is_on_screen(screen_x, screen_y, x, y):
-    if screen_x - 1 < x < screen_x + DISPLAY_WIDTH + 1 and screen_y - 1 < y < screen_y + DISPLAY_HEIGHT + 1:
+    if screen_x - 2 < x < screen_x + DISPLAY_WIDTH + 4 and screen_y - 2 < y < screen_y + DISPLAY_HEIGHT + 4:
         return True
     return False
+
+# TODO: There is an issue here where it treats the level (as a floor) differently than the monsters.
+
 
 def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     """
@@ -494,18 +495,21 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     elif motion_type == 1:
         if clock % 2:
             if level.is_empty(old_x, old_y + 2, 2, 1):
-                if not sprite_collision(monsters, monst):
+                new_frame = animation.frame(old_x, old_y + 1, 2, 2)
+                if not sprite_collision(monsters, monst.get_ident(), new_frame):
                 # fall
                     new_y += 1
             else:
                 # move towards the robot.
                 if robot_x < old_x - 1:
                     if level.is_empty(old_x - 1, old_y, 1, 2):
-                        if not sprite_collision(monsters, monst):
+                        new_frame = animation.frame(old_x - 1, old_y, 2, 2)
+                        if not sprite_collision(monsters, monst.get_ident(), new_frame):
                             new_x = old_x - 1
                 elif robot_x > old_x:                
                     if level.is_empty(old_x + 2, old_y, 1, 2):
-                        if not sprite_collision(monsters, monst):
+                        new_frame = animation.frame(old_x + 1, old_y, 2, 2)
+                        if not sprite_collision(monsters, monst.get_ident(), new_frame):
                             new_x = old_x + 1
 
 
