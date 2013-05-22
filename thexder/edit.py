@@ -459,6 +459,8 @@ def is_on_screen(screen_x, screen_y, x, y):
 
 # TODO: There is an issue here where it treats the level (as a floor) differently than the monsters.
 
+#       This is also very inefficiently written, so I think I will probably have to re-write this...
+
 
 def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     """
@@ -474,25 +476,31 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     new_x = old_x
     new_y = old_y
     
-    if motion_type == 5:
+    if motion_type == 1:
         pass
     elif motion_type == 2: # Falling
         new_x = old_x
         if level.is_empty(old_x, old_y + 2, 2, 1):
-            new_y = old_y + 1
+            new_frame = animation.frame(old_x, old_y + 1, 2, 2)
+            if not sprite_collision(monsters, monst.get_ident(), new_frame):
+                new_y = old_y + 1
         else:
             new_y = old_y
     elif motion_type == 3: # Slow horizontal motion, no falling.
         if clock % 2:
             if robot_x < old_x - 1:
                 if level.is_empty(old_x - 1, old_y, 1, 2):
-                    new_x = old_x - 1
+                    new_frame = animation.frame(old_x - 1, old_y, 2, 2)
+                    if not sprite_collision(monsters, monst.get_ident(), new_frame):
+                        new_x = old_x - 1
             elif robot_x > old_x:
                 if level.is_empty(old_x + 2, old_y, 1, 2):
-                    new_x = old_x + 1
+                    new_frame = animation.frame(old_x + 1, old_y, 2, 2)
+                    if not sprite_collision(monsters, monst.get_ident(), new_frame):
+                        new_x = old_x + 1
     elif motion_type == 4:
         pass
-    elif motion_type == 1:
+    elif motion_type == 5:
         if clock % 2:
             if level.is_empty(old_x, old_y + 2, 2, 1):
                 new_frame = animation.frame(old_x, old_y + 1, 2, 2)
@@ -512,11 +520,6 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
                         if not sprite_collision(monsters, monst.get_ident(), new_frame):
                             new_x = old_x + 1
 
-
-# TODO: This is crap. It counts the current enemy as blocking the space, which means that it
-#       never moves... I think that I need to change the level.is_empty method to look for
-#       collisions between entities entirely separately.
-    
     return (new_x, new_y)
 
 def get_onscreen_monsters(level, screen_x, screen_y):
