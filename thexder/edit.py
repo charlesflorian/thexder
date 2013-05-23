@@ -472,6 +472,9 @@ def is_empty(level, monsters, monst_ident, frame):
             return True
     return False
 
+# TODO: This actually moves every monster in the level, not just those that are on the screen...
+#       I should probably fix that.
+
 def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     """
     This is the function which will take as input some data (including the motion type)
@@ -487,7 +490,36 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     new_y = old_y
     
     if motion_type == 0x01: # Normal slow flying
-        pass
+        if old_x > robot_x + 3 and old_y < robot_y:
+            monst.set_state(0)
+        elif old_x > robot_x + 3 and old_y > robot_y + 4:
+            monst.set_state(1)
+        elif old_x < robot_x and old_y < robot_y:
+            monst.set_state(2)
+        elif old_x < robot_x and old_y > robot_y + 4:
+            monst.set_state(3)
+
+        if monst.get_state() == 0:
+            new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x - 1
+                new_y = old_y + 1
+        if monst.get_state() == 1:
+            new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x - 1
+                new_y = old_y - 1
+        if monst.get_state() == 2:
+            new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x + 1
+                new_y = old_y + 1
+        if monst.get_state() == 3:
+            new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x + 1
+                new_y = old_y - 1
+
     elif motion_type == 0x02: # Falling
         new_x = old_x
         new_frame = animation.frame(old_x, old_y + 1, 2, 2)
