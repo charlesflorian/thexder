@@ -462,6 +462,16 @@ def is_on_screen(screen_x, screen_y, x, y):
 #       This is also very inefficiently written, so I think I will probably have to re-write this...
 
 
+def is_empty(level, monsters, monst_ident, frame):
+    """
+    This just checks to see if there is anything where we are trying to go. This should be the default
+    method to look for stuff.
+    """
+    if level.is_empty(frame.x, frame.y, frame.width, frame.height):
+        if not sprite_collision(monsters, monst_ident, frame):
+            return True
+    return False
+
 def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     """
     This is the function which will take as input some data (including the motion type)
@@ -476,72 +486,66 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     new_x = old_x
     new_y = old_y
     
-    if motion_type == 1:
+    if motion_type == 0x01: # Normal slow flying
         pass
-    elif motion_type == 2: # Falling
+    elif motion_type == 0x02: # Falling
         new_x = old_x
-        if level.is_empty(old_x, old_y + 2, 2, 1):
-            new_frame = animation.frame(old_x, old_y + 1, 2, 2)
-            if not sprite_collision(monsters, monst.get_ident(), new_frame):
-                new_y = old_y + 1
+        new_frame = animation.frame(old_x, old_y + 1, 2, 2)
+        if is_empty(level, monsters, monst.get_ident(), new_frame):
+            new_y = old_y + 1
         else:
             new_y = old_y
-    elif motion_type == 3: # Slow horizontal motion, no falling.
+    elif motion_type == 0x03: # Slow horizontal motion, no falling.
         if clock % 2:
             if robot_x < old_x - 1:
-                if level.is_empty(old_x - 1, old_y, 1, 2):
-                    new_frame = animation.frame(old_x - 1, old_y, 2, 2)
-                    if not sprite_collision(monsters, monst.get_ident(), new_frame):
-                        new_x = old_x - 1
+                new_frame = animation.frame(old_x - 1, old_y, 2, 2)
+                if is_empty(level, monsters, monst.get_ident(), new_frame):
+                    new_x = old_x - 1
             elif robot_x > old_x:
-                if level.is_empty(old_x + 2, old_y, 1, 2):
-                    new_frame = animation.frame(old_x + 1, old_y, 2, 2)
-                    if not sprite_collision(monsters, monst.get_ident(), new_frame):
-                        new_x = old_x + 1
-    elif motion_type == 4:
+                new_frame = animation.frame(old_x + 1, old_y, 2, 2)
+                if is_empty(level, monsters, monst.get_ident(), new_frame):
+                    new_x = old_x + 1
+    elif motion_type == 0x04: # Rocket-type loopy motion
         pass
-    elif motion_type == 5:
+    elif motion_type == 0x05: # Falls, then moves slowly, possibly to the left/right depending on position.
         if clock % 2:
-            if level.is_empty(old_x, old_y + 2, 2, 1):
-                new_frame = animation.frame(old_x, old_y + 1, 2, 2)
-                if not sprite_collision(monsters, monst.get_ident(), new_frame):
-                # fall
-                    new_y += 1
+            # Check downward motion first.
+            new_frame = animation.frame(old_x, old_y + 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_y += 1
             else:
-                # move towards the robot.
                 if robot_x < old_x - 1:
-                    if level.is_empty(old_x - 1, old_y, 1, 2):
-                        new_frame = animation.frame(old_x - 1, old_y, 2, 2)
-                        if not sprite_collision(monsters, monst.get_ident(), new_frame):
-                            new_x = old_x - 1
-                elif robot_x > old_x:                
-                    if level.is_empty(old_x + 2, old_y, 1, 2):
-                        new_frame = animation.frame(old_x + 1, old_y, 2, 2)
-                        if not sprite_collision(monsters, monst.get_ident(), new_frame):
-                            new_x = old_x + 1
+                    new_frame = animation.frame(old_x - 1, old_y, 2, 2)
+                    if is_empty(level, monsters, monst.get_ident(), new_frame):
+                        new_x = old_x - 1
+                elif robot_x > old_x:
+                    new_frame = animation.frame(old_x + 1, old_y, 2, 2)
+                    if is_empty(level, monsters, monst.get_ident(), new_frame):
+                        new_x = old_x + 1
+
+    elif motion_type == 0x06: #       06 - hidden (animation is different!), no moving once open.
+        pass
+    elif motion_type == 0x07: #       07 - hidden (animation is different!), moves quickly once open.
+        pass
+    elif motion_type == 0x08: #       08 - falls, moves randomly-ish.
+        pass
+    elif motion_type == 0x09: #       09 - Seems to be about the same as 04?
+        pass
+    elif motion_type == 0x0a: #       0A - Quick up/down flying (ala bats)
+        pass
+    elif motion_type == 0x0b: #       0B - Weird jittery flying (also fast)
+        pass
+    elif motion_type == 0x0c: #       0C - diagonal fall, then no moving.
+        pass
 
     return (new_x, new_y)
 
-def get_onscreen_monsters(level, screen_x, screen_y):
-    monsters = level.monsters()
-    
-    out = {}
-    m_count = 0
-   
-    for monst in monsters:
-        pos = monsters[monst].get_pos()
-        
-        if is_on_screen(screen_x, screen_y, pos[0], pos[1]):
-            out[m_count] = monsters[monst]
-            m_count += 1
-    
-    return out
 
 def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
     """    
     This just moves all of the monsters using the previous method.
     """
-    monsters = get_onscreen_monsters(level, screen_x, screen_y)
+    monsters = level.monsters()
     
     for monst in monsters:
         
@@ -729,6 +733,8 @@ def main():
 # TODO: Should check here whether or not the motion in question works, perhaps?
 #       That is, if you are flying next to a wall/floor/roof, you shouldn't be able
 #       to turn into that direction if you press diagonally in that direction.
+#
+#       In particular, if you're in a cramped space, up/down should turn you around!
 
                     if keys[K_UP] and keys[K_LEFT]:
                         thx.push_direction(DIR_NW)
@@ -743,12 +749,12 @@ def main():
                     elif keys[K_DOWN]:
                         thx.push_direction(DIR_S)
                     elif keys[K_LEFT]:
-                        if thx.direction() == DIR_E:
+                        if thx.direction() == DIR_E and (levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1) or levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1)):                            
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_W)
                     elif keys[K_RIGHT]:
-                        if thx.direction() == DIR_W:
+                        if thx.direction() == DIR_W and (levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1) or levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1)):
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_E)
@@ -870,8 +876,6 @@ def main():
                         laser_dir = thx.facing()
                         #draw_laser(screen, robot_x + 3, robot_y + 1, (1, 0))
                     
-                    # TODO: This doesn't work if you turn around in an enclosed space.
-                            
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
                         if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
@@ -883,16 +887,13 @@ def main():
                             # Turn around
                             pass
 
-
-
-# TODO: This isn't... quite right. This would work very well for all non-hidden monsters.
-#       However, those that are hidden have their tiles change based on when they were set loose,
-#       not a global systems clock.
-            
                 if robot_y < 0:
                     robot_y = 0
-                if robot_y > LVL_HEIGHT - 4: # This is a little cheeky, since for a plane you _technically_ could be lower than this...
+                if robot_y > LVL_HEIGHT - 4: # This is a little cheeky, since for a plane you 
+                                             # _technically_ could be lower than this...
                     robot_y = LVL_HEIGHT - 4
+                    
+                    
 ##############################
 
 

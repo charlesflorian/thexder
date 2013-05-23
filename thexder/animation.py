@@ -116,8 +116,6 @@ class Monster(object):
         self.monster_class = monster_class
         self.life = health
         self.ident = ident
-        self.x = x
-        self.y = y
         self.frame = frame(x, y, 2, 2)
         
         self.state = 0
@@ -135,11 +133,9 @@ class Monster(object):
         return self.life
 
     def get_pos(self):
-        return (self.x, self.y)
+        return (self.frame.x, self.frame.y)
 
     def move_to(self, new_x, new_y):
-        self.x = new_x
-        self.y = new_y
         self.frame = frame(new_x, new_y, 2, 2)
         
     def get_state(self):
@@ -148,6 +144,9 @@ class Monster(object):
         over time. This will be very important, I think.
         """
         return self.state
+        
+    def set_state(self, state):
+        self.state = state
 
 
 class Animation(object):

@@ -51,10 +51,17 @@ THX_SAME_DIR = 0x100
 # TODO: The only problem with this is that I think that in your first part of a turn,
 #       it might start one frame late, timing-wise.
 #
+# This ends up being a little kludge-y, but I'm not sure as of yet a better way to address it.
+
 def turn_animation(dir_in, dir_out):
     shift = cmp(dir_out - dir_in, 0)
-    if abs(dir_in - dir_out) <= 8:
+    if abs(dir_in - dir_out) < 8:
         return THX_FLYING_ANIM[dir_in:dir_out:shift]
+    elif abs(dir_in - dir_out) == 8:
+        if dir_in < dir_out:
+            return THX_FLYING_ANIM[dir_in + 0x10:dir_out: -1]
+        else:
+            return THX_FLYING_ANIM[dir_in + 0x10:dir_out:-1]
     else:
         if dir_in < dir_out:
             return THX_FLYING_ANIM[dir_in + 0x10: dir_out:-1]
