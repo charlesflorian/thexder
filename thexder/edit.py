@@ -379,7 +379,7 @@ def display_level(screen, level, tiles, x, y):
 
             display_tile(screen, tiles[cur_tile % 16].tile(), j, i)
 
-def display_sprites(screen, level, frame, x, y):
+def display_sprites(screen, level, frame_number, x, y):
     global DISPLAY_WIDTH, DISPLAY_HEIGHT
 
     monsters = level.monsters()
@@ -388,7 +388,12 @@ def display_sprites(screen, level, frame, x, y):
         sprite = monsters[monst]
         pos = sprite.get_pos()
         if (x - 1 <= pos[0]< x + DISPLAY_WIDTH) and (y - 1 <= pos[1]< y + DISPLAY_HEIGHT):
-            display_tile(screen, level.monster_data(sprite.monster_type()).tile(frame), pos[0] - x, pos[1] - y)
+            # This is just so that each sprite type can have its own way of determining
+            # which frame to show.
+            cur_frame = monsters[monst].frame_no(frame_number)
+            
+            display_tile(screen, level.monster_data(sprite.monster_type()).tile(cur_frame),
+                    pos[0] - x, pos[1] - y)
 
 def convert_direction(direction):
     if direction == DIR_W:
@@ -499,22 +504,23 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
         elif old_x < robot_x and old_y > robot_y + 4:
             monst.set_state(3)
 
-        if monst.get_state() == 0:
+        state = monst.get_state()
+        if state == 0:
             new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_x = old_x - 1
                 new_y = old_y + 1
-        if monst.get_state() == 1:
+        if state == 1:
             new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_x = old_x - 1
                 new_y = old_y - 1
-        if monst.get_state() == 2:
+        if state == 2:
             new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_x = old_x + 1
                 new_y = old_y + 1
-        if monst.get_state() == 3:
+        if state == 3:
             new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_x = old_x + 1
@@ -546,14 +552,21 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_y += 1
             else:
-                if robot_x < old_x - 1:
+                if robot_x + 2 < old_x:
+                    monst.set_state(0)
+                elif robot_x > old_x:
+                    monst.set_state(1)
+                    
+                state = monst.get_state()            
+                if state == 0:
                     new_frame = animation.frame(old_x - 1, old_y, 2, 2)
                     if is_empty(level, monsters, monst.get_ident(), new_frame):
                         new_x = old_x - 1
-                elif robot_x > old_x:
+                elif state == 1:
                     new_frame = animation.frame(old_x + 1, old_y, 2, 2)
                     if is_empty(level, monsters, monst.get_ident(), new_frame):
                         new_x = old_x + 1
+            
 
     elif motion_type == 0x06: #       06 - hidden (animation is different!), no moving once open.
         pass
@@ -583,10 +596,15 @@ def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
         
         motion_type = level.monster_data(monsters[monst].monster_type()).get_motion()
         
-        (new_x, new_y) = monster_move(level, monsters, monsters[monst], robot_x, robot_y, 
-                motion_type, clock)
+        monst_pos = monsters[monst].get_pos()
         
-        monsters[monst].move_to(new_x, new_y)
+        if screen_x + 1 < monst_pos[0] < screen_x + DISPLAY_WIDTH:
+            # We only want to moves monsters within the display's width (any y-position, though).
+             
+            (new_x, new_y) = monster_move(level, monsters, monsters[monst], robot_x, robot_y, 
+                    motion_type, clock)
+            
+            monsters[monst].move_to(new_x, new_y)
 
 ##################################################################################################
 #
