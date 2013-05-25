@@ -541,6 +541,8 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
             monst.set_state(1)
         elif old_x < robot_x:
             monst.set_state(5)
+        
+        # I don't think these next two can occur, actually...            
         elif old_y > robot_y + 3:
             monst.set_state(3)
         elif old_y < robot_y:

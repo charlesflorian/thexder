@@ -3,6 +3,15 @@ import animation
 from . import thx_map
 from . import data
 
+#####################################################################
+#
+# Note that in certain levels, blocks of type 0x0d are things we can
+# pass through (after shooting them)...
+#
+# Actually, this seems to vary from level to level.
+#
+#####################################################################
+
 class Level(object):
     """
     This class will be the main class that holds all of the level data.
@@ -33,9 +42,12 @@ class Level(object):
         # Tiles?
         for i in range(0, width):
             for j in range(0, height):
-                if (self.map.tile(x + i, y + j) % 16) > 0:
+            
+                tile = self.map.tile(x + i, y + j) % 16
+                
+                if not tile in TRANSPARENT_TILES[self.map.curlvl]:
                     return False
-
+                    
         return True
 
     def num_monsters(self):

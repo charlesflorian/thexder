@@ -74,6 +74,12 @@ THX_FLAG_TRANSFORMING   = 0x10
 THX_FLYING_FRAMES = 0x20
 
 
+TRANSPARENT_TILES = [[0,0x0d],[0],[0],[0],
+                      [0],[0],[0],[0],
+                      [0,0x0c,0x0d],[0],[0,0x0c,0x0d],[0],
+                      [0],[0],[0],[0,0x0d]]
+
+
 COLORS = [pygame.Color(0,0,0), #Black
           pygame.Color(0xfa, 0x55, 0x55), #Salmon?
           pygame.Color(0,0xaa,0), #Green
