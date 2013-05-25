@@ -233,7 +233,7 @@ class Robot(object):
                     if self.direction() == DIR_E:
                         return self.frames[0x0a].tile()
                     else:
-                        return self.frames[0x06].tile()
+                        return self.frames[0x00].tile()
     
      
     def push_direction(self, direction):

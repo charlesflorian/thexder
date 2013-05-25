@@ -867,20 +867,20 @@ def main():
                     
                     keys = pygame.key.get_pressed()
 
-# TODO: Should check here whether or not the motion in question works, perhaps?
-#       That is, if you are flying next to a wall/floor/roof, you shouldn't be able
-#       to turn into that direction if you press diagonally in that direction.
-#
-#       In particular, if you're in a cramped space, up/down should turn you around!
+# TODO: Fix the up/down thing when in a tunnel.
 
                     if keys[K_UP] and keys[K_LEFT]:
-                        thx.push_direction(DIR_NW)
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 1):
+                            thx.push_direction(DIR_NW)
                     elif keys[K_UP] and keys[K_RIGHT]:
-                        thx.push_direction(DIR_NE)
+                        if levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 1):
+                            thx.push_direction(DIR_NE)
                     elif keys[K_DOWN] and keys[K_LEFT]:
-                        thx.push_direction(DIR_SW)
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y + 3, 3, 1):
+                            thx.push_direction(DIR_SW)
                     elif keys[K_DOWN] and keys[K_RIGHT]:                    
-                        thx.push_direction(DIR_SE)
+                        if levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 3, 1):
+                            thx.push_direction(DIR_SE)
                     elif keys[K_UP]:
                         thx.push_direction(DIR_N)
                     elif keys[K_DOWN]:
