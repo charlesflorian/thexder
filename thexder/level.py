@@ -109,7 +109,8 @@ class Level(object):
                 # BUGDBXX.BIN.
                 
                 m_type = (bug_offset - 0x80)/4
-                bug_dict[m_count] = animation.Monster(m_count, m_type, health[m_type], bug_x, bug_y)
+                bug_dict[m_count] = animation.Monster(m_count, m_type, motion[m_type],
+                        health[m_type], bug_x, bug_y)
                 m_count += 1
 
             i += BUGDB_ENTRY_LENGTH

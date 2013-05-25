@@ -480,7 +480,7 @@ def is_empty(level, monsters, monst_ident, frame):
 # TODO: This actually moves every monster in the level, not just those that are on the screen...
 #       I should probably fix that.
 
-def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
+def monster_move(level, monsters, monst, robot_x, robot_y, clock):
     """
     This is the function which will take as input some data (including the motion type)
     and return the new coordinates based on that input.
@@ -493,6 +493,8 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
     # For now, at least until I actually implement the other motions.
     new_x = old_x
     new_y = old_y
+    
+    motion_type = monst.get_motion()
     
     if motion_type == 0x01: # Normal slow flying
         if old_x > robot_x + 3 and old_y < robot_y:
@@ -544,7 +546,27 @@ def monster_move(level, monsters, monst, robot_x, robot_y, motion_type, clock):
                 if is_empty(level, monsters, monst.get_ident(), new_frame):
                     new_x = old_x + 1
     elif motion_type == 0x04: # Rocket-type loopy motion
-        pass
+    
+        # TODO: This is going to be a bit tricky... although I think that when I hit on the
+        #       right idea, this will probably be pretty straightforward.
+        
+        if old_x > robot_x + 3 and old_y < robot_y:
+            monst.set_state(0)
+        elif old_x > robot_x + 3 and old_y > robot_y + 3:
+            monst.set_state(2)
+        elif old_x < robot_x and old_y > robot_y + 3:
+            monst.set_state(4)
+        elif old_x < robot_x and old_y < robot_y:
+            monst.set_state(6)
+        elif old_x > robot_x + 3:
+            monst.set_state(1)
+        elif old_x < robot_x:
+            monst.set_state(5)
+        elif old_y > robot_y + 3:
+            monst.set_state(3)
+        elif old_y < robot_y:
+            monst.set_state(7)                    
+
     elif motion_type == 0x05: # Falls, then moves slowly, possibly to the left/right depending on position.
         if clock % 2:
             # Check downward motion first.
@@ -594,15 +616,12 @@ def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
     
     for monst in monsters:
         
-        motion_type = level.monster_data(monsters[monst].monster_type()).get_motion()
-        
         monst_pos = monsters[monst].get_pos()
         
         if screen_x + 1 < monst_pos[0] < screen_x + DISPLAY_WIDTH:
             # We only want to moves monsters within the display's width (any y-position, though).
              
-            (new_x, new_y) = monster_move(level, monsters, monsters[monst], robot_x, robot_y, 
-                    motion_type, clock)
+            (new_x, new_y) = monster_move(level, monsters, monsters[monst], robot_x, robot_y, clock)
             
             monsters[monst].move_to(new_x, new_y)
 
@@ -718,9 +737,6 @@ def main():
 
 # TODO: I also need to work out how to change between the different robot states better.
 
-# TODO: There is a problem if you jump up onto a ledge and don't come _down_ onto it. In
-#       such a case, you never actually land!
-
             elif event.type == TIME_EVENT:
                 game_clock += 1
             
@@ -734,6 +750,7 @@ def main():
                     
                     pass
                 elif thx.is_robot():
+                
                     keys = pygame.key.get_pressed()
                     
                     if thx.is_jumping():

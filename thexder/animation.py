@@ -112,10 +112,11 @@ class MonsterClass(object):
 
 class Monster(object):
 
-    def __init__(self, ident, monster_class, health, x, y):
+    def __init__(self, ident, monster_class, motion_type, health, x, y):
         """
         ident - refers to their unique id so as not to confuse them with anyone else.
-        monster_class - refers to their motion type.
+        monster_class - refers to the monster type
+        motion_type - refers to the motion type
         health - their original max health.
         x, y - refers to their original position.
         """
@@ -123,6 +124,7 @@ class Monster(object):
         self.life = health
         self.ident = ident
         self.frame = frame(x, y, 2, 2)
+        self.motion = motion_type
         
         self.state = 0
         
@@ -132,16 +134,19 @@ class Monster(object):
     def get_frame(self):
         return self.frame
         
+    def get_motion(self):
+        return self.motion
+        
     def monster_type(self):
         return self.monster_class
 
     def frame_no(self, clock):
-        if self.monster_class == 4 or self.monster_class == 9:
+        if self.get_motion() == 4:# or self.monster_class == 9:
             return self.get_state()
-#        elif self.monster_class == 6:
-#            pass
-#        elif self.monster_class == 7:
-#            pass
+        elif self.get_motion() == 6:
+            return 4 + clock % 4
+        elif self.get_motion() == 7:
+            return 4 + clock % 4
         return clock
 
     def health(self):

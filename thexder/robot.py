@@ -280,7 +280,7 @@ class Robot(object):
                     self.reel = THX_TURNING_ANIM[::-1]
                 self.set_direction(DIR_W)
             
-            if self.flags() & THX_FLAG_FALL and state.flags == THX_FLAG_ROBOT:
+            if (self.flags() & THX_FLAG_FALL or self.flags() & THX_FLAG_JUMP) and state.flags == THX_FLAG_ROBOT:
                 if self.direction() == DIR_E:
                     self.reel = THX_LANDING_RIGHT_ANIM[:]
                 else:
