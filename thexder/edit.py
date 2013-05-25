@@ -2,6 +2,7 @@ from math import *
 from random import *
 from sys import exit
 from os import rename
+from random import randint
 
 import pygame
 from pygame.locals import *
@@ -574,9 +575,32 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
     elif motion_type == 0x06: #       06 - hidden (animation is different!), no moving once open.
         pass
     elif motion_type == 0x07: #       07 - hidden (animation is different!), moves quickly once open.
-        pass
+    
+        # TODO: This will eventually need an interaction  method; it is hidden until...
+        
+        if monst.get_state() == 0:
+            if old_x < robot_x:
+                new_frame = animation.frame(old_x + 1, old_y, 2, 2)
+                if is_empty(level, monsters, monst.get_ident(), new_frame):
+                    new_x = old_x + 1
+            elif old_x > robot_x:
+                new_frame = animation.frame(old_x - 1, old_y, 2, 2)
+                if is_empty(level, monsters, monst.get_ident(), new_frame):
+                    new_x = old_x - 1
     elif motion_type == 0x08: #       08 - falls, moves randomly-ish.
-        pass
+        new_x = old_x
+        new_frame = animation.frame(old_x, old_y + 1, 2, 2)
+        if is_empty(level, monsters, monst.get_ident(), new_frame):
+            new_y = old_y + 1
+        else:
+            if randint(0,1) == 0:
+                new_frame = animation.frame(old_x - 1, old_y, 2, 2)
+                if is_empty(level, monsters, monst.get_ident(), new_frame):
+                    new_x = old_x - 1
+            else:
+                new_frame = animation.frame(old_x + 1, old_y, 2, 2)
+                if is_empty(level, monsters, monst.get_ident(), new_frame):
+                    new_x = old_x + 1
     elif motion_type == 0x09: #       09 - Seems to be about the same as 04?
         pass
     elif motion_type == 0x0a: #       0A - Quick up/down flying (ala bats)

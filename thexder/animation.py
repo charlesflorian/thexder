@@ -143,6 +143,9 @@ class Monster(object):
     def frame_no(self, clock):
         if self.get_motion() == 4:# or self.monster_class == 9:
             return self.get_state()
+        
+        # TODO: This needs to have room for an animation...
+        
         elif self.get_motion() == 6:
             return 4 + clock % 4
         elif self.get_motion() == 7:

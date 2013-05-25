@@ -74,6 +74,11 @@ THX_FLAG_TRANSFORMING   = 0x10
 THX_FLYING_FRAMES = 0x20
 
 
+# This is a list for each level (in order) of the tiles that are 'transparent'.
+#
+# In actuality, 0x00 is the only truly transparent tile, but the others are ones
+# that can be taken out with the robot laser.
+
 TRANSPARENT_TILES = [[0,0x0d],[0,0x0d],[0,0x0d],[0,0x0d],
                       [0],[0],[0],[0,0x0d],
                       [0,0x0c,0x0d],[0],[0,0x0c,0x0d],[0],
