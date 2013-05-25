@@ -61,7 +61,7 @@ def turn_animation(dir_in, dir_out):
         if dir_in < dir_out:
             return THX_FLYING_ANIM[dir_in + 0x10:dir_out: -1]
         else:
-            return THX_FLYING_ANIM[dir_in + 0x10:dir_out:-1]
+            return THX_FLYING_ANIM[dir_in:dir_out:-1]
     else:
         if dir_in < dir_out:
             return THX_FLYING_ANIM[dir_in + 0x10: dir_out:-1]
