@@ -604,7 +604,37 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
     elif motion_type == 0x09: #       09 - Seems to be about the same as 04?
         pass
     elif motion_type == 0x0a: #       0A - Quick up/down flying (ala bats)
-        pass
+        if old_x > robot_x + 3 and old_y < robot_y:
+            monst.set_state(0)
+        elif old_x > robot_x + 3 and old_y >= robot_y + 3:
+            monst.set_state(1)
+        elif old_x < robot_x and old_y < robot_y:
+            monst.set_state(2)
+        elif old_x < robot_x and old_y >= robot_y + 3:
+            monst.set_state(3)
+
+        state = monst.get_state()
+        if state == 0:
+            new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x - 1
+                new_y = old_y + 1
+        if state == 1:
+            new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x - 1
+                new_y = old_y - 1
+        if state == 2:
+            new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x + 1
+                new_y = old_y + 1
+        if state == 3:
+            new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x + 1
+                new_y = old_y - 1
+
     elif motion_type == 0x0b: #       0B - Weird jittery flying (also fast)
         pass
     elif motion_type == 0x0c: #       0C - diagonal fall, then no moving.
