@@ -40,7 +40,6 @@ def display_init(width, height):
     """
     This just sets up the pygame display.
     """
-    global FRAME_LENGTH_MS
     
     pygame.init()
     #pygame.key.set_repeat(120,30)
@@ -49,7 +48,6 @@ def display_init(width, height):
 
 
 def load_animations(tiles, pointers):
-    global MAX_ENEMIES, NUM_TILES
 
     animations = []
 
@@ -93,7 +91,6 @@ def load_raw_pointers():
     This just loads the raw pointers, and converts them from hex offsets to integer
     ones.
     """
-    global MAX_ENEMIES, MAX_LEVELS, PTR_SIZE
     
     dm = data.default_data_manager()
     pointers = []
@@ -116,7 +113,6 @@ def convert_raw_ptrs(pointer):
     of the tile within the TANBITXX file to an integer telling you which tile in the
     list of tiles it should be. There is nothing fancy here.
     """
-    global TILE_SIZE
     offset = [(ord(pointer[0]) + 0x0100 * ord(pointer[1]))/TILE_SIZE,
               (ord(pointer[2]) + 0x0100 * ord(pointer[3]))/TILE_SIZE,
               (ord(pointer[4]) + 0x0100 * ord(pointer[5]))/TILE_SIZE,
@@ -138,8 +134,6 @@ def process_raw_pointers(pointers):
 
     (level_from_which_to_load_tile, tile_number_within_that_tileset)
     """
-    global MAX_LEVELS, TANBIT_SIZE
-    global NUM_TILES
 
     length = 4 * NUM_TILES
     
@@ -192,7 +186,6 @@ def get_shift(i):
     return shift
     
 def load_animation_tiles():
-    global MAX_LEVELS
     output = []
 
     for i in range(0, MAX_LEVELS):
@@ -253,9 +246,6 @@ def load_levels():
 ##################################################################################################
 
 def show_tiles(screen, tileset, anim=False):
-    global TILE_WIDTH, TILE_HEIGHT
-    global DISPLAY_WIDTH, DISPLAY_HEIGHT
-    global PX_SIZE
     robot_frame = 0
     going = True
     while going:
@@ -341,7 +331,6 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     """
     This will display text in the thexder font.
     """
-    global DISPLAY_HEIGHT, DISPLAY_WIDTH
     say_what = " " + say_what.upper() + " "
 
     if center:
@@ -355,7 +344,6 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     
 
 def display_tile(screen, tile, x, y):
-    global PX_SIZE, TILE_HEIGHT, TILE_WIDTH, DISPLAY_HEIGHT, DISPLAY_WIDTH
 
     tile_size = PX_SIZE * TILE_HEIGHT
 
@@ -369,7 +357,6 @@ def display_level(screen, level, tiles, x, y):
     """
     This will show the level in the main frame, starting at the top right corner (x, y).
     """
-    global DISPLAY_WIDTH, DISPLAY_HEIGHT
     
     for j in range(0, DISPLAY_WIDTH):
         for i in range(0, DISPLAY_HEIGHT):
@@ -380,7 +367,6 @@ def display_level(screen, level, tiles, x, y):
             display_tile(screen, tiles[cur_tile % 16].tile(), j, i)
 
 def display_sprites(screen, level, frame_number, x, y):
-    global DISPLAY_WIDTH, DISPLAY_HEIGHT
 
     monsters = level.monsters()
 
@@ -626,8 +612,7 @@ def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
 
 
 def main():
-    global DISPLAY_HEIGHT, DISPLAY_WIDTH, LVL_HEIGHT, NO_MONSTERS
-    global PX_SIZE, TILE_HEIGHT, TILE_WIDTH
+
     global curlvl
 
     #t1 = time.time()
