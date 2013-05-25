@@ -74,8 +74,8 @@ THX_FLAG_TRANSFORMING   = 0x10
 THX_FLYING_FRAMES = 0x20
 
 
-TRANSPARENT_TILES = [[0,0x0d],[0],[0],[0],
-                      [0],[0],[0],[0],
+TRANSPARENT_TILES = [[0,0x0d],[0,0x0d],[0,0x0d],[0,0x0d],
+                      [0],[0],[0],[0,0x0d],
                       [0,0x0c,0x0d],[0],[0,0x0c,0x0d],[0],
                       [0],[0],[0],[0,0x0d]]
 
