@@ -78,12 +78,9 @@ class Robot(object):
     This will be the class of the Thexder robot. It will include the animation tiles for him,
     at the very least.
     """
-    global THX_GROUNDED, THX_FALLING, THX_JUMPING
-
     def __init__(self, filename="ROBOT.BIN"):   
         global TILE_WIDTH, TILE_HEIGHT
 
-        global THX_GROUNDED, THX_FALLING, THX_JUMPING
         content = data.default_data_manager().load_file(filename)
 
         # The number of bits per frame.

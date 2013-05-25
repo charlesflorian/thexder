@@ -454,17 +454,10 @@ def sprite_collision(monsters, monster_id, new_frame):
                 return True
     return False
 
-# TODO: Fix an off-by-1 error here (potential? When sprites fall off-screen, they don't check for
-#       anything below them). This can cause sprites to overlap and get stuck.
-
 def is_on_screen(screen_x, screen_y, x, y):
     if screen_x - 2 < x < screen_x + DISPLAY_WIDTH + 4 and screen_y - 2 < y < screen_y + DISPLAY_HEIGHT + 4:
         return True
     return False
-
-# TODO: There is an issue here where it treats the level (as a floor) differently than the monsters.
-
-#       This is also very inefficiently written, so I think I will probably have to re-write this...
 
 
 def is_empty(level, monsters, monst_ident, frame):
@@ -477,8 +470,8 @@ def is_empty(level, monsters, monst_ident, frame):
             return True
     return False
 
-# TODO: This actually moves every monster in the level, not just those that are on the screen...
-#       I should probably fix that.
+# TODO: Fix the monster motion. If they hit a wall for at lest one tick and they
+#       COULD be moving the other way, they should switch? Something like that...
 
 def monster_move(level, monsters, monst, robot_x, robot_y, clock):
     """
@@ -618,7 +611,7 @@ def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
         
         monst_pos = monsters[monst].get_pos()
         
-        if screen_x + 1 < monst_pos[0] < screen_x + DISPLAY_WIDTH:
+        if screen_x - 1 < monst_pos[0] < screen_x + DISPLAY_WIDTH:
             # We only want to moves monsters within the display's width (any y-position, though).
              
             (new_x, new_y) = monster_move(level, monsters, monsters[monst], robot_x, robot_y, clock)

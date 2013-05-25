@@ -29,17 +29,7 @@ class Level(object):
         return self.map.tile(x,y)
 
     def is_empty(self, x, y, width, height):
-        
-        # Monsters? 
-        #
-        # This part belongs in a separate routine.
-        #
-      
-#        for i in range(-1, width):
-#            for j in range(-1, height):
-#                if self.monster_at(x + i, y + j) != -1:
-#                    return False
-        
+                
         # Tiles?
         for i in range(0, width):
             for j in range(0, height):

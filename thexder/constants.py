@@ -48,12 +48,6 @@ TANBIT_SIZE = [0x100,0x100,0xe0,0x20,0x80,0x00,0x40,0x40,0xc0,0x00,0x40,0x40,0x8
 
 JUMP_MAX_HEIGHT = 16 # 16 is the actual max height.
 
-THX_GROUNDED         = 0
-THX_FALLING          = 1
-THX_JUMPING          = 2
-THX_TRANSFORMING     = 0x100
-THX_FLYING           = 5
-
 DIR_W   = 0x00
 DIR_WNW = 0x01
 DIR_NW  = 0x02
