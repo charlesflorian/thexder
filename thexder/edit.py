@@ -382,30 +382,56 @@ def display_sprites(screen, level, frame_number, x, y):
             display_tile(screen, level.monster_data(sprite.monster_type()).tile(cur_frame),
                     pos[0] - x, pos[1] - y)
 
-def convert_direction(direction):
+def dir_to_vec(direction):
     if direction == DIR_W:
-        return (-1, 0)
+        return (-2, 0)
     elif direction == DIR_WNW:
         return (-2, -1)
     elif direction == DIR_NW:
-        return (-1, -1)
+        return (-2, -2)
     elif direction == DIR_NNW:
         return (-1, -2)
     elif direction == DIR_N:
-        return (0, -1)
+        return (0, -2)
+    elif direction == DIR_NNE:
+        return (1, -2)
+    elif direction == DIR_NE:
+        return (2, -2)
+    elif direction == DIR_ENE:
+        return (2, -1)
+    elif direction == DIR_E:
+        return (2, 0)
+    elif direction == DIR_ESE:
+        return (2, 1)
+    elif direction == DIR_SE:
+        return (2, 2)
+    elif direction == DIR_SSE:
+        return (1, 2)
+    elif direction == DIR_S:
+        return (0, 2)
+    elif direction == DIR_SSW:
+        return (-1, 2)
+    elif direction == DIR_SW:
+        return (-2, 2)
+    elif direction == DIR_WSW:
+        return (-2, 1)
+    raise IndexError
 
 def draw_laser(screen, start_x, start_y, direction):
     """
     This should take as input the screen, starting coordinates, and a direction vector.
     It should try and trace out a line until it hits something that is not black.
     """
-    x_laz = start_x * TILE_WIDTH + 0x04
-    y_laz = start_y * TILE_HEIGHT + 0x04
+    x_laz = ((start_x + direction[0]) * TILE_WIDTH + 0x04) * PX_SIZE
+    y_laz = ((start_y + direction[1]) * TILE_HEIGHT + 0x04) * PX_SIZE
     
-    while screen.get_at((x_laz, y_laz)) == COLORS[0]: # Black
-        x_laz += direction[0]
-        y_laz += direction[1]
-        print x_laz, y_laz
+    #pygame.draw.line(screen, COLORS[0x0f], (x_laz * PX_SIZE, y_laz * PX_SIZE), (x_laz + direction[0] * 10, y_laz + direction[1] * 10), PX_SIZE)
+    pygame.draw.circle(screen, COLORS[0x0f], (x_laz, y_laz), 5)
+    pygame.display.update()
+#    while screen.get_at((x_laz, y_laz)) == COLORS[0]: # Black
+#        x_laz += direction[0]
+#        y_laz += direction[1]
+#        print x_laz, y_laz
 
 ##################################################################################################
 #
@@ -478,6 +504,8 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
     if motion_type == 0x00:
         pass
     elif motion_type == 0x01: # Normal slow flying
+        # TODO: Fix this. It should involve the state of the sprite.
+        state = monst.get_state()
         if old_x > robot_x + 3 and old_y < robot_y:
             monst.set_state(0)
         elif old_x > robot_x + 3 and old_y > robot_y + 4:
@@ -493,21 +521,29 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_x = old_x - 1
                 new_y = old_y + 1
+            else:
+                monst.set_state(1)
         if state == 1:
             new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_x = old_x - 1
                 new_y = old_y - 1
+            else:
+                monst.set_state(0)
         if state == 2:
             new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_x = old_x + 1
                 new_y = old_y + 1
+            else:
+                monst.set_state(3)
         if state == 3:
             new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
             if is_empty(level, monsters, monst.get_ident(), new_frame):
                 new_x = old_x + 1
                 new_y = old_y - 1
+            else:
+                monst.set_state(2)
 
     elif motion_type == 0x02: # Falling
         new_x = old_x
@@ -567,10 +603,14 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
                     new_frame = animation.frame(old_x - 1, old_y, 2, 2)
                     if is_empty(level, monsters, monst.get_ident(), new_frame):
                         new_x = old_x - 1
+                    else:
+                        monst.set_state(1)
                 elif state == 1:
                     new_frame = animation.frame(old_x + 1, old_y, 2, 2)
                     if is_empty(level, monsters, monst.get_ident(), new_frame):
                         new_x = old_x + 1
+                    else:
+                        monst.set_state(0)
             
 
     elif motion_type == 0x06: #       06 - hidden (animation is different!), no moving once open.
@@ -604,7 +644,9 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
                 if is_empty(level, monsters, monst.get_ident(), new_frame):
                     new_x = old_x + 1
     elif motion_type == 0x09: #       09 - Seems to be about the same as 04?
-        pass
+        pass                  # It is worth noting that this motion type does not actually occur in the bugdb
+                              # files anywhere...
+                             
     elif motion_type == 0x0a: #       0A - Quick up/down flying (ala bats)
         # TODO: The bottom part of this motion is not quite right.
 
@@ -896,20 +938,15 @@ def main():
                         else:
                             thx.push_direction(DIR_E)
 
-# TODO: There is a problem (which I guess I knew about) when you transform back into a
-#       robot from jet if you are moving up/down: you don't keep your original facing.
-#       This is because it takes its L/R direction from the direction the jet is pointing
-#       so up/down map to left/right, resp.
-                    
                     direction = thx.direction()
                     if direction == DIR_E:
                         if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3):
                             robot_x += 1
-                        elif levels[curlvl].is_empty(robot_x + 3, robot_y - 1, 1, 3):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 3):
                             robot_x += 1
                             robot_y -= 1
                             thx.push_direction(DIR_NE)
-                        elif levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 3):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 1, 3, 3):
                             robot_x += 1
                             robot_y += 1
                             thx.push_direction(DIR_SE)
@@ -918,11 +955,11 @@ def main():
                     elif direction == DIR_W:
                         if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3):
                             robot_x -= 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 1, 3):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 3):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 3):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 3, 3):
                             robot_x -= 1
                             robot_y += 1
                             thx.push_direction(DIR_SW)
@@ -931,11 +968,11 @@ def main():
                     elif direction == DIR_N:
                         if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1):
                             robot_y -= 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 1):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 3):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 1):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 3):
                             robot_x += 1
                             robot_y -= 1
                             thx.push_direction(DIR_NE)
@@ -944,11 +981,11 @@ def main():
                     elif direction == DIR_S:
                         if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1):
                             robot_y += 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 3, 3, 1):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 3, 3):
                             robot_x -= 1
                             robot_y += 1
                             thx.push_direction(DIR_SW)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 3, 1):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 1, 3, 3):
                             robot_x += 1
                             robot_y += 1
                             thx.push_direction(DIR_SE)
@@ -1010,8 +1047,8 @@ def main():
                             thx_blocked = True
                     
                     if keys[K_SPACE]:
-                        laser_dir = thx.facing()
-                        #draw_laser(screen, robot_x + 3, robot_y + 1, (1, 0))
+                        direction = dir_to_vec(thx.facing())
+                        draw_laser(screen, 20, 12, direction)
                     
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.

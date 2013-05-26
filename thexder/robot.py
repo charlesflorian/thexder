@@ -235,6 +235,9 @@ class Robot(object):
     def push_direction(self, direction):
         flag = self.flags()
         if not self.is_robot():
+        
+            # TODO: This still doesn't work quite right.
+            
             if DIR_N < direction < DIR_S:
                 flag = THX_FLAG_JET | THX_FLAG_E_FACING_JET 
             elif direction < DIR_N or DIR_S < direction:
@@ -245,6 +248,13 @@ class Robot(object):
         self.push_state(rState(flags, self.direction()))
   
     def push_state(self, state):
+        """
+        This is the function that maintains and switches between the internal states
+        of the robot. It takes as input an rState object, which is just something which 
+        encapsulates a direction and some flags.
+        
+        There are two auxiliary methods which simply change the state or direction.
+        """
         if state.flags & THX_FLAG_JET and self.is_robot(): # Transform to jet
             if self.direction() == DIR_E:
                 self.reel = THX_TRANSFORMING_RIGHT_ANIM[:]
