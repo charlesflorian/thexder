@@ -173,7 +173,6 @@ class Robot(object):
             self.step_count = 0
 
     def jump(self):
-#        self.push_flags(THX_FLAG_JUMP | THX_FLAG_ROBOT)
         self.set_flags(THX_FLAG_JUMP | THX_FLAG_ROBOT)
         self.jump_height += 1
         if self.jump_height > JUMP_MAX_HEIGHT:
@@ -187,7 +186,6 @@ class Robot(object):
         self.push_flags(THX_FLAG_ROBOT)
         
     def fall(self):
-#        self.push_flags(THX_FLAG_ROBOT | THX_FLAG_FALL)
         self.set_flags(THX_FLAG_ROBOT | THX_FLAG_FALL)
 
     def transform(self):
@@ -218,9 +216,7 @@ class Robot(object):
             return self.frames[self.reel[0]].tile() # ... use that frame.
         else:
             # Return whatever other frame we should use.
-            # This will require a bit of work.
             
-            # Things to consider: Robot/non-robot? Left/right?
             if not self.is_robot(): 
                 return self.frames[THX_FLYING_FRAMES + self.direction()].tile()
             else:
@@ -242,11 +238,6 @@ class Robot(object):
     def push_flags(self, flags):
         self.push_state(rState(flags, self.direction()))
   
-    # TODO: While I think this was a good idea in principle, I think that a
-    #       queue of states is not the right picture. Nevertheless, the queue
-    #       of animations I think is good, although it has to be modified for
-    #       flying.
-                
     def push_state(self, state):
         if state.flags & THX_FLAG_JET and self.is_robot(): # Transform to jet
             if self.direction() == DIR_E:
