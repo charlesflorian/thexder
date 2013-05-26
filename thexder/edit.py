@@ -432,16 +432,26 @@ def draw_laser(screen, start_x, start_y, direction):
     else:
         start_y = 12
     
-    x_laz = ((start_x + direction[0]) * TILE_WIDTH + 0x04) * PX_SIZE
-    y_laz = ((start_y + direction[1]) * TILE_HEIGHT + 0x04) * PX_SIZE
+    x_laz = x_laz_start = ((start_x + direction[0]) * TILE_WIDTH + 0x04) * PX_SIZE
+    y_laz = y_laz_start = ((start_y + direction[1]) * TILE_HEIGHT + 0x04) * PX_SIZE
     
-    #pygame.draw.line(screen, COLORS[0x0f], (x_laz * PX_SIZE, y_laz * PX_SIZE), (x_laz + direction[0] * 10, y_laz + direction[1] * 10), PX_SIZE)
-    pygame.draw.circle(screen, COLORS[0x0f], (x_laz, y_laz), 5)
+    color = screen.get_at((x_laz, y_laz))
+    while color == COLORS[0]:
+
+        screen.fill(COLORS[0x0f], pygame.Rect(x_laz, y_laz, PX_SIZE, PX_SIZE))
+
+        # TODO: This does not work if you are flying up or down.
+
+        if abs((y_laz - y_laz_start) * direction[0]) >= abs(direction[1]* (x_laz - x_laz_start)):
+            x_laz += PX_SIZE * cmp(direction[0],0)
+        else:
+            y_laz += PX_SIZE * cmp(direction[1],0)
+        try:
+            color = screen.get_at((x_laz, y_laz))
+        except IndexError:
+            break
+
     pygame.display.update()
-#    while screen.get_at((x_laz, y_laz)) == COLORS[0]: # Black
-#        x_laz += direction[0]
-#        y_laz += direction[1]
-#        print x_laz, y_laz
 
 ##################################################################################################
 #
@@ -454,10 +464,6 @@ def draw_laser(screen, start_x, start_y, direction):
 # Begin interaction methods.
 #
 ##################################################################################################
-
-# TODO: Oh god, this is going to be a pain in the ass to work out. There is so much that is poorly
-#       set up right now.
-
 
 def collision(frame_1, frame_2):
     if frame_1.x + frame_1.width <= frame_2.x:
