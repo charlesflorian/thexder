@@ -382,6 +382,28 @@ def display_sprites(screen, level, frame_number, x, y):
             display_tile(screen, level.monster_data(sprite.monster_type()).tile(cur_frame),
                     pos[0] - x, pos[1] - y)
 
+
+# TODO: Include a way to look the other direction, and fix the bounds.
+
+def is_on_screen(screen_x, screen_y, x, y):
+    if screen_x <= x < screen_x + DISPLAY_WIDTH and screen_y <= y < screen_y + DISPLAY_HEIGHT:
+        return True
+    return False
+
+def get_laser_targets(monsters, screen_x, screen_y):
+    out = []
+    for monst in monsters:
+        pos = monsters[monst].get_pos()
+        if is_on_screen(screen_x, screen_y, pos[0], pos[1]):
+            out.append(pos)
+        if is_on_screen(screen_x, screen_y, pos[0]+1, pos[1]):
+            out.append((pos[0] + 1,pos[1]))
+        if is_on_screen(screen_x, screen_y, pos[0], pos[1]+1):
+            out.append((pos[0],pos[1]+1))
+        if is_on_screen(screen_x, screen_y, pos[0]+1, pos[1]+1):
+            out.append((pos[0] + 1,pos[1]+1))
+    return out
+
 def dir_to_vec(direction):
     if direction == DIR_W:
         return (-2, 0)
@@ -417,7 +439,7 @@ def dir_to_vec(direction):
         return (-2, 1)
     raise IndexError
 
-def draw_laser(screen, start_x, start_y, direction):
+def draw_laser(screen, start_x, start_y, direction, is_robot=False, facing_east=True):
     """
     This should take as input the screen, starting coordinates, and a direction vector.
     It should try and trace out a line until it hits something that is not black.
@@ -432,17 +454,30 @@ def draw_laser(screen, start_x, start_y, direction):
     else:
         start_y = 12
     
-    x_laz = x_laz_start = ((start_x + direction[0]) * TILE_WIDTH + 0x04) * PX_SIZE
-    y_laz = y_laz_start = ((start_y + direction[1]) * TILE_HEIGHT + 0x04) * PX_SIZE
+    if is_robot:
+        if facing_east:
+            x_laz = x_laz_start = ((start_x+1) * TILE_WIDTH + 0x04) * PX_SIZE        
+        else:
+            x_laz = x_laz_start = ((start_x - 1) * TILE_WIDTH + 0x04) * PX_SIZE                    
+        y_laz = y_laz_start = ((start_y - 1) * TILE_HEIGHT + 0x04) * PX_SIZE
+    else:
+        x_laz = x_laz_start = ((start_x + direction[0]) * TILE_WIDTH + 0x04) * PX_SIZE
+        y_laz = y_laz_start = ((start_y + direction[1]) * TILE_HEIGHT + 0x04) * PX_SIZE
     
-    color = screen.get_at((x_laz, y_laz))
+    try:
+        color = screen.get_at((x_laz, y_laz))
+    except IndexError:
+        return
+        
     while color == COLORS[0]:
 
         screen.fill(COLORS[0x0f], pygame.Rect(x_laz, y_laz, PX_SIZE, PX_SIZE))
 
         # TODO: This does not work if you are flying up or down.
-
-        if abs((y_laz - y_laz_start) * direction[0]) >= abs(direction[1]* (x_laz - x_laz_start)):
+        
+        if direction[0] == 0:
+            y_laz += PX_SIZE * cmp(direction[1],0)
+        elif abs((y_laz - y_laz_start) * direction[0]) >= abs(direction[1]* (x_laz - x_laz_start)):
             x_laz += PX_SIZE * cmp(direction[0],0)
         else:
             y_laz += PX_SIZE * cmp(direction[1],0)
@@ -482,12 +517,6 @@ def sprite_collision(monsters, monster_id, new_frame):
             if collision(monsters[monst].get_frame(), new_frame):
                 return True
     return False
-
-def is_on_screen(screen_x, screen_y, x, y):
-    if screen_x - 2 < x < screen_x + DISPLAY_WIDTH + 4 and screen_y - 2 < y < screen_y + DISPLAY_HEIGHT + 4:
-        return True
-    return False
-
 
 def is_empty(level, monsters, monst_ident, frame):
     """
@@ -945,6 +974,18 @@ def main():
                         thx.push_direction(DIR_W)
                         if thx.is_grounded():
                             thx.step()
+                            
+                    if keys[K_SPACE]:
+                        # TODO: How to pick the direction?
+                        targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos)
+                        
+                        if len(targets):
+                            target = targets[game_clock % len(targets)]
+                            laser_direction = (target[0] - (robot_x + 3), target[1] - (robot_y + 1))
+                        else:
+                            laser_direction = (1, 0)
+                        
+                        draw_laser(screen, 20, robot_y, laser_direction, True)
 
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
