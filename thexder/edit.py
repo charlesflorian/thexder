@@ -371,59 +371,70 @@ def dir_to_vec(direction):
         return (-2, 1)
     raise IndexError
 
-def draw_laser(screen, start_x, start_y, direction, is_robot=False, facing_east=True):
+def draw_line(screen, start_x, start_y, direction, color=COLORS[0x0f]):
     """
-    This should take as input the screen, starting coordinates, and a direction vector.
-    It should try and trace out a line until it hits something that is not black.
+    This will be the aux method that will draw a line from the (thexder-sized) pixel at
+    position given by start_pos and going in the direction given.
     """
-
-    # This ist just to adjust for where the robot is on the screen.
-        
-    if start_y <= 11:
-        start_y = start_y + 1
-    elif start_y > 32:
-        start_y = start_y - 21
-    else:
-        start_y = 12
+#    if direction == (0, 0): # This is something that should never happen, if the enemies can't pass through you.
+#        raise ValueError
     
-    if is_robot:
-        if facing_east:
-            x_laz = x_laz_start = ((start_x + 1) * TILE_WIDTH) * PX_SIZE + 0x04      
-        else:
-            x_laz = x_laz_start = ((start_x - 1) * TILE_WIDTH) * PX_SIZE + 0x04
-                             
-        y_laz = y_laz_start = ((start_y - 1) * TILE_HEIGHT) * PX_SIZE + 0x04
-    else:
-        x_laz = x_laz_start = ((start_x + direction[0]) * TILE_WIDTH) * PX_SIZE 
-        y_laz = y_laz_start = ((start_y + direction[1]) * TILE_HEIGHT) * PX_SIZE 
+    x_pos = start_x = start_x * PX_SIZE
+    y_pos = start_y = start_y * PX_SIZE
     
     try:
-        color = screen.get_at((x_laz, y_laz))
+        scr_color = screen.get_at((x_pos, y_pos))
     except IndexError:
         return
         
-    while color == COLORS[0]:
-
-        screen.fill(COLORS[0x0f], pygame.Rect(x_laz, y_laz, PX_SIZE, PX_SIZE))
-
+    while scr_color == COLORS[0]:
+        
+        screen.fill(color, pygame.Rect(x_pos, y_pos, PX_SIZE, PX_SIZE))
+        
         if direction[0] == 0:
-            y_laz += PX_SIZE * cmp(direction[1],0)
-        elif abs((y_laz - y_laz_start) * direction[0]) >= abs(direction[1]* (x_laz - x_laz_start)):
-            x_laz += PX_SIZE * cmp(direction[0],0)
+            y_pos += PX_SIZE * cmp(direction[1], 0)
+        elif abs((y_pos - start_y) * direction[0]) >= abs((x_pos - start_x) * direction[1]):
+            x_pos += PX_SIZE * cmp(direction[0], 0)
         else:
-            y_laz += PX_SIZE * cmp(direction[1],0)
+            y_pos += PX_SIZE * cmp(direction[1], 0)
+            
         try:
-            color = screen.get_at((x_laz, y_laz))
+            scr_color = screen.get_at((x_pos, y_pos))
         except IndexError:
             break
-
+    
     pygame.display.update()
+
+def draw_laser(screen, start_x, start_y, direction, facing):
+    """
+    This will draw the laser from the tile located at screen position (start_x, start_y) in the direction
+    given, offset from the start_x, start_y position by the value of the tuple facing.
+    """
+    
+    draw_line(screen, (start_x + facing[0]) * TILE_WIDTH + TILE_WIDTH / 2,
+            (start_y + facing[1]) * TILE_HEIGHT + TILE_HEIGHT / 2, direction)
+    
+
 
 ##################################################################################################
 #
 # End display methods.
 #
 ##################################################################################################
+
+def robot_screen_y_pos(robot_y):
+    """
+    This just let's you know the y-position on the screen of the robot who is at the position
+    
+    robot_y
+    
+    in the actual level.
+    """
+    if robot_y < 11:
+        return robot_y
+    elif robot_y > LVL_HEIGHT - DISPLAY_HEIGHT / 2:
+        return robot_y - (LVL_HEIGHT - DISPLAY_HEIGHT)
+    return 11
 
 def main():
 
@@ -582,28 +593,31 @@ def main():
                         thx.push_direction(DIR_W)
                         if thx.is_grounded():
                             thx.step()
-                            
+                    
+                    
+                    # TODO: Something funny here when jumping/falling...        
                     if keys[K_SPACE]:
-                        targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos,
-                                thx.direction() == DIR_E)
 
                         if thx.direction() == DIR_E:
+                            targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, True)
+
                             if len(targets):
                                 target = targets[game_clock % len(targets)]
-                                laser_direction = (target[0] - (robot_x + 3), target[1] - (robot_y + 1))
+                                laser_dir = (target[0] - (robot_x + 2), target[1] - (robot_y + 1))
                             else:
-                                laser_direction = (1, 0)                        
-                            
-                            draw_laser(screen, 20, robot_y, laser_direction, True)
+                                laser_dir = (1,0)
+                                
+                            draw_laser(screen, 20, robot_screen_y_pos(robot_y), laser_dir, (1,0))
                         else:
-                            # TODO: Really not sure what's going on with this.
+                            targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, False)
+                            
                             if len(targets):
                                 target = targets[game_clock % len(targets)]
-                                laser_direction = (target[0] - robot_x, target[1] - (robot_y + 1))
+                                laser_dir = (target[0] - robot_x, target[1] - (robot_y + 1))
                             else:
-                                laser_direction = (-1, 0)                        
-                            
-                            draw_laser(screen, 20, robot_y, laser_direction, False)
+                                laser_dir = (-1,0)
+                                
+                            draw_laser(screen, 20, robot_screen_y_pos(robot_y), laser_dir, (-1,0))
 
 
                 else:
@@ -751,7 +765,7 @@ def main():
                     
                     if keys[K_SPACE]:
                         direction = dir_to_vec(thx.facing())
-                        draw_laser(screen, 20, robot_y, direction)
+                        draw_laser(screen, 20, robot_screen_y_pos(robot_y) + 1, direction, direction)
                     
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
