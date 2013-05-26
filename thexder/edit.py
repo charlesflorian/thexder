@@ -422,6 +422,16 @@ def draw_laser(screen, start_x, start_y, direction):
     This should take as input the screen, starting coordinates, and a direction vector.
     It should try and trace out a line until it hits something that is not black.
     """
+
+    # This ist just to adjust for where the robot is on the screen.
+        
+    if start_y <= 11:
+        start_y = start_y + 1
+    elif start_y > 32:
+        start_y = start_y - 21
+    else:
+        start_y = 12
+    
     x_laz = ((start_x + direction[0]) * TILE_WIDTH + 0x04) * PX_SIZE
     y_laz = ((start_y + direction[1]) * TILE_HEIGHT + 0x04) * PX_SIZE
     
@@ -564,10 +574,7 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
                     new_x = old_x + 1
     elif motion_type == 0x04: # Rocket-type loopy motion
     
-        # TODO: This is going to be a bit tricky... although I think that when I hit on the
-        #       right idea, this will probably be pretty straightforward.
-        
-        # Temporary: Make them just try to loop around.
+        # TODO: Make them actually try to follow you!        
         
         state = monst.get_state()
         
@@ -616,25 +623,6 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
                 new_y = old_y + 1
             monst.set_state(0)
         
-#        if old_x > robot_x + 3 and old_y < robot_y:
-#            monst.set_state(0)
-#        elif old_x > robot_x + 3 and old_y > robot_y + 3:
-#            monst.set_state(2)
-#        elif old_x < robot_x and old_y > robot_y + 3:
-#            monst.set_state(4)
-#        elif old_x < robot_x and old_y < robot_y:
-#            monst.set_state(6)
-#        elif old_x > robot_x + 3:
-#            monst.set_state(1)
-#        elif old_x < robot_x:
-#            monst.set_state(5)
-#        
-#        # I don't think these next two can occur, actually...            
-#        elif old_y > robot_y + 3:
-#            monst.set_state(3)
-#        elif old_y < robot_y:
-#            monst.set_state(7)                    
-
     elif motion_type == 0x05: # Falls, then moves slowly, possibly to the left/right depending on position.
         if clock % 2:
             # Check downward motion first.
@@ -1097,7 +1085,7 @@ def main():
                     
                     if keys[K_SPACE]:
                         direction = dir_to_vec(thx.facing())
-                        draw_laser(screen, 20, 12, direction)
+                        draw_laser(screen, 20, robot_y, direction)
                     
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
