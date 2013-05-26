@@ -567,24 +567,73 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock):
         # TODO: This is going to be a bit tricky... although I think that when I hit on the
         #       right idea, this will probably be pretty straightforward.
         
-        if old_x > robot_x + 3 and old_y < robot_y:
-            monst.set_state(0)
-        elif old_x > robot_x + 3 and old_y > robot_y + 3:
-            monst.set_state(2)
-        elif old_x < robot_x and old_y > robot_y + 3:
-            monst.set_state(4)
-        elif old_x < robot_x and old_y < robot_y:
-            monst.set_state(6)
-        elif old_x > robot_x + 3:
-            monst.set_state(1)
-        elif old_x < robot_x:
-            monst.set_state(5)
+        # Temporary: Make them just try to loop around.
         
-        # I don't think these next two can occur, actually...            
-        elif old_y > robot_y + 3:
+        state = monst.get_state()
+        
+        if state == 0:
+            new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x - 1
+                new_y = old_y + 1
+            monst.set_state(1)
+        elif state == 1:
+            new_frame = animation.frame(old_x - 1, old_y, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x - 1
+            monst.set_state(2)
+        elif state == 2:
+            new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x - 1
+                new_y = old_y - 1
             monst.set_state(3)
-        elif old_y < robot_y:
-            monst.set_state(7)                    
+        elif state == 3:
+            new_frame = animation.frame(old_x, old_y - 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_y = old_y - 1
+            monst.set_state(4)
+        elif state == 4:
+            new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x + 1
+                new_y = old_y - 1
+            monst.set_state(5)
+        elif state == 5:
+            new_frame = animation.frame(old_x + 1, old_y, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x + 1
+            monst.set_state(6)
+        elif state == 6:
+            new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_x = old_x + 1
+                new_y = old_y + 1
+            monst.set_state(7)
+        elif state == 7:
+            new_frame = animation.frame(old_x, old_y + 1, 2, 2)
+            if is_empty(level, monsters, monst.get_ident(), new_frame):
+                new_y = old_y + 1
+            monst.set_state(0)
+        
+#        if old_x > robot_x + 3 and old_y < robot_y:
+#            monst.set_state(0)
+#        elif old_x > robot_x + 3 and old_y > robot_y + 3:
+#            monst.set_state(2)
+#        elif old_x < robot_x and old_y > robot_y + 3:
+#            monst.set_state(4)
+#        elif old_x < robot_x and old_y < robot_y:
+#            monst.set_state(6)
+#        elif old_x > robot_x + 3:
+#            monst.set_state(1)
+#        elif old_x < robot_x:
+#            monst.set_state(5)
+#        
+#        # I don't think these next two can occur, actually...            
+#        elif old_y > robot_y + 3:
+#            monst.set_state(3)
+#        elif old_y < robot_y:
+#            monst.set_state(7)                    
 
     elif motion_type == 0x05: # Falls, then moves slowly, possibly to the left/right depending on position.
         if clock % 2:
