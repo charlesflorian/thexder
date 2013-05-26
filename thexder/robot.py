@@ -233,7 +233,13 @@ class Robot(object):
     
      
     def push_direction(self, direction):
-        self.push_state(rState(self.flags(), direction))
+        flag = self.flags()
+        if not self.is_robot():
+            if DIR_N < direction < DIR_S:
+                flag = THX_FLAG_JET | THX_FLAG_E_FACING_JET 
+            elif direction < DIR_N or DIR_S < direction:
+                flag = THX_FLAG_JET
+        self.push_state(rState(flag, direction))
         
     def push_flags(self, flags):
         self.push_state(rState(flags, self.direction()))
@@ -247,10 +253,15 @@ class Robot(object):
             self.thx_state = rState(THX_FLAG_JET | THX_FLAG_TRANSFORMING, self.direction())
         elif state.flags & THX_FLAG_ROBOT and not self.is_robot(): # Transform to robot
         
-            # TODO: This is not quite right. It should 'remember' the previous direction (E/W) you were flying
-            #       and use that to choose the new direction when you are going up/down. But this is close.
-            
-            if DIR_N < self.direction() <= DIR_S:
+            robot_direction = self.direction()
+            if robot_direction == DIR_S or robot_direction == DIR_N:
+                if self.flags() & THX_FLAG_E_FACING_JET:
+                    self.reel = THX_TRANSFORMING_RIGHT_ANIM[::-1]
+                    direction = DIR_E
+                else:
+                    self.reel = THX_TRANSFORMING_LEFT_ANIM[::-1]
+                    direction = DIR_W
+            elif DIR_N < robot_direction < DIR_S:
                 self.reel = THX_TRANSFORMING_RIGHT_ANIM[::-1]
                 direction = DIR_E
             else:
@@ -279,6 +290,7 @@ class Robot(object):
             if state.direction != self.facing():
             
                 self.reel = turn_animation(self.facing(), state.direction)
+                self.set_flags(state.flags)
                 self.set_direction(state.direction)
 
         
