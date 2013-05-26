@@ -342,7 +342,7 @@ def dir_to_vec(direction):
     elif direction == DIR_WNW:
         return (-2, -1)
     elif direction == DIR_NW:
-        return (-2, -2)
+        return (-1, -1)
     elif direction == DIR_NNW:
         return (-1, -2)
     elif direction == DIR_N:
@@ -350,7 +350,7 @@ def dir_to_vec(direction):
     elif direction == DIR_NNE:
         return (1, -2)
     elif direction == DIR_NE:
-        return (2, -2)
+        return (1, -1)
     elif direction == DIR_ENE:
         return (2, -1)
     elif direction == DIR_E:
@@ -358,7 +358,7 @@ def dir_to_vec(direction):
     elif direction == DIR_ESE:
         return (2, 1)
     elif direction == DIR_SE:
-        return (2, 2)
+        return (1, 1)
     elif direction == DIR_SSE:
         return (1, 2)
     elif direction == DIR_S:
@@ -366,7 +366,7 @@ def dir_to_vec(direction):
     elif direction == DIR_SSW:
         return (-1, 2)
     elif direction == DIR_SW:
-        return (-2, 2)
+        return (-1, 1)
     elif direction == DIR_WSW:
         return (-2, 1)
     raise IndexError
@@ -595,7 +595,9 @@ def main():
                             thx.step()
                     
                     
-                    # TODO: Something funny here when jumping/falling...        
+                    # TODO: Something funny here when jumping/falling... Also, it seems like
+                    #       the target is one square too high, which could explain the 'misses'.
+                         
                     if keys[K_SPACE]:
 
                         if thx.direction() == DIR_E:
