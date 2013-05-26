@@ -16,6 +16,7 @@ from . import animation
 from . import graphics
 from . import robot
 
+from sprites import *
 from constants import *
 
 # for debugging: import pdb; pdb.set_trace()
@@ -240,80 +241,6 @@ def load_levels():
 
     return levels
 
-################################################################################################## 
-#
-# Debug stuff.
-#
-##################################################################################################
-
-def show_tiles(screen, tileset, anim=False):
-    robot_frame = 0
-    going = True
-    while going:
-        display_tile(screen, tileset[robot_frame].tile(), 0, 0)
-
-        pygame.display.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                keys = pygame.key.get_pressed()
-                if keys[K_RIGHT]:
-                    robot_frame += 1
-                    if robot_frame >= len(tileset):
-                        robot_frame = 0
-                elif keys[K_LEFT]:
-                    robot_frame -= 1
-                    if robot_frame < 0:
-                        robot_frame = len(tileset) - 1
-                elif keys[K_q]:
-                    going = False
-
-def view_enemies(screen,lvl):
-    which_monster = 0
-    frame = 0
-
-    monsters = []
-    for i in range(0, lvl.num_monsters()):
-        monsters.append(lvl.monster_data(i))
-
-    pygame.time.set_timer(TIME_EVENT, 100)
-
-    going = True
-    while going:
-        screen.blit(graphics.render_tile(monsters[which_monster].raw(frame),20),(0,0))
-        text = pygame.font.Font(None, 20).render("Enemy: %x, Frame: %x" % (which_monster, frame), False, (100,255,100))
-        pygame.draw.rect(screen,(0,0,0),(10,330,220,50),0)
-        screen.blit(text,(20, 340))
-
-        text = pygame.font.Font(None, 20).render("HG: %x, EG: %x, P: %x, M: %x, H: %x" % (monsters[which_monster].get_health_gain(), monsters[which_monster].get_enmax_gain(), monsters[which_monster].get_points(), monsters[which_monster].get_motion(), monsters[which_monster].get_health()), False, (100,255,100))
-        screen.blit(text,(20, 360))
-
-        pygame.display.update()
-        
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                keys = pygame.key.get_pressed()
-
-                if keys[K_RIGHT]:
-                    which_monster += 1
-                    if which_monster >= len(monsters):
-                        which_monster = 0
-                elif keys[K_LEFT]:
-                    which_monster -= 1
-                    if which_monster < 0:
-                        which_monster = len(monsters) - 1
-                elif keys[K_q]:
-                    going = False
-            elif event.type == TIME_EVENT:
-                frame += 1
-                if frame >= NUM_TILES:
-                    frame = 0
-
-##################################################################################################
-#
-# End debug stuff.
-#
-##################################################################################################
 
 
 ##################################################################################################
@@ -386,21 +313,26 @@ def display_sprites(screen, level, frame_number, x, y):
 # TODO: Include a way to look the other direction, and fix the bounds.
 
 def is_on_screen(screen_x, screen_y, x, y):
-    if screen_x <= x < screen_x + DISPLAY_WIDTH and screen_y <= y < screen_y + DISPLAY_HEIGHT:
+    if screen_x < x < screen_x + DISPLAY_WIDTH / 2 and screen_y <= y < screen_y + DISPLAY_HEIGHT:
         return True
     return False
 
-def get_laser_targets(monsters, screen_x, screen_y):
+def get_laser_targets(monsters, screen_x, screen_y, east_facing=True):
     out = []
+    
+    shift = 0
+    if east_facing:
+        shift = DISPLAY_WIDTH / 2
+        
     for monst in monsters:
         pos = monsters[monst].get_pos()
-        if is_on_screen(screen_x, screen_y, pos[0], pos[1]):
+        if is_on_screen(screen_x + shift, screen_y, pos[0], pos[1]):
             out.append(pos)
-        if is_on_screen(screen_x, screen_y, pos[0]+1, pos[1]):
+        if is_on_screen(screen_x + shift, screen_y, pos[0]+1, pos[1]):
             out.append((pos[0] + 1,pos[1]))
-        if is_on_screen(screen_x, screen_y, pos[0], pos[1]+1):
+        if is_on_screen(screen_x + shift, screen_y, pos[0], pos[1]+1):
             out.append((pos[0],pos[1]+1))
-        if is_on_screen(screen_x, screen_y, pos[0]+1, pos[1]+1):
+        if is_on_screen(screen_x + shift, screen_y, pos[0]+1, pos[1]+1):
             out.append((pos[0] + 1,pos[1]+1))
     return out
 
@@ -456,13 +388,14 @@ def draw_laser(screen, start_x, start_y, direction, is_robot=False, facing_east=
     
     if is_robot:
         if facing_east:
-            x_laz = x_laz_start = ((start_x+1) * TILE_WIDTH + 0x04) * PX_SIZE        
+            x_laz = x_laz_start = ((start_x + 1) * TILE_WIDTH) * PX_SIZE + 0x04      
         else:
-            x_laz = x_laz_start = ((start_x - 1) * TILE_WIDTH + 0x04) * PX_SIZE                    
-        y_laz = y_laz_start = ((start_y - 1) * TILE_HEIGHT + 0x04) * PX_SIZE
+            x_laz = x_laz_start = ((start_x - 1) * TILE_WIDTH) * PX_SIZE + 0x04
+                             
+        y_laz = y_laz_start = ((start_y - 1) * TILE_HEIGHT) * PX_SIZE + 0x04
     else:
-        x_laz = x_laz_start = ((start_x + direction[0]) * TILE_WIDTH + 0x04) * PX_SIZE
-        y_laz = y_laz_start = ((start_y + direction[1]) * TILE_HEIGHT + 0x04) * PX_SIZE
+        x_laz = x_laz_start = ((start_x + direction[0]) * TILE_WIDTH) * PX_SIZE 
+        y_laz = y_laz_start = ((start_y + direction[1]) * TILE_HEIGHT) * PX_SIZE 
     
     try:
         color = screen.get_at((x_laz, y_laz))
@@ -473,8 +406,6 @@ def draw_laser(screen, start_x, start_y, direction, is_robot=False, facing_east=
 
         screen.fill(COLORS[0x0f], pygame.Rect(x_laz, y_laz, PX_SIZE, PX_SIZE))
 
-        # TODO: This does not work if you are flying up or down.
-        
         if direction[0] == 0:
             y_laz += PX_SIZE * cmp(direction[1],0)
         elif abs((y_laz - y_laz_start) * direction[0]) >= abs(direction[1]* (x_laz - x_laz_start)):
@@ -493,329 +424,6 @@ def draw_laser(screen, start_x, start_y, direction, is_robot=False, facing_east=
 # End display methods.
 #
 ##################################################################################################
-
-##################################################################################################
-#
-# Begin interaction methods.
-#
-##################################################################################################
-
-def collision(frame_1, frame_2):
-    if frame_1.x + frame_1.width <= frame_2.x:
-        return False
-    if frame_1.x >= frame_2.x + frame_2.width:
-        return False
-    if frame_1.y + frame_1.height <= frame_2.y:
-        return False
-    if frame_1.y >= frame_2.y + frame_2.height:
-        return False
-    return True
-
-def sprite_collision(monsters, monster_id, new_frame):
-    for monst in monsters:
-        if monster_id != monsters[monst].get_ident():
-            if collision(monsters[monst].get_frame(), new_frame):
-                return True
-    return False
-
-def is_empty(level, monsters, monst_ident, frame):
-    """
-    This just checks to see if there is anything where we are trying to go. This should be the default
-    method to look for stuff.
-    """
-    if level.is_empty(frame.x, frame.y, frame.width, frame.height):
-        if not sprite_collision(monsters, monst_ident, frame):
-            return True
-    return False
-
-# TODO: Fix the monster motion. If they hit a wall for at lest one tick and they
-#       COULD be moving the other way, they should switch? Something like that...
-
-def monster_move(level, monsters, monst, robot_x, robot_y, clock):
-    """
-    This is the function which will take as input some data (including the motion type)
-    and return the new coordinates based on that input.
-    """    
-    
-    pos = monst.get_pos()
-    old_x = pos[0]
-    old_y = pos[1]
-
-    new_x = old_x
-    new_y = old_y
-    
-    motion_type = monst.get_motion()
-    
-    if motion_type == 0x00:
-        pass
-    elif motion_type == 0x01: # Normal slow flying
-        # TODO: Fix this. It should involve the state of the sprite.
-        state = monst.get_state()
-        if old_x > robot_x + 3 and old_y < robot_y:
-            monst.set_state(0)
-        elif old_x > robot_x + 3 and old_y > robot_y + 4:
-            monst.set_state(1)
-        elif old_x < robot_x and old_y < robot_y:
-            monst.set_state(2)
-        elif old_x < robot_x and old_y > robot_y + 4:
-            monst.set_state(3)
-
-        state = monst.get_state()
-        if state == 0:
-            new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-                new_y = old_y + 1
-            else:
-                monst.set_state(1)
-        if state == 1:
-            new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-                new_y = old_y - 1
-            else:
-                monst.set_state(0)
-        if state == 2:
-            new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-                new_y = old_y + 1
-            else:
-                monst.set_state(3)
-        if state == 3:
-            new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-                new_y = old_y - 1
-            else:
-                monst.set_state(2)
-
-    elif motion_type == 0x02: # Falling
-        new_x = old_x
-        new_frame = animation.frame(old_x, old_y + 1, 2, 2)
-        if is_empty(level, monsters, monst.get_ident(), new_frame):
-            new_y = old_y + 1
-        else:
-            new_y = old_y
-    elif motion_type == 0x03: # Slow horizontal motion, no falling.
-        if clock % 2:
-            if robot_x < old_x - 1:
-                new_frame = animation.frame(old_x - 1, old_y, 2, 2)
-                if is_empty(level, monsters, monst.get_ident(), new_frame):
-                    new_x = old_x - 1
-            elif robot_x > old_x:
-                new_frame = animation.frame(old_x + 1, old_y, 2, 2)
-                if is_empty(level, monsters, monst.get_ident(), new_frame):
-                    new_x = old_x + 1
-    elif motion_type == 0x04: # Rocket-type loopy motion
-    
-        # TODO: Make them actually try to follow you!        
-        
-        state = monst.get_state()
-        
-        if state == 0:
-            new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-                new_y = old_y + 1
-            monst.set_state(1)
-        elif state == 1:
-            new_frame = animation.frame(old_x - 1, old_y, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-            monst.set_state(2)
-        elif state == 2:
-            new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-                new_y = old_y - 1
-            monst.set_state(3)
-        elif state == 3:
-            new_frame = animation.frame(old_x, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_y = old_y - 1
-            monst.set_state(4)
-        elif state == 4:
-            new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-                new_y = old_y - 1
-            monst.set_state(5)
-        elif state == 5:
-            new_frame = animation.frame(old_x + 1, old_y, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-            monst.set_state(6)
-        elif state == 6:
-            new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-                new_y = old_y + 1
-            monst.set_state(7)
-        elif state == 7:
-            new_frame = animation.frame(old_x, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_y = old_y + 1
-            monst.set_state(0)
-        
-    elif motion_type == 0x05: # Falls, then moves slowly, possibly to the left/right depending on position.
-        if clock % 2:
-            # Check downward motion first.
-            new_frame = animation.frame(old_x, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_y += 1
-            else:
-                if robot_x + 2 < old_x:
-                    monst.set_state(0)
-                elif robot_x > old_x:
-                    monst.set_state(1)
-                    
-                state = monst.get_state()            
-                if state == 0:
-                    new_frame = animation.frame(old_x - 1, old_y, 2, 2)
-                    if is_empty(level, monsters, monst.get_ident(), new_frame):
-                        new_x = old_x - 1
-                    else:
-                        monst.set_state(1)
-                elif state == 1:
-                    new_frame = animation.frame(old_x + 1, old_y, 2, 2)
-                    if is_empty(level, monsters, monst.get_ident(), new_frame):
-                        new_x = old_x + 1
-                    else:
-                        monst.set_state(0)
-            
-
-    elif motion_type == 0x06: #       06 - hidden (animation is different!), no moving once open.
-        pass
-    elif motion_type == 0x07: #       07 - hidden (animation is different!), moves quickly once open.
-    
-        # TODO: This will eventually need an interaction  method; it is hidden until...
-        
-#        if monst.get_state() == 3:
-        if monst.get_state() == 0:
-            if old_x < robot_x:
-                new_frame = animation.frame(old_x + 1, old_y, 2, 2)
-                if is_empty(level, monsters, monst.get_ident(), new_frame):
-                    new_x = old_x + 1
-            elif old_x > robot_x:
-                new_frame = animation.frame(old_x - 1, old_y, 2, 2)
-                if is_empty(level, monsters, monst.get_ident(), new_frame):
-                    new_x = old_x - 1
-    elif motion_type == 0x08: #       08 - falls, moves randomly-ish.
-        new_x = old_x
-        new_frame = animation.frame(old_x, old_y + 1, 2, 2)
-        if is_empty(level, monsters, monst.get_ident(), new_frame):
-            new_y = old_y + 1
-        else:
-            if randint(0,1) == 0:
-                new_frame = animation.frame(old_x - 1, old_y, 2, 2)
-                if is_empty(level, monsters, monst.get_ident(), new_frame):
-                    new_x = old_x - 1
-            else:
-                new_frame = animation.frame(old_x + 1, old_y, 2, 2)
-                if is_empty(level, monsters, monst.get_ident(), new_frame):
-                    new_x = old_x + 1
-    elif motion_type == 0x09: #       09 - Seems to be about the same as 04?
-        pass                  # It is worth noting that this motion type does not actually occur in the bugdb
-                              # files anywhere...
-                             
-    elif motion_type == 0x0a: #       0A - Quick up/down flying (ala bats)
-        # TODO: The bottom part of this motion is not quite right.
-
-        if old_x > robot_x + 3 and old_y < robot_y:
-            monst.set_state(0)
-        elif old_x > robot_x + 3 and old_y >= robot_y + 3:
-            monst.set_state(1)
-        elif old_x < robot_x and old_y < robot_y:
-            monst.set_state(2)
-        elif old_x < robot_x and old_y >= robot_y + 3:
-            monst.set_state(3)
-
-        state = monst.get_state()
-        if state == 0:
-            new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-                new_y = old_y + 1
-        if state == 1:
-            new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-                new_y = old_y - 1
-        if state == 2:
-            new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-                new_y = old_y + 1
-        if state == 3:
-            new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-                new_y = old_y - 1
-
-    elif motion_type == 0x0b: #       0B - Weird jittery flying (also fast)
-        if old_x > robot_x + 3 and old_y < robot_y:
-            monst.set_state(0)
-        elif old_x > robot_x + 3 and old_y >= robot_y:
-            monst.set_state(1)
-        elif old_x < robot_x and old_y < robot_y:
-            monst.set_state(2)
-        elif old_x < robot_x and old_y >= robot_y:
-            monst.set_state(3)
-
-        state = monst.get_state()
-        if state == 0:
-            new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-                new_y = old_y + 1
-        if state == 1:
-            new_frame = animation.frame(old_x - 1, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x - 1
-                new_y = old_y - 1
-        if state == 2:
-            new_frame = animation.frame(old_x + 1, old_y + 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-                new_y = old_y + 1
-        if state == 3:
-            new_frame = animation.frame(old_x + 1, old_y - 1, 2, 2)
-            if is_empty(level, monsters, monst.get_ident(), new_frame):
-                new_x = old_x + 1
-                new_y = old_y - 1
-    else: #       >= 0C - diagonal fall, then no moving.
-        new_frame = animation.frame(old_x - 1, old_y + 1, 2, 2)
-        if is_empty(level,monsters, monst.get_ident(), new_frame):
-            new_x = old_x - 1
-            new_y = old_y + 1
-
-    return (new_x, new_y)
-
-
-def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
-    """    
-    This just moves all of the monsters using the previous method.
-    """
-    monsters = level.monsters()
-    
-    for monst in monsters:
-        
-        monst_pos = monsters[monst].get_pos()
-        
-        if screen_x - 1 < monst_pos[0] < screen_x + DISPLAY_WIDTH:
-            # We only want to moves monsters within the display's width (any y-position, though).
-             
-            (new_x, new_y) = monster_move(level, monsters, monsters[monst], robot_x, robot_y, clock)
-            
-            monsters[monst].move_to(new_x, new_y)
-
-##################################################################################################
-#
-# End interaction methods.
-#
-##################################################################################################
-
 
 def main():
 
@@ -976,16 +584,27 @@ def main():
                             thx.step()
                             
                     if keys[K_SPACE]:
-                        # TODO: How to pick the direction?
-                        targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos)
-                        
-                        if len(targets):
-                            target = targets[game_clock % len(targets)]
-                            laser_direction = (target[0] - (robot_x + 3), target[1] - (robot_y + 1))
+                        targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos,
+                                thx.direction() == DIR_E)
+
+                        if thx.direction() == DIR_E:
+                            if len(targets):
+                                target = targets[game_clock % len(targets)]
+                                laser_direction = (target[0] - (robot_x + 3), target[1] - (robot_y + 1))
+                            else:
+                                laser_direction = (1, 0)                        
+                            
+                            draw_laser(screen, 20, robot_y, laser_direction, True)
                         else:
-                            laser_direction = (1, 0)
-                        
-                        draw_laser(screen, 20, robot_y, laser_direction, True)
+                            # TODO: Really not sure what's going on with this.
+                            if len(targets):
+                                target = targets[game_clock % len(targets)]
+                                laser_direction = (target[0] - robot_x, target[1] - (robot_y + 1))
+                            else:
+                                laser_direction = (-1, 0)                        
+                            
+                            draw_laser(screen, 20, robot_y, laser_direction, False)
+
 
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
