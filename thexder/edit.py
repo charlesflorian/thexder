@@ -385,8 +385,8 @@ def draw_line(screen, start_x, start_y, direction, color=COLORS[0x0f]):
     try:
         scr_color = screen.get_at((x_pos, y_pos))
     except IndexError:
-        return
-        
+        return False
+    
     while scr_color == COLORS[0]:
         
         screen.fill(color, pygame.Rect(x_pos, y_pos, PX_SIZE, PX_SIZE))
@@ -401,9 +401,14 @@ def draw_line(screen, start_x, start_y, direction, color=COLORS[0x0f]):
         try:
             scr_color = screen.get_at((x_pos, y_pos))
         except IndexError:
-            break
+            pygame.display.update()
+            return False
     
     pygame.display.update()
+    
+    # This should return the sprite id, if it hits a sprite. Or some way of hitting a wall?
+    
+    return (x_pos / PX_SIZE, y_pos / PX_SIZE)
 
 def draw_laser(screen, start_x, start_y, direction, facing):
     """
@@ -411,9 +416,28 @@ def draw_laser(screen, start_x, start_y, direction, facing):
     given, offset from the start_x, start_y position by the value of the tuple facing.
     """
     
-    draw_line(screen, (start_x + facing[0]) * TILE_WIDTH + TILE_WIDTH / 2,
+    result = draw_line(screen, (start_x + facing[0]) * TILE_WIDTH + TILE_WIDTH / 2,
             (start_y + facing[1]) * TILE_HEIGHT + TILE_HEIGHT / 2, direction)
     
+    if result:        
+        return (result[0] / TILE_WIDTH, result[1] / TILE_HEIGHT)
+    return False        
+    
+
+def target_hit(level, x, y):
+    """
+    This should tell you what is at the location (x, y) in case you hit it.
+    """
+    hit_tile = level.tile(x, y)
+    if hit_tile:
+        if hit_tile == 0x06: #Obviously, this is not the right thing. But it works! Tiles are shootable!
+            level.map.change_tile(x,y,0x00)
+            return
+
+    monst = sprite_collision(level.monsters(), -1, animation.frame(x,y,1,1))
+    if monst:
+        # Monsters are killable!
+        del level.monsters()[monst]
 
 
 ##################################################################################################
@@ -595,8 +619,7 @@ def main():
                             thx.step()
                     
                     
-                    # TODO: Something funny here when jumping/falling... Also, it seems like
-                    #       the target is one square too high, which could explain the 'misses'.
+                    # TODO: Something funny here when jumping/falling... 
                          
                     if keys[K_SPACE]:
 
@@ -605,21 +628,27 @@ def main():
 
                             if len(targets):
                                 target = targets[game_clock % len(targets)]
-                                laser_dir = (target[0] - (robot_x + 2), target[1] - (robot_y + 1))
+                                laser_dir = (target[0] - (robot_x + 2), target[1] - robot_y)
                             else:
                                 laser_dir = (1,0)
                                 
-                            draw_laser(screen, 20, robot_screen_y_pos(robot_y), laser_dir, (1,0))
+                            result = draw_laser(screen, 20, robot_screen_y_pos(robot_y), laser_dir, (1,0))
+                            
+                            if result:
+                                target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
                         else:
                             targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, False)
                             
                             if len(targets):
                                 target = targets[game_clock % len(targets)]
-                                laser_dir = (target[0] - robot_x, target[1] - (robot_y + 1))
+                                laser_dir = (target[0] - robot_x, target[1] - robot_y)
                             else:
                                 laser_dir = (-1,0)
                                 
-                            draw_laser(screen, 20, robot_screen_y_pos(robot_y), laser_dir, (-1,0))
+                            result = draw_laser(screen, 20, robot_screen_y_pos(robot_y), laser_dir, (-1,0))
+                            
+                            if result:
+                                target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
 
 
                 else:
@@ -767,7 +796,10 @@ def main():
                     
                     if keys[K_SPACE]:
                         direction = dir_to_vec(thx.facing())
-                        draw_laser(screen, 20, robot_screen_y_pos(robot_y) + 1, direction, direction)
+                        result = draw_laser(screen, 20, robot_screen_y_pos(robot_y) + 1, direction, direction)
+
+                        if result:
+                            target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
                     
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.

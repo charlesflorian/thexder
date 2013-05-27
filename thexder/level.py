@@ -95,7 +95,7 @@ class Level(object):
         
         i = BUGDB_HEADER_SIZE
 
-        m_count = 0
+        m_count = 1
         bug_dict = {}
 
         while i < len(content):

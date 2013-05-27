@@ -19,7 +19,7 @@ def sprite_collision(monsters, monster_id, new_frame):
     for monst in monsters:
         if monster_id != monsters[monst].get_ident():
             if collision(monsters[monst].get_frame(), new_frame):
-                return True
+                return monst
     return False
 
 def is_empty(level, monsters, monst_ident, frame, robot_x, robot_y, is_robot=True):
