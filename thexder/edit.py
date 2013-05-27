@@ -433,12 +433,8 @@ def target_hit(level, x, y):
     
         # TODO: Sort out exactly which tiles we can destroy. In most levels, 0x0d is correct.
         
-        return (x, y, hit_tile)
+        return (0, x, y, hit_tile)
         
-        if hit_tile == 0x0d: 
-            level.map.change_tile(x,y,0x00)
-            return
-
     monst = sprite_collision(level.monsters(), -1, animation.frame(x,y,1,1))
     if monst:
         # Monsters are killable!
@@ -448,8 +444,10 @@ def target_hit(level, x, y):
             
             del level.monsters()[monst]
             
-            return ident
-            
+            return (1, ident, monst)
+
+        return monst
+                    
     return False
 
 
@@ -652,10 +650,13 @@ def main():
                                 
                                 if hit:
                                     if type(hit) is tuple:
-                                        if hit[2] in SHOOTABLE_TILES[curlvl]:
-                                            levels[curlvl].map.change_tile(hit[0], hit[1], 0x00)
-                                    else:
-                                        pass
+                                        if hit[0] == 0:
+                                            if hit[3] in SHOOTABLE_TILES[curlvl]:
+                                                levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
+                                        else:
+                                            print "Enmax gain: ", levels[curlvl].monster_data(hit[1]).get_enmax_gain()
+                                            print "Health gain: ", levels[curlvl].monster_data(hit[1]).get_health_gain()
+                                            print "Points gain: ", levels[curlvl].monster_data(hit[1]).get_points()
                         else:
                             targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, False)
                             
@@ -672,10 +673,13 @@ def main():
 
                                 if hit:
                                     if type(hit) is tuple:
-                                        if hit[2] in SHOOTABLE_TILES[curlvl]:
-                                            levels[curlvl].map.change_tile(hit[0], hit[1], 0x00)
-                                    else:
-                                        pass
+                                        if hit[0] == 0:
+                                            if hit[3] in SHOOTABLE_TILES[curlvl]:
+                                                levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
+                                        else:
+                                            print "Enmax gain: ", levels[curlvl].monster_data(hit[1]).get_enmax_gain()
+                                            print "Health gain: ", levels[curlvl].monster_data(hit[1]).get_health_gain()
+                                            print "Points gain: ", levels[curlvl].monster_data(hit[1]).get_points()
 
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
@@ -829,10 +833,13 @@ def main():
 
                             if hit:
                                 if type(hit) is tuple:
-                                    if hit[2] in SHOOTABLE_TILES[curlvl]:
-                                        levels[curlvl].map.change_tile(hit[0], hit[1], 0x00)
-                                else:
-                                    pass
+                                    if hit[0] == 0:
+                                        if hit[3] in SHOOTABLE_TILES[curlvl]:
+                                            levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
+                                    else:
+                                        print "Enmax gain: ", levels[curlvl].monster_data(hit[1]).get_enmax_gain()
+                                        print "Health gain: ", levels[curlvl].monster_data(hit[1]).get_health_gain()
+                                        print "Points gain: ", levels[curlvl].monster_data(hit[1]).get_points()
 
                     
                     if thx_blocked:
