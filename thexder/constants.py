@@ -80,6 +80,11 @@ THX_FLYING_FRAMES = 0x20
 # In actuality, 0x00 is the only truly transparent tile, but the others are ones
 # that can be taken out with the robot laser.
 
+SHOOTABLE_TILES = [[0x0d], [0x0d], [0x0d], [0x0d],
+                    [],[],[],[0x0d],
+                    [0x0c, 0x0d], [0x0d], [0x0c, 0x0d], [0x0d],
+                    [],[],[],[0x0d]]
+
 TRANSPARENT_TILES = [[0,0x0d],[0,0x0d],[0,0x0d],[0,0x0d],
                       [0],[0],[0],[0,0x0d],
                       [0,0x0c,0x0d],[0],[0,0x0c,0x0d],[0],

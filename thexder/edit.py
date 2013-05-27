@@ -417,7 +417,7 @@ def draw_laser(screen, start_x, start_y, direction, facing):
     """
     
     result = draw_line(screen, (start_x + facing[0]) * TILE_WIDTH + TILE_WIDTH / 2,
-            (start_y + facing[1]) * TILE_HEIGHT + TILE_HEIGHT / 2, direction)
+            (start_y + facing[1]) * TILE_HEIGHT + 3, direction)
     
     if result:        
         return (result[0] / TILE_WIDTH, result[1] / TILE_HEIGHT)
@@ -433,6 +433,8 @@ def target_hit(level, x, y):
     
         # TODO: Sort out exactly which tiles we can destroy. In most levels, 0x0d is correct.
         
+        return (x, y, hit_tile)
+        
         if hit_tile == 0x0d: 
             level.map.change_tile(x,y,0x00)
             return
@@ -441,7 +443,14 @@ def target_hit(level, x, y):
     if monst:
         # Monsters are killable!
         if not level.monsters()[monst].zap():
+        
+            ident = level.monsters()[monst].monster_type()
+            
             del level.monsters()[monst]
+            
+            return ident
+            
+    return False
 
 
 ##################################################################################################
@@ -639,7 +648,14 @@ def main():
                             result = draw_laser(screen, 20, robot_screen_y_pos(robot_y), laser_dir, (1,0))
                             
                             if result:
-                                target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
+                                hit = target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
+                                
+                                if hit:
+                                    if type(hit) is tuple:
+                                        if hit[2] in SHOOTABLE_TILES[curlvl]:
+                                            levels[curlvl].map.change_tile(hit[0], hit[1], 0x00)
+                                    else:
+                                        pass
                         else:
                             targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, False)
                             
@@ -652,8 +668,14 @@ def main():
                             result = draw_laser(screen, 20, robot_screen_y_pos(robot_y), laser_dir, (-1,0))
                             
                             if result:
-                                target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
+                                hit = target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
 
+                                if hit:
+                                    if type(hit) is tuple:
+                                        if hit[2] in SHOOTABLE_TILES[curlvl]:
+                                            levels[curlvl].map.change_tile(hit[0], hit[1], 0x00)
+                                    else:
+                                        pass
 
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
@@ -803,7 +825,15 @@ def main():
                         result = draw_laser(screen, 20, robot_screen_y_pos(robot_y) + 1, direction, direction)
 
                         if result:
-                            target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
+                            hit = target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
+
+                            if hit:
+                                if type(hit) is tuple:
+                                    if hit[2] in SHOOTABLE_TILES[curlvl]:
+                                        levels[curlvl].map.change_tile(hit[0], hit[1], 0x00)
+                                else:
+                                    pass
+
                     
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.

@@ -45,8 +45,10 @@ class Level(object):
             
                 tile = self.map.tile(x + i, y + j) % 16
                 
-                if not tile in TRANSPARENT_TILES[self.map.curlvl]:
+                if tile > 0:
                     return False
+#                if not tile in TRANSPARENT_TILES[self.map.curlvl]:
+#                    return False
                     
         return True
 

@@ -22,6 +22,14 @@ def sprite_collision(monsters, monster_id, new_frame):
                 return monst
     return False
 
+def robot_empty(level, frame):
+    if not level.is_empty(frame.x, frame.y, frame.width, frame.height):
+        return False
+    if sprite_collisions(level.monsters(), -1, frame):
+        return False
+    return True
+        
+
 def is_empty(level, monsters, monst_ident, frame, robot_x, robot_y, is_robot=True):
     """
     This just checks to see if there is anything where we are trying to go. This should be the default
