@@ -430,14 +430,18 @@ def target_hit(level, x, y):
     """
     hit_tile = level.tile(x, y)
     if hit_tile:
-        if hit_tile == 0x06: #Obviously, this is not the right thing. But it works! Tiles are shootable!
+    
+        # TODO: Sort out exactly which tiles we can destroy. In most levels, 0x0d is correct.
+        
+        if hit_tile == 0x0d: 
             level.map.change_tile(x,y,0x00)
             return
 
     monst = sprite_collision(level.monsters(), -1, animation.frame(x,y,1,1))
     if monst:
         # Monsters are killable!
-        del level.monsters()[monst]
+        if not level.monsters()[monst].zap():
+            del level.monsters()[monst]
 
 
 ##################################################################################################

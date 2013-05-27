@@ -170,6 +170,10 @@ class Monster(object):
         
     def set_state(self, state):
         self.state = state
+        
+    def zap(self):
+        self.life -= 1
+        return self.health()
 
 
 class Animation(object):
