@@ -850,11 +850,13 @@ def main():
                             robot_y -= 1
                             thx.transform()
                         else:
-                            # Turn around
+                            # TODO: This seems a little off in timing?
                             if thx.direction() == DIR_E:
                                 thx.push_direction(DIR_W)
+                                robot_x -= 1
                             elif thx.direction() == DIR_W:
                                 thx.push_direction(DIR_E)
+                                robot_x += 1
 
                 if robot_y < 0:
                     robot_y = 0
