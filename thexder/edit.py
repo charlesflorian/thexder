@@ -851,7 +851,10 @@ def main():
                             thx.transform()
                         else:
                             # Turn around
-                            pass
+                            if thx.direction() == DIR_E:
+                                thx.push_direction(DIR_W)
+                            elif thx.direction() == DIR_W:
+                                thx.push_direction(DIR_E)
 
                 if robot_y < 0:
                     robot_y = 0
