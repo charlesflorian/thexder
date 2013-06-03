@@ -105,7 +105,8 @@ class Robot(object):
         self.jump_height = 0
 
         self.enmax = 100
-        self.heatlh = 100
+        self.health = 100
+        self.score = 0
         
         self.frames = self.big_frames
         self.frames.extend(self.small_frames)
@@ -155,6 +156,16 @@ class Robot(object):
         return self.direction()
         
 # Set methods
+    def change_score(self, d_score):
+        self.score += d_score
+    
+    def change_health(self, d_health):
+        self.health += d_health
+        if self.health > self.enmax:
+            self.health = self.enmax
+            
+    def change_enmax(self, d_enmax):
+        self.enmax += d_enmax
 
     def set_state(self, state):
         self.thx_state = state 
@@ -198,6 +209,8 @@ class Robot(object):
         return self.flags() & THX_FLAG_TRANSFORMING 
         
     def tick(self):
+        if self.health > self.enmax:
+            self.health = self.enmax
         if len(self.reel):
             self.reel.pop(0) # This just knocks off one frame in the animation.
         elif self.flags() & THX_FLAG_TRANSFORMING:

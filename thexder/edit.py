@@ -259,7 +259,7 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     """
     This will display text in the thexder font.
     """
-    say_what = " " + say_what.upper() + " "
+    say_what = say_what.upper()
 
     if center:
         x = (DISPLAY_WIDTH - len(say_what)) / 2
@@ -268,18 +268,21 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     for i in range(0, len(say_what)):
         display_tile(screen, tiles[ord(say_what[i])].tile(), x + i, y)
 
-    pygame.display.update()
+    #pygame.display.update()
     
 
 # This doesn't seem to work very well? It's skippy...
 def display_stats(screen, tiles, thx):
-    #tile_size = PX_SIZE * TILE_HEIGHT
-    #screen.fill(COLORS[0], pygame.Rect(0,DISPLAY_HEIGHT * tile_size, DISPLAY_WIDTH * tile_size, tile_size))
+    tile_size = PX_SIZE * TILE_HEIGHT
+    screen.fill(COLORS[0], pygame.Rect(0,DISPLAY_HEIGHT * tile_size, DISPLAY_WIDTH * tile_size, tile_size))
     
-    display_text(screen, "energy", tiles, False, 0, DISPLAY_HEIGHT)
-    display_text(screen, "score", tiles, False, 0, DISPLAY_HEIGHT + 2)
-    display_text(screen, "level", tiles, False, 16, DISPLAY_HEIGHT + 2)
-    display_text(screen, "enmax", tiles, False, 26, DISPLAY_HEIGHT + 2)
+    display_text(screen, "energy", tiles, False, 1, DISPLAY_HEIGHT)
+    display_text(screen, str(thx.health), tiles, False, 7, DISPLAY_HEIGHT)
+    display_text(screen, "score", tiles, False, 1, DISPLAY_HEIGHT + 2)
+    display_text(screen, str(thx.score), tiles, False, 6, DISPLAY_HEIGHT + 2)
+    display_text(screen, "level", tiles, False, 17, DISPLAY_HEIGHT + 2)
+    display_text(screen, "enmax", tiles, False, 27, DISPLAY_HEIGHT + 2)
+    display_text(screen, str(thx.enmax), tiles, False, 32, DISPLAY_HEIGHT + 2)
 
 def display_tile(screen, tile, x, y):
 
@@ -518,8 +521,6 @@ def main():
 
     pygame.time.set_timer(TIME_EVENT, FRAME_LENGTH_MS)
 
-    display_stats(screen, lvl_tiles, thx)
-    
     going = True
     while going:
 
@@ -537,6 +538,9 @@ def main():
         display_sprites(screen, levels[curlvl], game_clock % NUM_TILES, x_pos, y_pos)
         #display_tile(screen, thx.get_frame(), 19, robot_y - y_pos)
         display_tile(screen, thx.frame(), 19, robot_y - y_pos)
+        
+        display_stats(screen, lvl_tiles, thx)
+    
         
         pygame.display.update()
 
@@ -667,9 +671,9 @@ def main():
                                             if hit[3] in SHOOTABLE_TILES[curlvl]:
                                                 levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
                                         else:
-                                            print "Enmax gain: ", levels[curlvl].monster_data(hit[1]).get_enmax_gain()
-                                            print "Health gain: ", levels[curlvl].monster_data(hit[1]).get_health_gain()
-                                            print "Points gain: ", levels[curlvl].monster_data(hit[1]).get_points()
+                                            thx.change_enmax(levels[curlvl].monster_data(hit[1]).get_enmax_gain())
+                                            thx.change_health(levels[curlvl].monster_data(hit[1]).get_health_gain())
+                                            thx.change_score(levels[curlvl].monster_data(hit[1]).get_points())
                         else:
                             targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, False)
                             
@@ -690,9 +694,9 @@ def main():
                                             if hit[3] in SHOOTABLE_TILES[curlvl]:
                                                 levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
                                         else:
-                                            print "Enmax gain: ", levels[curlvl].monster_data(hit[1]).get_enmax_gain()
-                                            print "Health gain: ", levels[curlvl].monster_data(hit[1]).get_health_gain()
-                                            print "Points gain: ", levels[curlvl].monster_data(hit[1]).get_points()
+                                            thx.change_enmax(levels[curlvl].monster_data(hit[1]).get_enmax_gain())
+                                            thx.change_health(levels[curlvl].monster_data(hit[1]).get_health_gain())
+                                            thx.change_score(levels[curlvl].monster_data(hit[1]).get_points())
 
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
@@ -850,9 +854,9 @@ def main():
                                         if hit[3] in SHOOTABLE_TILES[curlvl]:
                                             levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
                                     else:
-                                        print "Enmax gain: ", levels[curlvl].monster_data(hit[1]).get_enmax_gain()
-                                        print "Health gain: ", levels[curlvl].monster_data(hit[1]).get_health_gain()
-                                        print "Points gain: ", levels[curlvl].monster_data(hit[1]).get_points()
+                                        thx.change_enmax(levels[curlvl].monster_data(hit[1]).get_enmax_gain())
+                                        thx.change_health(levels[curlvl].monster_data(hit[1]).get_health_gain())
+                                        thx.change_score(levels[curlvl].monster_data(hit[1]).get_points())
 
                     
                     if thx_blocked:
