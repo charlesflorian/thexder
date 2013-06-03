@@ -174,6 +174,7 @@ class Monster(object):
     def zap(self):
         self.life -= 1
         return self.health()
+        
 
 
 class Animation(object):

@@ -28,7 +28,6 @@ def robot_empty(level, frame):
     if sprite_collisions(level.monsters(), -1, frame):
         return False
     return True
-        
 
 def is_empty(level, monsters, monst_ident, frame, robot_x, robot_y, is_robot=True):
     """
