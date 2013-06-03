@@ -274,12 +274,12 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
 # This doesn't seem to work very well? It's skippy...
 def display_stats(screen, tiles, thx):
     tile_size = PX_SIZE * TILE_HEIGHT
-    screen.fill(COLORS[0], pygame.Rect(0,DISPLAY_HEIGHT * tile_size, DISPLAY_WIDTH * tile_size, tile_size))
+    screen.fill(COLORS[0], pygame.Rect(0,DISPLAY_HEIGHT * tile_size, DISPLAY_WIDTH * tile_size, tile_size * 3))
     
     display_text(screen, "energy", tiles, False, 1, DISPLAY_HEIGHT)
     display_text(screen, str(thx.health), tiles, False, 7, DISPLAY_HEIGHT)
     display_text(screen, "score", tiles, False, 1, DISPLAY_HEIGHT + 2)
-    display_text(screen, str(thx.score), tiles, False, 6, DISPLAY_HEIGHT + 2)
+    display_text(screen, "{0:010d}".format(thx.score), tiles, False, 6, DISPLAY_HEIGHT + 2)
     display_text(screen, "level", tiles, False, 17, DISPLAY_HEIGHT + 2)
     display_text(screen, "enmax", tiles, False, 27, DISPLAY_HEIGHT + 2)
     display_text(screen, str(thx.enmax), tiles, False, 32, DISPLAY_HEIGHT + 2)
@@ -517,6 +517,9 @@ def main():
     x_pos = 0
     y_pos = 0
 
+    # This will just allow us to toggle between noclip/clipping for debug.
+    clipping = True
+
     game_clock = 0
 
     pygame.time.set_timer(TIME_EVENT, FRAME_LENGTH_MS)
@@ -583,6 +586,8 @@ def main():
                     pause()
                     display_text(screen, "No seriously what", lvl_tiles)
                     pause()
+                elif keys[K_c]:
+                    clipping = not clipping
                     
                 #elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...
@@ -609,24 +614,24 @@ def main():
                     keys = pygame.key.get_pressed()
                     
                     if thx.is_jumping():
-                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, True):
+                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, clipping):
                             robot_y -= 1
                         else:
-                            if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1, True):
+                            if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1, clipping):
                                 thx.fall()
                                 robot_y += 1
                             else:
                                 thx.land()
                     elif thx.is_falling():
-                        if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1, True):
+                        if levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1, clipping):
                             robot_y += 1
                         else:
                             thx.land()
                     elif thx.is_grounded():
-                        if keys[K_UP] and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, True):
+                        if keys[K_UP] and levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, clipping):
                             thx.jump()
                             robot_y -= 1
-                        elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1, True):
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 4, 3, 1, clipping):
                             thx.fall()
                             robot_y += 1
 
@@ -634,13 +639,13 @@ def main():
                     if keys[K_DOWN]:
                         thx.transform()
                     elif keys[K_RIGHT]:
-                        if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4, True):
+                        if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 4, clipping):
                             robot_x += 1
                         thx.push_direction(DIR_E)
                         if thx.is_grounded():
                             thx.step()
                     elif keys[K_LEFT]:
-                        if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4, True):
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 4, clipping):
                             robot_x -= 1
                         thx.push_direction(DIR_W)
                         if thx.is_grounded():
@@ -707,80 +712,80 @@ def main():
 # TODO: Fix the up/down thing when in a tunnel.
 
                     if keys[K_UP] and keys[K_LEFT]:
-                        if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 3, True):
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 3, clipping):
                             thx.push_direction(DIR_NW)
                     elif keys[K_UP] and keys[K_RIGHT]:
-                        if levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 3, True):
+                        if levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 3, clipping):
                             thx.push_direction(DIR_NE)
                     elif keys[K_DOWN] and keys[K_LEFT]:
-                        if levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 3, 3, True):
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 3, 3, clipping):
                             thx.push_direction(DIR_SW)
                     elif keys[K_DOWN] and keys[K_RIGHT]:                    
-                        if levels[curlvl].is_empty(robot_x + 1, robot_y + 1, 3, 3, True):
+                        if levels[curlvl].is_empty(robot_x + 1, robot_y + 1, 3, 3, clipping):
                             thx.push_direction(DIR_SE)
                     elif keys[K_UP]:
                         thx.push_direction(DIR_N)
                     elif keys[K_DOWN]:
                         thx.push_direction(DIR_S)
                     elif keys[K_LEFT]:
-                        if thx.direction() == DIR_E and (levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, True) or levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, True)):                            
+                        if thx.direction() == DIR_E and (levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, clipping) or levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, clipping)):                            
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_W)
                     elif keys[K_RIGHT]:
-                        if thx.direction() == DIR_W and (levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, True) or levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, True)):
+                        if thx.direction() == DIR_W and (levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, clipping) or levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, clipping)):
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_E)
 
                     direction = thx.direction()
                     if direction == DIR_E:
-                        if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3, True):
+                        if levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3, clipping):
                             robot_x += 1
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 3, True):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 3, clipping):
                             robot_x += 1
                             robot_y -= 1
                             thx.push_direction(DIR_NE)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 1, 3, 3, True):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 1, 3, 3, clipping):
                             robot_x += 1
                             robot_y += 1
                             thx.push_direction(DIR_SE)
                         else:
                             thx_blocked = True
                     elif direction == DIR_W:
-                        if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3, True):
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3, clipping):
                             robot_x -= 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 3, True):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 3, clipping):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 3, 3, True):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 3, 3, clipping):
                             robot_x -= 1
                             robot_y += 1
                             thx.push_direction(DIR_SW)
                         else:
                             thx_blocked = True
                     elif direction == DIR_N:
-                        if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, True):
+                        if levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, clipping):
                             robot_y -= 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 3, True):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 3, clipping):
                             robot_x -= 1
                             robot_y -= 1
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 3, True):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 3, clipping):
                             robot_x += 1
                             robot_y -= 1
                             thx.push_direction(DIR_NE)
                         else:
                             thx_blocked = True
                     elif direction == DIR_S:
-                        if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, True):
+                        if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, clipping):
                             robot_y += 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 3, 3, True):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 3, 3, clipping):
                             robot_x -= 1
                             robot_y += 1
                             thx.push_direction(DIR_SW)
-                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 1, 3, 3, True):
+                        elif levels[curlvl].is_empty(robot_x + 1, robot_y + 1, 3, 3, clipping):
                             robot_x += 1
                             robot_y += 1
                             thx.push_direction(DIR_SE)
@@ -789,53 +794,53 @@ def main():
 
                     # Diagonals
                     elif direction == DIR_NW:
-                        if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3,
-                                1, True) and levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2, True):
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y - 1, 3, 1,
+                                clipping) and levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 2, clipping):
                             robot_x -= 1
                             robot_y -= 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3, True):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3, clipping):
                             robot_x -= 1
                             thx.push_direction(DIR_W)
-                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, True):
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, clipping):
                             robot_y -= 1
                             thx.push_direction(DIR_N)
                         else:
                             thx_blocked = True
                     elif direction == DIR_NE:
-                        if levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 
-                                1, True) and levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2, True):
+                        if levels[curlvl].is_empty(robot_x + 1, robot_y - 1, 3, 1, 
+                                clipping) and levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 2, clipping):
                             robot_x += 1
                             robot_y -= 1
-                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3, True):
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3, clipping):
                             robot_x += 1
                             thx.push_direction(DIR_E)
-                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, True):
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, clipping):
                             robot_y -= 1
                             thx.push_direction(DIR_N)
                         else:
                             thx_blocked = True
                     elif direction == DIR_SE:
-                        if levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 3, 
-                                1, True) and levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2, True):
+                        if levels[curlvl].is_empty(robot_x + 1, robot_y + 3, 3, 1, 
+                                clipping) and levels[curlvl].is_empty(robot_x + 3, robot_y + 1, 1, 2, clipping):
                             robot_x += 1
                             robot_y += 1
-                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3, True):
+                        elif levels[curlvl].is_empty(robot_x + 3, robot_y, 1, 3, clipping):
                             robot_x += 1
                             thx.push_direction(DIR_E)
-                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, True):
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, clipping):
                             robot_y += 1
                             thx.push_direction(DIR_S)
                         else:
                             thx_blocked = True
                     elif direction == DIR_SW:
-                        if levels[curlvl].is_empty(robot_x - 1, robot_y + 3, 3, 
-                                1, True) and levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 2, True):
+                        if levels[curlvl].is_empty(robot_x - 1, robot_y + 3, 3, 1, 
+                                clipping) and levels[curlvl].is_empty(robot_x - 1, robot_y + 1, 1, 2, clipping):
                             robot_x -= 1
                             robot_y += 1
-                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3, True):
+                        elif levels[curlvl].is_empty(robot_x - 1, robot_y, 1, 3, clipping):
                             robot_x -= 1
                             thx.push_direction(DIR_W)
-                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, True):
+                        elif levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, clipping):
                             robot_y += 1
                             thx.push_direction(DIR_S)
                         else:
@@ -861,9 +866,9 @@ def main():
                     
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
-                        if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, True):
+                        if levels[curlvl].is_empty(robot_x, robot_y + 3, 3, 1, clipping):
                             thx.transform()
-                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, True):
+                        elif levels[curlvl].is_empty(robot_x, robot_y - 1, 3, 1, clipping):
                             robot_y -= 1
                             thx.transform()
                         else:
