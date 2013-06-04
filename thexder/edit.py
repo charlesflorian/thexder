@@ -484,6 +484,8 @@ def robot_screen_y_pos(robot_y):
         return robot_y - (LVL_HEIGHT - DISPLAY_HEIGHT)
     return 11
 
+# TODO: robot_x, robot_y should be properties of the object robot.thx(), not independent variables.
+
 def main():
 
     global curlvl
@@ -600,7 +602,7 @@ def main():
             elif event.type == TIME_EVENT:
                 game_clock += 1
             
-                move_monsters(levels[curlvl], x_pos, y_pos, robot_x, robot_y, game_clock)
+                move_monsters(levels[curlvl], x_pos, y_pos, robot_x, robot_y, game_clock, thx)
                 
                 thx.tick()
                 

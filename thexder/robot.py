@@ -116,10 +116,26 @@ class Robot(object):
         
         self.aiming = DIR_E
 
+        self.bounds = animation.frame(19,11,3,4) # These are the default starting parameters. It may be worth
+                                                # allowing this to be mutable...
 # Animations.
 
 
 # Queries
+    def get_frame(self):
+        return self.bounds
+
+    def x(self):
+        return self.get_frame().x
+        
+    def y(self):
+        return self.get_frame().y
+    
+    def width(self):
+        return self.get_frame().width
+        
+    def height(self):
+        return self.get_frame().height
 
     def direction(self):
         return self.query_state().direction
@@ -157,7 +173,7 @@ class Robot(object):
         
 # Set methods
     def change_score(self, d_score):
-        self.score += d_score
+        self.score += d_score * 25
     
     def change_health(self, d_health):
         self.health += d_health
@@ -175,6 +191,9 @@ class Robot(object):
     
     def set_direction(self, direction):
         self.set_state(rState(self.flags(), direction))
+        
+    def set_frame(self, frame):
+        self.bounds = frame
 
 # Actions
 
@@ -202,8 +221,10 @@ class Robot(object):
     def transform(self):
         if self.is_robot():
             self.push_state(rState(THX_FLAG_JET))
+            self.set_frame(animation.frame(self.x(), self.y(), 3, 3))
         else:
             self.push_state(rState(THX_FLAG_ROBOT))
+            self.set_frame(animation.frame(self.x(), self.y(), 3, 4))
 
     def wait(self):
         return self.flags() & THX_FLAG_TRANSFORMING 

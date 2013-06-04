@@ -308,7 +308,7 @@ def monster_move(level, monsters, monst, robot_x, robot_y, clock, is_robot=True)
     return (new_x, new_y)
 
 
-def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock):
+def move_monsters(level, screen_x, screen_y, robot_x, robot_y, clock, robot):
     """    
     This just moves all of the monsters using the previous method.
     """
