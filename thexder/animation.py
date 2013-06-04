@@ -74,6 +74,32 @@ class frame(object):
         self.y = y
         self.width = width
         self.height = height
+ 
+    # These are so that you can easily check for space in a given direction.
+        
+    def N(self):
+        return frame(self.x, self.y - 1, self.width, self.height)
+    
+    def E(self):
+        return frame(self.x + 1, self.y, self.width, self.height)
+        
+    def W(self):
+        return frame(self.x - 1, self.y, self.width, self.height)
+        
+    def S(self):
+        return frame(self.x, self.y + 1, self.width, self.height)
+        
+    def NE(self):
+        return frame(self.x + 1, self.y - 1, self.width, self.height)
+
+    def NW(self):
+        return frame(self.x - 1, self.y - 1, self.width, self.height)
+
+    def SE(self):
+        return frame(self.x + 1, self.y + 1, self.width, self.height)
+
+    def SW(self):
+        return frame(self.x - 1, self.y + 1, self.width, self.height)
         
 class MonsterClass(object):
     """

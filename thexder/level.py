@@ -38,22 +38,20 @@ class Level(object):
     def tile(self, x, y):
         return self.map.tile(x,y)
 
-    def is_empty(self, x, y, width, height, check_monsters=False, is_robot=True):
+#    def is_empty(self, x, y, width, height, check_monsters=False, is_robot=True):
+    def is_empty(self, frame, check_monsters=False, is_robot=True):
                 
         # Tiles?
-        for i in range(0, width):
-            for j in range(0, height):
+        for i in range(0, frame.width):
+            for j in range(0, frame.height):
             
-                tile = self.map.tile(x + i, y + j) % 16
+                tile = self.map.tile(frame.x + i, frame.y + j) % 16
                 
                 if tile > 0:
                     return False
-#                if not tile in TRANSPARENT_TILES[self.map.curlvl]:
-#                    return False
         
         if check_monsters:
-            r_frame = animation.frame(x, y, width, height)
-            if sprite_collision(self.monsters(), -1, r_frame):
+            if sprite_collision(self.monsters(), -1, frame):
                 return False
                      
         return True

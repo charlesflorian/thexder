@@ -194,6 +194,12 @@ class Robot(object):
         
     def set_frame(self, frame):
         self.bounds = frame
+        
+    def set_x(self, x):
+        self.bounds.x = x
+        
+    def set_y(self, y):
+        self.bounds.y = y
 
 # Actions
 
