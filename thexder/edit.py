@@ -685,6 +685,7 @@ def main():
                     # TODO: Something funny here when jumping/falling... 
                          
                     if keys[K_SPACE]:
+                        thx.fire()
 
                         if thx.direction() == DIR_E:
                             targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, True)
@@ -873,6 +874,8 @@ def main():
                             thx_blocked = True
                     
                     if keys[K_SPACE]:
+                        thx.fire()
+                        
                         direction = dir_to_vec(thx.facing())
                         result = draw_laser(screen, 20, robot_screen_y_pos(thx.y()) + 1, direction, direction)
 

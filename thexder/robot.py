@@ -114,6 +114,8 @@ class Robot(object):
         self.reel = []
         self.thx_state = rState(THX_FLAG_ROBOT, DIR_E)
         
+        self.shots_fired = 0
+        
         self.aiming = DIR_E
 
         self.frame = animation.frame(19,11,3,4) # These are the default starting parameters. It may be worth
@@ -178,8 +180,8 @@ class Robot(object):
     def change_score(self, d_score):
         self.score += d_score * 25
     
-    def change_health(self, d_health):
-        self.health += d_health
+    def change_health(self, d_health, multiplying_factor=2):
+        self.health += d_health * multiplying_factor
         if self.health > self.enmax:
             self.health = self.enmax
             
@@ -205,6 +207,14 @@ class Robot(object):
         self.frame.y = y
 
 # Actions
+
+    def take_damage(self, damage=1):
+        self.change_health(-1 * damage)
+
+    def fire(self):
+        self.shots_fired += 1
+        if self.shots_fired % THX_LASER_COUNT == 0:
+            self.take_damage()
 
     def step(self):
         self.step_count += 1

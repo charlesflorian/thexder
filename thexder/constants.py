@@ -76,6 +76,8 @@ THX_FLAG_E_FACING_JET   = 0x20
 
 THX_FLYING_FRAMES = 0x20
 
+THX_LASER_COUNT = 0x18
+
 
 # This is a list for each level (in order) of the tiles that are 'transparent'.
 #
