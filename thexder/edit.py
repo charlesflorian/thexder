@@ -603,6 +603,7 @@ def main():
                 game_clock += 1
             
                 #move_monsters(levels[curlvl], x_pos, y_pos, robot_x, robot_y, game_clock, thx)
+                move_monsters(levels[curlvl], x_pos, y_pos, game_clock, thx)
                 
                 thx.tick()
                 
