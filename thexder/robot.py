@@ -185,8 +185,8 @@ class Robot(object):
     def change_score(self, d_score):
         self.score += d_score * 25
     
-    def change_health(self, d_health, multiplying_factor=2):
-        self.health += d_health * multiplying_factor
+    def change_health(self, d_health):
+        self.health += d_health
         if self.health > self.enmax:
             self.health = self.enmax
         
@@ -216,7 +216,7 @@ class Robot(object):
 
 # Actions
 
-    def take_damage(self, damage=1):
+    def take_damage(self, damage=2):
         self.change_health(-1 * damage)
 
     def fire(self):

@@ -91,10 +91,10 @@ SHOOTABLE_TILES = [[0x0d], [0x0d], [0x0d], [0x0d],
                     [0x0c, 0x0d], [0x0d], [0x0c, 0x0d], [0x0d],
                     [],[],[],[0x0d]]
 
-TRANSPARENT_TILES = [[0,0x0d],[0,0x0d],[0,0x0d],[0,0x0d],
-                      [0],[0],[0],[0,0x0d],
-                      [0,0x0c,0x0d],[0],[0,0x0c,0x0d],[0],
-                      [0],[0],[0],[0,0x0d]]
+#TRANSPARENT_TILES = [[0,0x0d],[0,0x0d],[0,0x0d],[0,0x0d],
+#                      [0],[0],[0],[0,0x0d],
+#                      [0,0x0c,0x0d],[0],[0,0x0c,0x0d],[0],
+#                      [0],[0],[0],[0,0x0d]]
 
 
 COLORS = [pygame.Color(0,0,0), #Black
