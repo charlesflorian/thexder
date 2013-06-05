@@ -43,6 +43,8 @@ THX_TURNING_ANIM = [0x12,0x13]
 THX_LANDING_LEFT_ANIM = [0x10]
 THX_LANDING_RIGHT_ANIM = [0x11]
 
+THX_DYING = [0x30, 0x31, 0x32]
+
 THX_SAME_DIR = 0x100
 
 #
@@ -175,6 +177,9 @@ class Robot(object):
             if len(self.reel):
                 return self.reel[0] - 0x20
         return self.direction()
+
+    def is_dead(self):
+        return self.flags() & THX_FLAG_DEAD
         
 # Set methods
     def change_score(self, d_score):
@@ -184,6 +189,9 @@ class Robot(object):
         self.health += d_health * multiplying_factor
         if self.health > self.enmax:
             self.health = self.enmax
+        
+        if self.get_health() <= 0:
+            self.die()
             
     def change_enmax(self, d_enmax):
         self.enmax += d_enmax
@@ -246,7 +254,7 @@ class Robot(object):
             self.set_frame(animation.frame(self.x(), self.y(), 3, 4))
 
     def wait(self):
-        return self.flags() & THX_FLAG_TRANSFORMING 
+        return self.flags() & (THX_FLAG_TRANSFORMING | THX_FLAG_DEAD)
         
     def tick(self):
         if self.health > self.enmax:
@@ -256,6 +264,8 @@ class Robot(object):
         elif self.flags() & THX_FLAG_TRANSFORMING:
             self.clearflag(THX_FLAG_TRANSFORMING)
 
+    def die(self):
+        self.push_flags(THX_FLAG_DEAD)
 
 # New interface
         
@@ -308,6 +318,8 @@ class Robot(object):
         
         There are two auxiliary methods which simply change the state or direction.
         """
+        if state.flags & THX_FLAG_DEAD:
+            self.reel = THX_DYING[:]
         if state.flags & THX_FLAG_JET and self.is_robot(): # Transform to jet
             if self.direction() == DIR_E:
                 self.reel = THX_TRANSFORMING_RIGHT_ANIM[:]

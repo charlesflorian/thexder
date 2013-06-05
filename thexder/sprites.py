@@ -34,11 +34,17 @@ def is_empty(level, monsters, monst_ident, frame, robot):
     This just checks to see if there is anything where we are trying to go. This should be the default
     method to look for stuff.
     """
-    if level.is_empty(frame):
+    if not level.is_empty(frame):
+        return False
         
-        if not sprite_collision(monsters, monst_ident, frame) and not collision(frame, robot.get_frame()):
-            return True
-    return False
+    if sprite_collision(monsters, monst_ident, frame):
+        return False
+
+    if collision(frame, robot.get_frame()):
+        robot.take_damage()
+        return False
+
+    return True
 
 # TODO: Fix the monster motion. If they hit a wall for at lest one tick and they
 #       COULD be moving the other way, they should switch? Something like that...

@@ -73,10 +73,12 @@ THX_FLAG_JUMP           = 0x04
 THX_FLAG_FALL           = 0x08
 THX_FLAG_TRANSFORMING   = 0x10
 THX_FLAG_E_FACING_JET   = 0x20
+THX_FLAG_DEAD           = 0x40
 
 THX_FLYING_FRAMES = 0x20
 
-THX_LASER_COUNT = 0x18
+# This is the amount of times you need to fire your laser before you take damage.
+THX_LASER_COUNT = 0x20
 
 
 # This is a list for each level (in order) of the tiles that are 'transparent'.

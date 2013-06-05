@@ -33,9 +33,6 @@ curlvl = 0
 #
 ##########################################################################################
 
-robot_x = 19
-robot_y = 11
-
 ##########################################################################################
 
 def display_init(width, height):
@@ -271,7 +268,6 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     #pygame.display.update()
     
 
-# This doesn't seem to work very well? It's skippy...
 def display_stats(screen, tiles, thx):
     tile_size = PX_SIZE * TILE_HEIGHT
     screen.fill(COLORS[0], pygame.Rect(0,DISPLAY_HEIGHT * tile_size, DISPLAY_WIDTH * tile_size, tile_size * 3))
@@ -349,8 +345,6 @@ def display_sprites(screen, level, frame_number, x, y):
             display_tile(screen, level.monster_data(sprite.monster_type()).tile(cur_frame),
                     pos[0] - x, pos[1] - y)
 
-
-# TODO: Include a way to look the other direction, and fix the bounds.
 
 def is_on_screen(screen_x, screen_y, x, y):
     if screen_x < x < screen_x + DISPLAY_WIDTH / 2 and screen_y <= y < screen_y + DISPLAY_HEIGHT:
@@ -497,6 +491,9 @@ def target_hit(level, x, y):
 #
 ##################################################################################################
 
+# TODO: There is a bug here, in that when you are falling near the top of the level and firing
+#       the laser at the same time, it comes from the wrong spot.
+
 def robot_screen_y_pos(robot_y):
     """
     This just let's you know the y-position on the screen of the robot who is at the position
@@ -510,8 +507,6 @@ def robot_screen_y_pos(robot_y):
     elif robot_y > LVL_HEIGHT - DISPLAY_HEIGHT / 2:
         return robot_y - (LVL_HEIGHT - DISPLAY_HEIGHT)
     return 11
-
-# TODO: robot_x, robot_y should be properties of the object robot.thx(), not independent variables.
 
 def main():
 
@@ -540,9 +535,6 @@ def main():
 
     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
-    robot_y = 11 # 11 is the default start.
-    robot_x = 19
-
     x_pos = 0
     y_pos = 0
 
@@ -568,7 +560,6 @@ def main():
 
         display_level(screen, levels[curlvl], lvl_graphics, x_pos, y_pos)
         display_sprites(screen, levels[curlvl], game_clock % NUM_TILES, x_pos, y_pos)
-        #display_tile(screen, thx.get_frame(), 19, robot_y - y_pos)
         display_tile(screen, thx.tile(), 19, thx.y() - y_pos)
         
         display_stats(screen, lvl_tiles, thx)
@@ -627,9 +618,12 @@ def main():
 # TODO: I also need to work out how to change between the different robot states better.
 
             elif event.type == TIME_EVENT:
+            
+                if thx.is_dead():
+                    pass
+                    
                 game_clock += 1
             
-                #move_monsters(levels[curlvl], x_pos, y_pos, robot_x, robot_y, game_clock, thx)
                 move_monsters(levels[curlvl], x_pos, y_pos, game_clock, thx)
                 
                 thx.tick()
