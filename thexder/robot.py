@@ -108,22 +108,22 @@ class Robot(object):
         self.health = 100
         self.score = 0
         
-        self.frames = self.big_frames
-        self.frames.extend(self.small_frames)
+        self.tiles = self.big_frames
+        self.tiles.extend(self.small_frames)
         self.step_count = 0
         self.reel = []
         self.thx_state = rState(THX_FLAG_ROBOT, DIR_E)
         
         self.aiming = DIR_E
 
-        self.bounds = animation.frame(19,11,3,4) # These are the default starting parameters. It may be worth
+        self.frame = animation.frame(19,11,3,4) # These are the default starting parameters. It may be worth
                                                 # allowing this to be mutable...
 # Animations.
 
 
 # Queries
     def get_frame(self):
-        return self.bounds
+        return self.frame
 
     def x(self):
         return self.get_frame().x
@@ -154,6 +154,9 @@ class Robot(object):
         
     def is_falling(self):
         return self.flags() & THX_FLAG_FALL
+
+    def get_health(self):
+        return self.health
         
     def facing(self):
         """
@@ -193,13 +196,13 @@ class Robot(object):
         self.set_state(rState(self.flags(), direction))
         
     def set_frame(self, frame):
-        self.bounds = frame
+        self.frame = frame
         
     def set_x(self, x):
-        self.bounds.x = x
+        self.frame.x = x
         
     def set_y(self, y):
-        self.bounds.y = y
+        self.frame.y = y
 
 # Actions
 
@@ -251,25 +254,25 @@ class Robot(object):
         if fl & flag:
             self.set_state(rState(fl - flag, self.direction()))
         
-    def frame(self):
+    def tile(self):
         if len(self.reel):                   # If there is a current animation...
-            return self.frames[self.reel[0]].tile() # ... use that frame.
+            return self.tiles[self.reel[0]].tile() # ... use that frame.
         else:
             # Return whatever other frame we should use.
             
             if not self.is_robot(): 
-                return self.frames[THX_FLYING_FRAMES + self.direction()].tile()
+                return self.tiles[THX_FLYING_FRAMES + self.direction()].tile()
             else:
                 if self.is_grounded():
                     if self.direction() == DIR_E:
-                        return self.frames[0x08 + self.step_count].tile()
+                        return self.tiles[0x08 + self.step_count].tile()
                     else:
-                        return self.frames[0 + self.step_count].tile()
+                        return self.tiles[0 + self.step_count].tile()
                 else:
                     if self.direction() == DIR_E:
-                        return self.frames[0x0a].tile()
+                        return self.tiles[0x0a].tile()
                     else:
-                        return self.frames[0x00].tile()
+                        return self.tiles[0x00].tile()
     
      
     def push_direction(self, direction):

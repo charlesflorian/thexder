@@ -277,13 +277,40 @@ def display_stats(screen, tiles, thx):
     screen.fill(COLORS[0], pygame.Rect(0,DISPLAY_HEIGHT * tile_size, DISPLAY_WIDTH * tile_size, tile_size * 3))
     
     display_text(screen, "energy", tiles, False, 1, DISPLAY_HEIGHT)
-    display_text(screen, str(thx.health), tiles, False, 7, DISPLAY_HEIGHT)
+    display_text(screen, str(thx.get_health()), tiles, False, 34, DISPLAY_HEIGHT)
     display_text(screen, "score", tiles, False, 1, DISPLAY_HEIGHT + 2)
-    display_text(screen, "{0:010d}".format(thx.score), tiles, False, 6, DISPLAY_HEIGHT + 2)
-    display_text(screen, "level", tiles, False, 17, DISPLAY_HEIGHT + 2)
-    display_text(screen, "enmax", tiles, False, 27, DISPLAY_HEIGHT + 2)
-    display_text(screen, str(thx.enmax), tiles, False, 32, DISPLAY_HEIGHT + 2)
+    display_text(screen, "{0:09d}".format(thx.score), tiles, False, 7, DISPLAY_HEIGHT + 2)
+    display_text(screen, "level", tiles, False, 18, DISPLAY_HEIGHT + 2)
+    display_text(screen, "enmax", tiles, False, 28, DISPLAY_HEIGHT + 2)
+    display_text(screen, str(thx.enmax), tiles, False, 34, DISPLAY_HEIGHT + 2)
+    
+    draw_health_bar(screen, thx.get_health())
+    
+def draw_health_bar(screen, health):
+            
+    if health > 40: # green
+        if health > 100:
+            health = 100
+        screen.fill(COLORS[0x02], pygame.Rect(18 * PX_SIZE * TILE_WIDTH, (DISPLAY_HEIGHT * TILE_HEIGHT + 2) * PX_SIZE, PX_SIZE * TILE_WIDTH * (health - 40)/4, PX_SIZE * 5))
+        health = 40
+    if health > 20: # yellow
+        screen.fill(COLORS[0x06], pygame.Rect(13 * PX_SIZE * TILE_WIDTH, (DISPLAY_HEIGHT * TILE_HEIGHT + 2) * PX_SIZE, PX_SIZE * TILE_WIDTH * (health - 20)/4, PX_SIZE * 5))
+        health = 20
 
+    # ... and red.
+    screen.fill(COLORS[0x05], pygame.Rect(8 * PX_SIZE * TILE_WIDTH, (DISPLAY_HEIGHT * TILE_HEIGHT + 2) * PX_SIZE, PX_SIZE * TILE_WIDTH * (health)/4, PX_SIZE * 5))
+
+    # Now draw the border.
+    screen.fill(COLORS[0x0f], pygame.Rect(8 * PX_SIZE * TILE_WIDTH, (DISPLAY_HEIGHT * TILE_HEIGHT + 1) * PX_SIZE,
+            PX_SIZE * TILE_WIDTH * 25, PX_SIZE))
+    screen.fill(COLORS[0x0f], pygame.Rect(8 * PX_SIZE * TILE_WIDTH, (DISPLAY_HEIGHT * TILE_HEIGHT + 7) * PX_SIZE,
+            PX_SIZE * TILE_WIDTH * 25, PX_SIZE))
+    screen.fill(COLORS[0x0f], pygame.Rect(8 * PX_SIZE * TILE_WIDTH, (DISPLAY_HEIGHT * TILE_HEIGHT + 1) * PX_SIZE,
+            PX_SIZE, PX_SIZE * 7))
+    screen.fill(COLORS[0x0f], pygame.Rect(33 * PX_SIZE * TILE_WIDTH, (DISPLAY_HEIGHT * TILE_HEIGHT + 1) * PX_SIZE,
+            PX_SIZE, PX_SIZE * 7))
+
+        
 def display_tile(screen, tile, x, y):
 
     tile_size = PX_SIZE * TILE_HEIGHT
@@ -542,7 +569,7 @@ def main():
         display_level(screen, levels[curlvl], lvl_graphics, x_pos, y_pos)
         display_sprites(screen, levels[curlvl], game_clock % NUM_TILES, x_pos, y_pos)
         #display_tile(screen, thx.get_frame(), 19, robot_y - y_pos)
-        display_tile(screen, thx.frame(), 19, thx.y() - y_pos)
+        display_tile(screen, thx.tile(), 19, thx.y() - y_pos)
         
         display_stats(screen, lvl_tiles, thx)
     
