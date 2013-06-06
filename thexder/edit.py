@@ -282,6 +282,13 @@ def display_stats(screen, tiles, thx):
     display_text(screen, "{0:03d}".format(thx.get_health()) + "\\", tiles, False, 34, DISPLAY_HEIGHT)
     display_text(screen, str(thx.enmax) + "\\", tiles, False, 34, DISPLAY_HEIGHT + 2)
     
+    shield = thx.shield()
+    if shield:
+        bar_width = tile_size * DISPLAY_WIDTH * shield / THX_SHIELD_STRENGTH
+        screen.fill(COLORS[0x05], pygame.Rect((tile_size * DISPLAY_WIDTH - bar_width)/2, tile_size * (DISPLAY_HEIGHT + 1) + PX_SIZE, bar_width, PX_SIZE * (TILE_HEIGHT - 1)))
+    else:
+        display_text(screen, "SHIELD OFF", tiles, False, (DISPLAY_WIDTH - 10) / 2, DISPLAY_HEIGHT + 1)
+    
     draw_health_bar(screen, thx.get_health())
     
 def draw_health_bar(screen, health):
@@ -611,6 +618,8 @@ def main():
                     pause()
                 elif keys[K_c]:
                     clipping = not clipping
+                elif keys[K_z]:
+                    thx.shield_on()
                     
                 #elif keys[K_t]:
                     # I still want to be able to look over the enemy tiles, since this seems to be an issue...

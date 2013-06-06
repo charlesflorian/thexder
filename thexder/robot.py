@@ -118,6 +118,8 @@ class Robot(object):
         
         self.shots_fired = 0
         
+        self.shield_value = 0
+        
         self.aiming = DIR_E
 
         self.frame = animation.frame(19,11,3,4) # These are the default starting parameters. It may be worth
@@ -181,6 +183,9 @@ class Robot(object):
     def is_dead(self):
         return self.flags() & THX_FLAG_DEAD
         
+    def shield(self):
+        return self.shield_value
+        
 # Set methods
     def change_score(self, d_score):
         self.score += d_score * 25
@@ -219,7 +224,10 @@ class Robot(object):
 # Actions
 
     def take_damage(self, damage=2):
-        self.change_health(-1 * damage)
+        if self.shield():
+            self.shield_value -= damage
+        else:
+            self.change_health(-1 * damage)
 
     def fire(self):
         self.shots_fired += 1
@@ -265,6 +273,13 @@ class Robot(object):
             self.reel.pop(0) # This just knocks off one frame in the animation.
         elif self.flags() & THX_FLAG_TRANSFORMING:
             self.clearflag(THX_FLAG_TRANSFORMING)
+            
+        if self.shield():
+            self.shield_value -= 1
+
+    def shield_on(self):
+        self.shield_value = THX_SHIELD_STRENGTH
+        self.change_health(-10)
 
     def die(self):
         self.push_flags(THX_FLAG_DEAD)

@@ -77,6 +77,8 @@ THX_FLAG_DEAD           = 0x40
 
 THX_FLYING_FRAMES = 0x20
 
+THX_SHIELD_STRENGTH = 0x100
+
 # This is the amount of times you need to fire your laser before you take damage.
 THX_LASER_COUNT = 0x20
 
