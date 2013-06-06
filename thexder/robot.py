@@ -195,6 +195,8 @@ class Robot(object):
             
     def change_enmax(self, d_enmax):
         self.enmax += d_enmax
+        if self.enmax > 500:
+            self.enmax = 500
 
     def set_state(self, state):
         self.thx_state = state 

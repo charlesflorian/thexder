@@ -29,6 +29,9 @@ def robot_empty(level, frame):
         return False
     return True
 
+# TODO: Meld this with level.is_empty(), since they are really doing the same thing.
+#       This would require, however, the robot to be a sprite.
+
 def is_empty(level, monsters, monst_ident, frame, robot):
     """
     This just checks to see if there is anything where we are trying to go. This should be the default

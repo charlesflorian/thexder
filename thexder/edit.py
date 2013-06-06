@@ -256,7 +256,7 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     """
     This will display text in the thexder font.
     """
-    say_what = say_what.upper()
+    #say_what = say_what.upper()
 
     if center:
         x = (DISPLAY_WIDTH - len(say_what)) / 2
@@ -272,13 +272,15 @@ def display_stats(screen, tiles, thx):
     tile_size = PX_SIZE * TILE_HEIGHT
     screen.fill(COLORS[0], pygame.Rect(0,DISPLAY_HEIGHT * tile_size, DISPLAY_WIDTH * tile_size, tile_size * 3))
     
-    display_text(screen, "energy", tiles, False, 1, DISPLAY_HEIGHT)
-    display_text(screen, str(thx.get_health()), tiles, False, 34, DISPLAY_HEIGHT)
-    display_text(screen, "score", tiles, False, 1, DISPLAY_HEIGHT + 2)
+    display_text(screen, "ENERGY", tiles, False, 1, DISPLAY_HEIGHT)    
+    display_text(screen, "SCORE", tiles, False, 1, DISPLAY_HEIGHT + 2)
+    display_text(screen, "LEVEL", tiles, False, 18, DISPLAY_HEIGHT + 2)
+    display_text(screen, "ENMAX", tiles, False, 28, DISPLAY_HEIGHT + 2)
+
+    # The backslash we include is because this is the character in the tileset for the percent sign.
     display_text(screen, "{0:09d}".format(thx.score), tiles, False, 7, DISPLAY_HEIGHT + 2)
-    display_text(screen, "level", tiles, False, 18, DISPLAY_HEIGHT + 2)
-    display_text(screen, "enmax", tiles, False, 28, DISPLAY_HEIGHT + 2)
-    display_text(screen, str(thx.enmax), tiles, False, 34, DISPLAY_HEIGHT + 2)
+    display_text(screen, "{0:03d}".format(thx.get_health()) + "\\", tiles, False, 34, DISPLAY_HEIGHT)
+    display_text(screen, str(thx.enmax) + "\\", tiles, False, 34, DISPLAY_HEIGHT + 2)
     
     draw_health_bar(screen, thx.get_health())
     
@@ -601,10 +603,11 @@ def main():
                 elif keys[K_r]:
                     # This should load and display the thexder robot animation. 
                     #show_tiles(screen, lvl_tiles)
-                    show_tiles(screen, thx.get_plane_animation())
-                    display_text(screen, "What the what", lvl_tiles)
-                    pause()
-                    display_text(screen, "No seriously what", lvl_tiles)
+                    for i in range(0, 0x10):
+                        for j in range(0, 0x20):
+                            if (j * 0x10 + i) < len(lvl_tiles):
+                                display_text(screen, chr(j * 0x10 + i), lvl_tiles, False, i , j)
+                    pygame.display.update()
                     pause()
                 elif keys[K_c]:
                     clipping = not clipping
