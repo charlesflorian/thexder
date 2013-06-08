@@ -739,9 +739,7 @@ def main():
                                             if hit[3] in SHOOTABLE_TILES[curlvl]:
                                                 levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
                                         else:
-                                            thx.change_enmax(levels[curlvl].monster_data(hit[1]).get_enmax_gain())
-                                            thx.change_health(levels[curlvl].monster_data(hit[1]).get_health_gain())
-                                            thx.change_score(levels[curlvl].monster_data(hit[1]).get_points())
+                                            thx.kill(levels[curlvl].monster_data(hit[1]))
                         else:
                             targets = get_laser_targets(sprites, x_pos, y_pos, False)
                             
@@ -762,9 +760,7 @@ def main():
                                             if hit[3] in SHOOTABLE_TILES[curlvl]:
                                                 levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
                                         else:
-                                            thx.change_enmax(levels[curlvl].monster_data(hit[1]).get_enmax_gain())
-                                            thx.change_health(levels[curlvl].monster_data(hit[1]).get_health_gain())
-                                            thx.change_score(levels[curlvl].monster_data(hit[1]).get_points())
+                                            thx.kill(levels[curlvl].monster_data(hit[1]))
 
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
@@ -920,9 +916,7 @@ def main():
                                         if hit[3] in SHOOTABLE_TILES[curlvl]:
                                             levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
                                     else:
-                                        thx.change_enmax(levels[curlvl].monster_data(hit[1]).get_enmax_gain())
-                                        thx.change_health(levels[curlvl].monster_data(hit[1]).get_health_gain())
-                                        thx.change_score(levels[curlvl].monster_data(hit[1]).get_points())
+                                        thx.kill(levels[curlvl].monster_data(hit[1]))
 
                     
                     if thx_blocked:

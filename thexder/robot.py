@@ -289,6 +289,14 @@ class Robot(object):
     def die(self):
         self.push_flags(THX_FLAG_DEAD)
 
+    def kill(self, monster_type):
+        """
+        This takes as input an animation.MonsterClass object, and changes the robot's stats accordingly.
+        """
+        self.change_enmax(monster_type.get_enmax_gain())
+        self.change_health(monster_type.get_health_gain())
+        self.change_score(monster_type.get_points())
+
 # New interface
         
     def clearflag(self, flag):

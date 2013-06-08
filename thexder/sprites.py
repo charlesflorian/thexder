@@ -317,4 +317,5 @@ def move_monsters(level, sprites, screen_x, clock):
                             dead_sprites.append(monst)
 
     for monst in dead_sprites:
+        thx.kill(level.monster_data(sprites[monst].monster_type()))
         del sprites[monst]
