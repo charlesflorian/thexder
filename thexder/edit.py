@@ -762,6 +762,17 @@ def main():
                                         else:
                                             thx.kill(levels[curlvl].monster_data(hit[1]))
 
+                    if thx.is_robot():
+                        # Check to see if the ground below us damages the robot.
+                        take_damage = False
+                        for row in levels[curlvl].tiles(thx.get_frame().S()):
+                            if DAMAGE_TILE in row:
+                                take_damage = True
+                                break
+                        if take_damage:
+                            thx.take_damage()
+                                
+
                 else:
                     thx_blocked = False # Start by assuming that the jet is not blocked in its direction
                                         # of motion. If it turns out to be, then it should try transform.

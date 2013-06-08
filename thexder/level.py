@@ -38,6 +38,18 @@ class Level(object):
     def tile(self, x, y):
         return self.map.tile(x,y)
 
+    def tiles(self, frame):
+        """
+        This should return an array of all the tiles in the given frame.
+        """
+        output = []
+        for i in range(0, frame.width):
+            output.append([])
+            for j in range(0, frame.height):
+                output[i].append(self.tile(frame.x + i, frame.y + j))
+                
+        return output
+
     def is_empty(self, frame, check_monsters=False):
         """
         This simply checks as to whether or not the given frame intersects with any tiles in the level.
