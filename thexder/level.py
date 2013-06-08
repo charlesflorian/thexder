@@ -50,9 +50,9 @@ class Level(object):
                 if tile > 0:
                     return False
         
-        if check_monsters:
-            if sprite_collision(self.monsters(), -1, frame):
-                return False
+#        if check_monsters:
+#            if sprite_collision(self.monsters(), -1, frame):
+#                return False
                      
         return True
 
@@ -101,6 +101,7 @@ class Level(object):
         
         i = BUGDB_HEADER_SIZE
 
+        # This should start at 1, since sprite 0 will be the robot.
         m_count = 1
         bug_dict = {}
 

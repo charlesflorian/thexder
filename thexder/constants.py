@@ -79,16 +79,21 @@ THX_FLYING_FRAMES = 0x20
 
 THX_SHIELD_STRENGTH = 0x100
 
+THX_SPRITE = 0x00
+
 # This is the amount of times you need to fire your laser before you take damage.
 THX_LASER_COUNT = 0x20
 
-
+# These are the tiles that can be destroyed by shooting them, by level (this is because
+# it does vary level by level, a little bit)
 SHOOTABLE_TILES = [[0x0d], [0x0d], [0x0d], [0x0d],
                     [],[],[],[0x0d],
                     [0x0c, 0x0d], [0x0d], [0x0c, 0x0d], [0x0d],
                     [],[],[],[0x0d]]
-                    
-DAMAGE_TILES = []                    
+                
+
+# This is the tile number (in every tile set, it seems) that causes damage when you stand on it.
+DAMAGE_TILE = 0x01
 
 
 COLORS = [pygame.Color(0,0,0), #Black
@@ -111,7 +116,6 @@ COLORS = [pygame.Color(0,0,0), #Black
 # Events
 
 TIME_EVENT = pygame.USEREVENT + 1
-
 
 # Debug stuff.
 

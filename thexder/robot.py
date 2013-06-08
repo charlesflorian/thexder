@@ -128,6 +128,9 @@ class Robot(object):
 
 
 # Queries
+    def get_ident(self):
+        return THX_SPRITE
+        
     def get_frame(self):
         return self.frame
 

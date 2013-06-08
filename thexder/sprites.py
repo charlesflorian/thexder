@@ -32,6 +32,22 @@ def robot_empty(level, frame):
 # TODO: Meld this with level.is_empty(), since they are really doing the same thing.
 #       This would require, however, the robot to be a sprite.
 
+def b_is_empty(level, sprites, which_id, frame, clipping=False):
+    """
+    This should take as input the level, the sprites, and which sprite we are interested in comparing.
+    
+    It should check if frame intersects with any other sprites, and with the level.
+    """
+    if not level.is_empty(frame):
+        return False
+        
+    for sprite in sprites:
+        if sprite != which_id:
+            if collision(sprites[sprite].get_frame(), frame):
+                return False
+                
+    return True
+
 def is_empty(level, monsters, monst_ident, frame, robot):
     """
     This just checks to see if there is anything where we are trying to go. This should be the default
@@ -282,20 +298,21 @@ def monster_move(level, monsters, monst, clock, robot):
     return (new_x, new_y)
 
 
-def move_monsters(level, screen_x, screen_y, clock, robot):
+def move_monsters(level, sprites, screen_x, clock, robot):
     """    
     This just moves all of the monsters using the previous method.
     """
-    monsters = level.monsters()
+    #monsters = level.monsters()
     
-    for monst in monsters:
+    for monst in sprites:
         
-        monst_pos = monsters[monst].get_pos()
-        
-        if screen_x - 2 < monst_pos[0] < screen_x + DISPLAY_WIDTH:
-            # We only want to moves monsters within the display's width (any y-position, though).
-             
-            (new_x, new_y) = monster_move(level, monsters, monsters[monst], clock, robot)
+        if monst != THX_SPRITE:
+            monst_pos = sprites[monst].get_pos()
             
-            monsters[monst].move_to(new_x, new_y)
+            if screen_x - 2 < monst_pos[0] < screen_x + DISPLAY_WIDTH:
+                # We only want to moves monsters within the display's width (any y-position, though).
+                 
+                (new_x, new_y) = monster_move(level, sprites, sprites[monst], clock, robot)
+                
+                sprites[monst].move_to(new_x, new_y)
 

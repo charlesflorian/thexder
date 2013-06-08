@@ -269,6 +269,10 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     
 
 def display_stats(screen, tiles, thx):
+    """
+    This just displays the status info at the bottom of the screen; the only bit it's missing is that
+    at the moment it does not display which level we are on.
+    """
     tile_size = PX_SIZE * TILE_HEIGHT
     screen.fill(COLORS[0], pygame.Rect(0,DISPLAY_HEIGHT * tile_size, DISPLAY_WIDTH * tile_size, tile_size * 3))
     
@@ -292,7 +296,10 @@ def display_stats(screen, tiles, thx):
     draw_health_bar(screen, thx.get_health())
     
 def draw_health_bar(screen, health):
-            
+    """
+    This is pretty clear what this does. It takes as input the health and fills in a health bar
+    appropriately coloured.
+    """        
     if health > 40: # green
         if health > 100:
             health = 100
@@ -317,10 +324,13 @@ def draw_health_bar(screen, health):
 
         
 def display_tile(screen, tile, x, y):
-
+    """
+    This draws a tile at screen location (x, y)---not pixel location.
+    
+    This is the main method for drawing any tiles on the screen.
+    """
     tile_size = PX_SIZE * TILE_HEIGHT
 
-#    if (0 <= x < DISPLAY_WIDTH) and (0 <= y < DISPLAY_HEIGHT):
     if (-1 <= x < DISPLAY_WIDTH) and (-1 <= y < SCREEN_HEIGHT):
         screen.blit(tile, (x * tile_size, y * tile_size))
     else:
@@ -339,20 +349,21 @@ def display_level(screen, level, tiles, x, y):
 
             display_tile(screen, tiles[cur_tile % 16].tile(), j, i)
 
-def display_sprites(screen, level, frame_number, x, y):
+def display_sprites(screen, level, sprites, frame_number, x, y):
 
-    monsters = level.monsters()
+    #monsters = level.monsters()
 
-    for monst in monsters:
-        sprite = monsters[monst]
-        pos = sprite.get_pos()
-        if (x - 1 <= pos[0]< x + DISPLAY_WIDTH) and (y - 1 <= pos[1]< y + DISPLAY_HEIGHT):
-            # This is just so that each sprite type can have its own way of determining
-            # which frame to show.
-            cur_frame = monsters[monst].frame_no(frame_number)
-            
-            display_tile(screen, level.monster_data(sprite.monster_type()).tile(cur_frame),
-                    pos[0] - x, pos[1] - y)
+    for monst in sprites:
+        if monst != THX_SPRITE:
+            sprite = sprites[monst]
+            pos = sprite.get_pos()
+            if (x - 1 <= pos[0]< x + DISPLAY_WIDTH) and (y - 1 <= pos[1]< y + DISPLAY_HEIGHT):
+                # This is just so that each sprite type can have its own way of determining
+                # which frame to show.
+                cur_frame = sprites[monst].frame_no(frame_number)
+                
+                display_tile(screen, level.monster_data(sprite.monster_type()).tile(cur_frame),
+                        pos[0] - x, pos[1] - y)
 
 
 def is_on_screen(screen_x, screen_y, x, y):
@@ -368,15 +379,16 @@ def get_laser_targets(monsters, screen_x, screen_y, east_facing=True):
         shift = DISPLAY_WIDTH / 2
         
     for monst in monsters:
-        pos = monsters[monst].get_pos()
-        if is_on_screen(screen_x + shift, screen_y, pos[0], pos[1]):
-            out.append(pos)
-        if is_on_screen(screen_x + shift, screen_y, pos[0]+1, pos[1]):
-            out.append((pos[0] + 1,pos[1]))
-        if is_on_screen(screen_x + shift, screen_y, pos[0], pos[1]+1):
-            out.append((pos[0],pos[1]+1))
-        if is_on_screen(screen_x + shift, screen_y, pos[0]+1, pos[1]+1):
-            out.append((pos[0] + 1,pos[1]+1))
+        if monst != THX_SPRITE:
+            pos = monsters[monst].get_pos()
+            if is_on_screen(screen_x + shift, screen_y, pos[0], pos[1]):
+                out.append(pos)
+            if is_on_screen(screen_x + shift, screen_y, pos[0]+1, pos[1]):
+                out.append((pos[0] + 1,pos[1]))
+            if is_on_screen(screen_x + shift, screen_y, pos[0], pos[1]+1):
+                out.append((pos[0],pos[1]+1))
+            if is_on_screen(screen_x + shift, screen_y, pos[0]+1, pos[1]+1):
+                out.append((pos[0] + 1,pos[1]+1))
     return out
 
 def dir_to_vec(direction):
@@ -467,7 +479,7 @@ def draw_laser(screen, start_x, start_y, direction, facing):
     return False        
     
 
-def target_hit(level, x, y):
+def target_hit(level, sprites, x, y):
     """
     This should tell you what is at the location (x, y) in case you hit it.
     """
@@ -478,14 +490,14 @@ def target_hit(level, x, y):
         
         return (0, x, y, hit_tile)
         
-    monst = sprite_collision(level.monsters(), -1, animation.frame(x,y,1,1))
+    monst = sprite_collision(sprites, -1, animation.frame(x,y,1,1))
     if monst:
         # Monsters are killable!
-        if not level.monsters()[monst].zap():
+        if not sprites[monst].zap():
         
-            ident = level.monsters()[monst].monster_type()
+            ident = sprites[monst].monster_type()
             
-            del level.monsters()[monst]
+            del sprites[monst]
             
             return (1, ident, monst)
 
@@ -502,6 +514,8 @@ def target_hit(level, x, y):
 
 # TODO: There is a bug here, in that when you are falling near the top of the level and firing
 #       the laser at the same time, it comes from the wrong spot.
+
+
 
 def robot_screen_y_pos(robot_y):
     """
@@ -528,8 +542,13 @@ def main():
     # This loads all of the levels and animation tiles. The Level class contains a map, as
     # well as all the of animation/monster data.
     levels = load_levels()
-
-    thx = robot.Robot()
+    sprites = levels[curlvl].monsters().copy()
+    
+    sprites[THX_SPRITE] = robot.Robot()
+    
+    #thx = robot.Robot()
+    
+    thx = sprites[THX_SPRITE]
 
 
     (lower_tile, upper_tile) = tile_bounds()
@@ -568,7 +587,7 @@ def main():
             x_pos = 0
 
         display_level(screen, levels[curlvl], lvl_graphics, x_pos, y_pos)
-        display_sprites(screen, levels[curlvl], game_clock % NUM_TILES, x_pos, y_pos)
+        display_sprites(screen, levels[curlvl], sprites, game_clock % NUM_TILES, x_pos, y_pos)
         display_tile(screen, thx.tile(), 19, thx.y() - y_pos)
         
         display_stats(screen, lvl_tiles, thx)
@@ -636,7 +655,7 @@ def main():
                     
                 game_clock += 1
             
-                move_monsters(levels[curlvl], x_pos, y_pos, game_clock, thx)
+                move_monsters(levels[curlvl], sprites, x_pos, game_clock, thx)
                 
                 thx.tick()
                 
@@ -650,7 +669,8 @@ def main():
                     keys = pygame.key.get_pressed()
                     
                     if thx.is_jumping():
-                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(thx.get_frame().N(), clipping):
+#                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(thx.get_frame().N(), clipping):
+                        if keys[K_UP] and thx.jump() and b_is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping):
                             thx.set_y(thx.y() - 1)
                         else:
                             if levels[curlvl].is_empty(thx.get_frame().S(), clipping):
@@ -675,7 +695,8 @@ def main():
                     if keys[K_DOWN]:
                         thx.transform()
                     elif keys[K_RIGHT]:
-                        if levels[curlvl].is_empty(thx.get_frame().E(), clipping):
+#                        if levels[curlvl].is_empty(thx.get_frame().E(), clipping):
+                        if b_is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
                             thx.set_x(thx.x() + 1)
                         thx.push_direction(DIR_E)
                         if thx.is_grounded():
@@ -694,7 +715,7 @@ def main():
                         thx.fire()
 
                         if thx.direction() == DIR_E:
-                            targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, True)
+                            targets = get_laser_targets(sprites, x_pos, y_pos, True)
 
                             if len(targets):
                                 target = targets[game_clock % len(targets)]
@@ -705,7 +726,7 @@ def main():
                             result = draw_laser(screen, 20, robot_screen_y_pos(thx.y()), laser_dir, (1,0))
                             
                             if result:
-                                hit = target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
+                                hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
                                 
                                 if hit:
                                     if type(hit) is tuple:
@@ -717,7 +738,7 @@ def main():
                                             thx.change_health(levels[curlvl].monster_data(hit[1]).get_health_gain())
                                             thx.change_score(levels[curlvl].monster_data(hit[1]).get_points())
                         else:
-                            targets = get_laser_targets(levels[curlvl].monsters(), x_pos, y_pos, False)
+                            targets = get_laser_targets(sprites, x_pos, y_pos, False)
                             
                             if len(targets):
                                 target = targets[game_clock % len(targets)]
@@ -728,7 +749,7 @@ def main():
                             result = draw_laser(screen, 20, robot_screen_y_pos(thx.y()), laser_dir, (-1,0))
                             
                             if result:
-                                hit = target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
+                                hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
 
                                 if hit:
                                     if type(hit) is tuple:
@@ -886,7 +907,7 @@ def main():
                         result = draw_laser(screen, 20, robot_screen_y_pos(thx.y()) + 1, direction, direction)
 
                         if result:
-                            hit = target_hit(levels[curlvl], result[0] + x_pos, result[1] + y_pos)
+                            hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
 
                             if hit:
                                 if type(hit) is tuple:
