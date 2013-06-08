@@ -22,17 +22,8 @@ def sprite_collision(monsters, monster_id, new_frame):
                 return monst
     return False
 
-def robot_empty(level, frame):
-    if not level.is_empty(frame.x, frame.y, frame.width, frame.height):
-        return False
-    if sprite_collisions(level.monsters(), -1, frame):
-        return False
-    return True
 
-# TODO: Meld this with level.is_empty(), since they are really doing the same thing.
-#       This would require, however, the robot to be a sprite.
-
-def b_is_empty(level, sprites, which_id, frame, clipping=False):
+def is_empty(level, sprites, which_id, frame, clipping=False):
     """
     This should take as input the level, the sprites, and which sprite we are interested in comparing.
     
@@ -48,27 +39,11 @@ def b_is_empty(level, sprites, which_id, frame, clipping=False):
                 
     return True
 
-def is_empty(level, monsters, monst_ident, frame, robot):
-    """
-    This just checks to see if there is anything where we are trying to go. This should be the default
-    method to look for stuff.
-    """
-    if not level.is_empty(frame):
-        return False
-        
-    if sprite_collision(monsters, monst_ident, frame):
-        return False
-
-    if collision(frame, robot.get_frame()):
-        robot.take_damage()
-        return False
-
-    return True
 
 # TODO: Fix the monster motion. If they hit a wall for at lest one tick and they
 #       COULD be moving the other way, they should switch? Something like that...
 
-def monster_move(level, monsters, monst, clock, robot):
+def monster_move(level, monsters, monst, clock):
     """
     This is the function which will take as input some data (including the motion type)
     and return the new coordinates based on that input.
@@ -82,6 +57,8 @@ def monster_move(level, monsters, monst, clock, robot):
     new_y = old_y
         
     motion_type = monst.get_motion()
+    
+    robot = monsters[THX_SPRITE]
     
     if motion_type == 0x00:
         pass
@@ -99,25 +76,25 @@ def monster_move(level, monsters, monst, clock, robot):
 
         state = monst.get_state()
         if state == 0:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SW(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SW()):
                 new_x = old_x - 1
                 new_y = old_y + 1
 #            else:
 #                monst.set_state(1)
         if state == 1:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NW(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NW()):
                 new_x = old_x - 1
                 new_y = old_y - 1
 #            else:
 #                monst.set_state(0)
         if state == 2:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SE(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SE()):
                 new_x = old_x + 1
                 new_y = old_y + 1
 #            else:
 #                monst.set_state(3)
         if state == 3:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NE(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NE()):
                 new_x = old_x + 1
                 new_y = old_y - 1
 #            else:
@@ -125,17 +102,17 @@ def monster_move(level, monsters, monst, clock, robot):
 
     elif motion_type == 0x02: # Falling
         new_x = old_x
-        if is_empty(level, monsters, monst.get_ident(), monst.get_frame().S(), robot):
+        if is_empty(level, monsters, monst.get_ident(), monst.get_frame().S()):
             new_y = old_y + 1
         else:
             new_y = old_y
     elif motion_type == 0x03: # Slow horizontal motion, no falling.
         if clock % 2:
             if robot.x() < old_x - 1:
-                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W(), robot):
+                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W()):
                     new_x = old_x - 1
             elif robot.x() > old_x:
-                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E(), robot):
+                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E()):
                     new_x = old_x + 1
     elif motion_type == 0x04: # Rocket-type loopy motion
     
@@ -144,46 +121,46 @@ def monster_move(level, monsters, monst, clock, robot):
         state = monst.get_state()
         
         if state == 0:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SW(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SW()):
                 new_x = old_x - 1
                 new_y = old_y + 1
             monst.set_state(1)
         elif state == 1:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W()):
                 new_x = old_x - 1
             monst.set_state(2)
         elif state == 2:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NW(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NW()):
                 new_x = old_x - 1
                 new_y = old_y - 1
             monst.set_state(3)
         elif state == 3:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().N(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().N()):
                 new_y = old_y - 1
             monst.set_state(4)
         elif state == 4:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NE(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NE()):
                 new_x = old_x + 1
                 new_y = old_y - 1
             monst.set_state(5)
         elif state == 5:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E()):
                 new_x = old_x + 1
             monst.set_state(6)
         elif state == 6:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SE(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SE()):
                 new_x = old_x + 1
                 new_y = old_y + 1
             monst.set_state(7)
         elif state == 7:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().S(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().S()):
                 new_y = old_y + 1
             monst.set_state(0)
         
     elif motion_type == 0x05: # Falls, then moves slowly, possibly to the left/right depending on position.
         if clock % 2:
             # Check downward motion first.
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().S(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().S()):
                 new_y += 1
             else:
                 if robot.x() + 2 < old_x:
@@ -193,12 +170,12 @@ def monster_move(level, monsters, monst, clock, robot):
                     
                 state = monst.get_state()            
                 if state == 0:
-                    if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W(), robot):
+                    if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W()):
                         new_x = old_x - 1
                     else:
                         monst.set_state(1)
                 elif state == 1:
-                    if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E(), robot):
+                    if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E()):
                         new_x = old_x + 1
                     else:
                         monst.set_state(0)
@@ -213,21 +190,21 @@ def monster_move(level, monsters, monst, clock, robot):
 #        if monst.get_state() == 3:
         if monst.get_state() == 0:
             if old_x < robot.x():
-                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E(), robot):
+                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E()):
                     new_x = old_x + 1
             elif old_x > robot.x():
-                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W(), robot):
+                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W()):
                     new_x = old_x - 1
     elif motion_type == 0x08: #       08 - falls, moves randomly-ish.
         new_x = old_x
-        if is_empty(level, monsters, monst.get_ident(), monst.get_frame().S(), robot):
+        if is_empty(level, monsters, monst.get_ident(), monst.get_frame().S()):
             new_y = old_y + 1
         else:
             if randint(0,1) == 0:
-                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W(), robot):
+                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().W()):
                     new_x = old_x - 1
             else:
-                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E(), robot):
+                if is_empty(level, monsters, monst.get_ident(), monst.get_frame().E()):
                     new_x = old_x + 1
     elif motion_type == 0x09: #       09 - Seems to be about the same as 04?
         pass                  # It is worth noting that this motion type does not actually occur in the bugdb
@@ -247,19 +224,19 @@ def monster_move(level, monsters, monst, clock, robot):
 
         state = monst.get_state()
         if state == 0:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SW(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SW()):
                 new_x = old_x - 1
                 new_y = old_y + 1
         if state == 1:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NW(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NW()):
                 new_x = old_x - 1
                 new_y = old_y - 1
         if state == 2:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SE(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SE()):
                 new_x = old_x + 1
                 new_y = old_y + 1
         if state == 3:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NE(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NE()):
                 new_x = old_x + 1
                 new_y = old_y - 1
 
@@ -275,30 +252,30 @@ def monster_move(level, monsters, monst, clock, robot):
 
         state = monst.get_state()
         if state == 0:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SW(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SW()):
                 new_x = old_x - 1
                 new_y = old_y + 1
         if state == 1:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NW(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NW()):
                 new_x = old_x - 1
                 new_y = old_y - 1
         if state == 2:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SE(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().SE()):
                 new_x = old_x + 1
                 new_y = old_y + 1
         if state == 3:
-            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NE(), robot):
+            if is_empty(level, monsters, monst.get_ident(), monst.get_frame().NE()):
                 new_x = old_x + 1
                 new_y = old_y - 1
     else: #       >= 0C - diagonal fall, then no moving.
-        if is_empty(level,monsters, monst.get_ident(), monst.get_frame().SW(), robot):
+        if is_empty(level,monsters, monst.get_ident(), monst.get_frame().SW()):
             new_x = old_x - 1
             new_y = old_y + 1
 
     return (new_x, new_y)
 
 
-def move_monsters(level, sprites, screen_x, clock, robot):
+def move_monsters(level, sprites, screen_x, clock):
     """    
     This just moves all of the monsters using the previous method.
     """
@@ -312,7 +289,7 @@ def move_monsters(level, sprites, screen_x, clock, robot):
             if screen_x - 2 < monst_pos[0] < screen_x + DISPLAY_WIDTH:
                 # We only want to moves monsters within the display's width (any y-position, though).
                  
-                (new_x, new_y) = monster_move(level, sprites, sprites[monst], clock, robot)
+                (new_x, new_y) = monster_move(level, sprites, sprites[monst], clock)
                 
                 sprites[monst].move_to(new_x, new_y)
 

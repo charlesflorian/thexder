@@ -542,6 +542,7 @@ def main():
     # This loads all of the levels and animation tiles. The Level class contains a map, as
     # well as all the of animation/monster data.
     levels = load_levels()
+    
     sprites = levels[curlvl].monsters().copy()
     
     sprites[THX_SPRITE] = robot.Robot()
@@ -614,6 +615,9 @@ def main():
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
 
+                    sprites = levels[curlvl].monsters().copy()
+                    sprites[THX_SPRITE] = thx
+
                     thx.set_x(19)
                     thx.set_y(11)
                 elif keys[K_n]:
@@ -623,6 +627,9 @@ def main():
 
                     (lower_tile, upper_tile) = tile_bounds(curlvl)
                     lvl_graphics = lvl_tiles[lower_tile:upper_tile]
+
+                    sprites = levels[curlvl].monsters().copy()
+                    sprites[THX_SPRITE] = thx
 
                     thx.set_x(19)
                     thx.set_y(11)
@@ -655,7 +662,7 @@ def main():
                     
                 game_clock += 1
             
-                move_monsters(levels[curlvl], sprites, x_pos, game_clock, thx)
+                move_monsters(levels[curlvl], sprites, x_pos, game_clock)
                 
                 thx.tick()
                 
@@ -669,25 +676,24 @@ def main():
                     keys = pygame.key.get_pressed()
                     
                     if thx.is_jumping():
-#                        if keys[K_UP] and thx.jump() and levels[curlvl].is_empty(thx.get_frame().N(), clipping):
-                        if keys[K_UP] and thx.jump() and b_is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping):
+                        if keys[K_UP] and thx.jump() and is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping):
                             thx.set_y(thx.y() - 1)
                         else:
-                            if levels[curlvl].is_empty(thx.get_frame().S(), clipping):
+                            if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().S(), clipping):
                                 thx.fall()
                                 thx.set_y(thx.y() + 1)
                             else:
                                 thx.land()
                     elif thx.is_falling():
-                        if levels[curlvl].is_empty(thx.get_frame().S(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().S(), clipping):
                             thx.set_y(thx.y() + 1)
                         else:
                             thx.land()
                     elif thx.is_grounded():
-                        if keys[K_UP] and levels[curlvl].is_empty(thx.get_frame().N(), clipping):
+                        if keys[K_UP] and is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping):
                             thx.jump()
                             thx.set_y(thx.y() - 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().S(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().S(), clipping):
                             thx.fall()
                             thx.set_y(thx.y() + 1)
 
@@ -695,14 +701,14 @@ def main():
                     if keys[K_DOWN]:
                         thx.transform()
                     elif keys[K_RIGHT]:
-#                        if levels[curlvl].is_empty(thx.get_frame().E(), clipping):
-                        if b_is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
+#                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
                             thx.set_x(thx.x() + 1)
                         thx.push_direction(DIR_E)
                         if thx.is_grounded():
                             thx.step()
                     elif keys[K_LEFT]:
-                        if levels[curlvl].is_empty(thx.get_frame().W(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().W(), clipping):
                             thx.set_x(thx.x() - 1)
                         thx.push_direction(DIR_W)
                         if thx.is_grounded():
@@ -770,80 +776,80 @@ def main():
 # TODO: Fix the up/down thing when in a tunnel.
 
                     if keys[K_UP] and keys[K_LEFT]:
-                        if levels[curlvl].is_empty(thx.get_frame().NW(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().NW(), clipping):
                             thx.push_direction(DIR_NW)
                     elif keys[K_UP] and keys[K_RIGHT]:
-                        if levels[curlvl].is_empty(thx.get_frame().NE(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().NE(), clipping):
                             thx.push_direction(DIR_NE)
                     elif keys[K_DOWN] and keys[K_LEFT]:
-                        if levels[curlvl].is_empty(thx.get_frame().SW(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().SW(), clipping):
                             thx.push_direction(DIR_SW)
                     elif keys[K_DOWN] and keys[K_RIGHT]:                    
-                        if levels[curlvl].is_empty(thx.get_frame().SE(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().SE(), clipping):
                             thx.push_direction(DIR_SE)
                     elif keys[K_UP]:
                         thx.push_direction(DIR_N)
                     elif keys[K_DOWN]:
                         thx.push_direction(DIR_S)
                     elif keys[K_LEFT]:
-                        if thx.direction() == DIR_E and (levels[curlvl].is_empty(thx.get_frame().N(), clipping) or levels[curlvl].is_empty(thx.get_frame().S(), clipping)):
+                        if thx.direction() == DIR_E and (is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping) or is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().S(), clipping)):
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_W)
                     elif keys[K_RIGHT]:
-                        if thx.direction() == DIR_W and (levels[curlvl].is_empty(thx.get_frame().N(), clipping) or levels[curlvl].is_empty(thx.get_frame().S(), clipping)):
+                        if thx.direction() == DIR_W and (is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping) or is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().S(), clipping)):
                             thx_blocked = True
                         else:
                             thx.push_direction(DIR_E)
 
                     direction = thx.direction()
                     if direction == DIR_E:
-                        if levels[curlvl].is_empty(thx.get_frame().E(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
                             thx.set_x(thx.x() + 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().NE(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().NE(), clipping):
                             thx.set_x(thx.x() + 1)
                             thx.set_y(thx.y() - 1)
                             thx.push_direction(DIR_NE)
-                        elif levels[curlvl].is_empty(thx.get_frame().SE(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().SE(), clipping):
                             thx.set_x(thx.x() + 1)
                             thx.set_y(thx.y() + 1)
                             thx.push_direction(DIR_SE)
                         else:
                             thx_blocked = True
                     elif direction == DIR_W:
-                        if levels[curlvl].is_empty(thx.get_frame().W(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().W(), clipping):
                             thx.set_x(thx.x() - 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().NW(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().NW(), clipping):
                             thx.set_x(thx.x() - 1)
                             thx.set_y(thx.y() - 1)
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(thx.get_frame().SW(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().SW(), clipping):
                             thx.set_x(thx.x() - 1)
                             thx.set_y(thx.y() + 1)
                             thx.push_direction(DIR_SW)
                         else:
                             thx_blocked = True
                     elif direction == DIR_N:
-                        if levels[curlvl].is_empty(thx.get_frame().N(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping):
                             thx.set_y(thx.y() - 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().NW(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().NW(), clipping):
                             thx.set_x(thx.x() - 1)
                             thx.set_y(thx.y() - 1)
                             thx.push_direction(DIR_NW)
-                        elif levels[curlvl].is_empty(thx.get_frame().NE(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().NE(), clipping):
                             thx.set_x(thx.x() + 1)
                             thx.set_y(thx.y() - 1)
                             thx.push_direction(DIR_NE)
                         else:
                             thx_blocked = True
                     elif direction == DIR_S:
-                        if levels[curlvl].is_empty(thx.get_frame().S(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().S(), clipping):
                             thx.set_y(thx.y() + 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().SW(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().SW(), clipping):
                             thx.set_x(thx.x() - 1)
                             thx.set_y(thx.y() + 1)
                             thx.push_direction(DIR_SW)
-                        elif levels[curlvl].is_empty(thx.get_frame().SE(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().SE(), clipping):
                             thx.set_x(thx.x() + 1)
                             thx.set_y(thx.y() + 1)
                             thx.push_direction(DIR_SE)
@@ -852,49 +858,49 @@ def main():
 
                     # Diagonals
                     elif direction == DIR_NW:
-                        if levels[curlvl].is_empty(thx.get_frame().NW(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().NW(), clipping):
                             thx.set_x(thx.x() - 1)
                             thx.set_y(thx.y() - 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().W(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().W(), clipping):
                             thx.set_x(thx.x() - 1)
                             thx.push_direction(DIR_W)
-                        elif levels[curlvl].is_empty(thx.get_frame().N(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping):
                             thx.set_y(thx.y() - 1)
                             thx.push_direction(DIR_N)
                         else:
                             thx_blocked = True
                     elif direction == DIR_NE:
-                        if levels[curlvl].is_empty(thx.get_frame().NE(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().NE(), clipping):
                             thx.set_x(thx.x() + 1)
                             thx.set_y(thx.y() - 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().E(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
                             thx.set_x(thx.x() + 1)
                             thx.push_direction(DIR_E)
-                        elif levels[curlvl].is_empty(thx.get_frame().N(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping):
                             thx.set_y(thx.y() - 1)
                             thx.push_direction(DIR_N)
                         else:
                             thx_blocked = True
                     elif direction == DIR_SE:
-                        if levels[curlvl].is_empty(thx.get_frame().SE(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().SE(), clipping):
                             thx.set_x(thx.x() + 1)
                             thx.set_y(thx.y() + 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().E(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
                             thx.set_x(thx.x() + 1)
                             thx.push_direction(DIR_E)
-                        elif levels[curlvl].is_empty(thx.get_frame().S(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().S(), clipping):
                             thx.set_y(thx.y() + 1)
                             thx.push_direction(DIR_S)
                         else:
                             thx_blocked = True
                     elif direction == DIR_SW:
-                        if levels[curlvl].is_empty(thx.get_frame().SW(), clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().SW(), clipping):
                             thx.set_x(thx.x() - 1)
                             thx.set_y(thx.y() + 1)
-                        elif levels[curlvl].is_empty(thx.get_frame().W(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().W(), clipping):
                             thx.set_x(thx.x() - 1)
                             thx.push_direction(DIR_W)
-                        elif levels[curlvl].is_empty(thx.get_frame().S(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().S(), clipping):
                             thx.set_y(thx.y() + 1)
                             thx.push_direction(DIR_S)
                         else:
@@ -923,9 +929,9 @@ def main():
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
                         big_frame = animation.frame(thx.x(), thx.y(), thx.width(), thx.height() + 1)
-                        if levels[curlvl].is_empty(big_frame, clipping):
+                        if is_empty(levels[curlvl], sprites, THX_SPRITE, big_frame, clipping):
                             thx.transform()
-                        elif levels[curlvl].is_empty(big_frame.N(), clipping):
+                        elif is_empty(levels[curlvl], sprites, THX_SPRITE, big_frame.N(), clipping):
                             thx.set_y(thx.y() - 1)
                             thx.transform()
                         else:

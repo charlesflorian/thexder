@@ -39,7 +39,7 @@ class Level(object):
         return self.map.tile(x,y)
 
 #    def is_empty(self, x, y, width, height, check_monsters=False, is_robot=True):
-    def is_empty(self, frame, check_monsters=False, is_robot=True):
+    def is_empty(self, frame, check_monsters=False):
                 
         # Tiles?
         for i in range(0, frame.width):
@@ -49,11 +49,7 @@ class Level(object):
                 
                 if tile > 0:
                     return False
-        
-#        if check_monsters:
-#            if sprite_collision(self.monsters(), -1, frame):
-#                return False
-                     
+                             
         return True
 
     def num_monsters(self):
