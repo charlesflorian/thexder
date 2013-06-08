@@ -281,6 +281,8 @@ def move_monsters(level, sprites, screen_x, clock):
     """
     #monsters = level.monsters()
     
+    dead_sprites = []
+    
     for monst in sprites:
         
         if monst != THX_SPRITE:
@@ -292,4 +294,27 @@ def move_monsters(level, sprites, screen_x, clock):
                 (new_x, new_y) = monster_move(level, sprites, sprites[monst], clock)
                 
                 sprites[monst].move_to(new_x, new_y)
+                
+                # ... and try to damage the robot.
+                
+                damage_robot = False
+                
+                thx = sprites[THX_SPRITE]
+                                
+                if sprites[monst].get_motion() == 0:
+                    if collision(sprites[monst].get_frame().N(), thx.get_frame()):
+                        damage_robot = True
+                elif sprites[monst].get_motion() == 2:
+                    if collision(animation.frame(monst_pos[0],monst_pos[1] - 1, 2, 4), thx.get_frame()):
+                        damage_robot = True
+                else:
+                    if collision(animation.frame(monst_pos[0] - 1,monst_pos[1] - 1, 4, 4), thx.get_frame()):
+                        damage_robot = True
+                        
+                if damage_robot:
+                    if not thx.take_damage():
+                        if sprites[monst].zap() <= 0:
+                            dead_sprites.append(monst)
 
+    for monst in dead_sprites:
+        del sprites[monst]

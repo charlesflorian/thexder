@@ -38,10 +38,10 @@ class Level(object):
     def tile(self, x, y):
         return self.map.tile(x,y)
 
-#    def is_empty(self, x, y, width, height, check_monsters=False, is_robot=True):
     def is_empty(self, frame, check_monsters=False):
-                
-        # Tiles?
+        """
+        This simply checks as to whether or not the given frame intersects with any tiles in the level.
+        """                
         for i in range(0, frame.width):
             for j in range(0, frame.height):
             

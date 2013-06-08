@@ -493,7 +493,7 @@ def target_hit(level, sprites, x, y):
     monst = sprite_collision(sprites, -1, animation.frame(x,y,1,1))
     if monst:
         # Monsters are killable!
-        if not sprites[monst].zap():
+        if sprites[monst].zap() <= 0:
         
             ident = sprites[monst].monster_type()
             
@@ -701,7 +701,6 @@ def main():
                     if keys[K_DOWN]:
                         thx.transform()
                     elif keys[K_RIGHT]:
-#                        if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
                         if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().E(), clipping):
                             thx.set_x(thx.x() + 1)
                         thx.push_direction(DIR_E)

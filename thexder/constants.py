@@ -113,6 +113,10 @@ COLORS = [pygame.Color(0,0,0), #Black
           pygame.Color(0x00,0xaa,0xaa), #Blue-Gray
           pygame.Color(0xfb,0xfb,0xfb)] #White
 
+# Damage areas for sprites of given motion types:
+
+
+
 # Events
 
 TIME_EVENT = pygame.USEREVENT + 1

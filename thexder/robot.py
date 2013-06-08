@@ -227,10 +227,12 @@ class Robot(object):
 # Actions
 
     def take_damage(self, damage=2):
-        if self.shield():
+        if self.shield() >= 0:
             self.shield_value -= damage
+            return False
         else:
             self.change_health(-1 * damage)
+            return True
 
     def fire(self):
         self.shots_fired += 1
