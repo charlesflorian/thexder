@@ -267,7 +267,7 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
     #pygame.display.update()
     
 
-def display_stats(screen, tiles, thx):
+def display_stats(screen, tiles, thx, level):
     """
     This just displays the status info at the bottom of the screen; the only bit it's missing is that
     at the moment it does not display which level we are on.
@@ -283,6 +283,7 @@ def display_stats(screen, tiles, thx):
     # The backslash we include is because this is the character in the tileset for the percent sign.
     display_text(screen, "{0:09d}".format(thx.score), tiles, False, 7, DISPLAY_HEIGHT + 2)
     display_text(screen, "{0:03d}".format(thx.get_health()) + "\\", tiles, False, 34, DISPLAY_HEIGHT)
+    display_text(screen, "{0:02d}".format(level + 1), tiles, False, 24 , DISPLAY_HEIGHT + 2)
     display_text(screen, str(thx.enmax) + "\\", tiles, False, 34, DISPLAY_HEIGHT + 2)
     
     shield = thx.shield()
@@ -608,7 +609,7 @@ def main():
         display_sprites(screen, levels[curlvl], sprites, game_clock % NUM_TILES, x_pos, y_pos)
         display_tile(screen, thx.tile(), 19, thx.y() - y_pos)
         
-        display_stats(screen, lvl_tiles, thx)
+        display_stats(screen, lvl_tiles, thx, curlvl)
     
         
         pygame.display.update()
