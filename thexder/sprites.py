@@ -312,7 +312,7 @@ def move_monsters(level, sprites, screen_x, clock):
                         damage_robot = True
                         
                 if damage_robot:
-                    if not thx.take_damage():
+                    if not thx.take_damage(4):
                         if sprites[monst].zap() <= 0:
                             dead_sprites.append(monst)
 

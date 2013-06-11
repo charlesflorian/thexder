@@ -260,7 +260,6 @@ def display_text(screen, say_what, tiles, center=True, x=0, y=0):
 
     if center:
         x = (DISPLAY_WIDTH - len(say_what)) / 2
-        y = 8
 
     for i in range(0, len(say_what)):
         display_tile(screen, tiles[ord(say_what[i])].tile(), x + i, y)
@@ -601,11 +600,18 @@ def main():
                 keys = pygame.key.get_pressed()
                 # We have to check for certain keys, e.g. quit.
                 if keys[K_q]:
-#                    display_text(screen, "Are you sure you want",lvl_tiles)
-#                    display_text(screen, "to quit? (Y/N)", lvl_tiles)
-#                    pause()
-                    pygame.display.quit()
-                    going = False
+                    display_text(screen, " CONFIRM EXIT TO DOS ",lvl_tiles, True, 0, 7)
+                    display_text(screen, "    PRESS Y OR N     ", lvl_tiles, True, 0, 8)
+                    pygame.display.update()
+
+                    pause_keys = pause()                    
+                    while pause_keys[K_n] == 0 and pause_keys[K_y] == 0:
+                        pause_keys = pause()
+                        
+                    if pause_keys[K_y]:
+                        pygame.display.quit()
+                        going = False
+                    
                 # These next two switch from one level to the next.
                 elif keys[K_m]:
                     curlvl += 1
@@ -644,6 +650,8 @@ def main():
                     pause()
                 elif keys[K_c]:
                     clipping = not clipping
+                elif keys[K_h]:
+                    thx.change_health(100)
                 elif keys[K_z]:
                     thx.shield_on()
                     

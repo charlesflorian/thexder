@@ -116,6 +116,8 @@ class Robot(object):
         self.reel = []
         self.thx_state = rState(THX_FLAG_ROBOT, DIR_E)
         
+        self.took_damage = False
+        
         self.shots_fired = 0
         
         self.shield_value = 0
@@ -227,12 +229,19 @@ class Robot(object):
 # Actions
 
     def take_damage(self, damage=2):
-        if self.shield() >= 0:
-            self.shield_value -= damage
-            return False
+        # You should only get hurt once per tick... although this doesn't seem quite right. I'm not sure
+        # that I completely get the rules for this.
+        if not self.took_damage:
+            self.took_damage = True
+            if self.shield() > 0:
+                self.shield_value -= damage * 2
+                return False
+            else:
+                self.change_health(-1 * damage)
+                return True
         else:
-            self.change_health(-1 * damage)
-            return True
+            return self.shield() > 0
+        
 
     def fire(self):
         self.shots_fired += 1
@@ -272,6 +281,7 @@ class Robot(object):
         return self.flags() & (THX_FLAG_TRANSFORMING | THX_FLAG_DEAD)
         
     def tick(self):
+        self.took_damage = False
         if self.health > self.enmax:
             self.health = self.enmax
         if len(self.reel):
