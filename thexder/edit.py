@@ -235,7 +235,7 @@ def load_levels():
     levels = []
     for i in range(0, 16):
         levels.append(level.Level(i, animations[i]))
-
+        
     return levels
 
 
@@ -286,7 +286,7 @@ def display_stats(screen, tiles, thx):
     display_text(screen, str(thx.enmax) + "\\", tiles, False, 34, DISPLAY_HEIGHT + 2)
     
     shield = thx.shield()
-    if shield:
+    if shield > 0:
         bar_width = tile_size * DISPLAY_WIDTH * shield / THX_SHIELD_STRENGTH
         screen.fill(COLORS[0x05], pygame.Rect((tile_size * DISPLAY_WIDTH - bar_width)/2, tile_size * (DISPLAY_HEIGHT + 1) + PX_SIZE, bar_width, PX_SIZE * (TILE_HEIGHT - 1)))
     else:
@@ -364,6 +364,24 @@ def display_sprites(screen, level, sprites, frame_number, x, y):
                 display_tile(screen, level.monster_data(sprite.monster_type()).tile(cur_frame),
                         pos[0] - x, pos[1] - y)
 
+
+def display_end_level(screen, level, tiles_text, lvl_tiles):
+    text = "LEVEL {0:02d} COMPLETED".format(level + 1)
+    count = 0
+    
+    while count < DISPLAY_WIDTH + len(text):
+        for event in pygame.event.get():
+            if event.type == TIME_EVENT:
+                display_text(screen, text[max(count - DISPLAY_WIDTH, 0):count],
+                            tiles_text, False, max(DISPLAY_WIDTH - count, 0), 7)
+
+                if count > len(text):
+                    # Should show the default tile behind it...
+                    display_tile(screen, lvl_tiles[LEVEL_END_TILE[level]].tile(), DISPLAY_WIDTH - (count - len(text)), 7)
+
+                count += 1
+                
+                pygame.display.update()
 
 def is_on_screen(screen_x, screen_y, x, y):
     if screen_x < x < screen_x + DISPLAY_WIDTH / 2 and screen_y <= y < screen_y + DISPLAY_HEIGHT:
@@ -639,25 +657,26 @@ def main():
 
                     thx.set_x(19)
                     thx.set_y(11)
-                elif keys[K_r]:
-                    # This should load and display the thexder robot animation. 
-                    #show_tiles(screen, lvl_tiles)
+                elif keys[K_z]:
+                    thx.shield_on()
+
+# Cheats!                    
+                elif keys[K_c]:
+                    clipping = not clipping
+                elif keys[K_h]:
+                    thx.change_health(100)
+
+# Debug!
+                elif keys[K_t]:
                     for i in range(0, 0x10):
                         for j in range(0, 0x20):
                             if (j * 0x10 + i) < len(lvl_tiles):
                                 display_text(screen, chr(j * 0x10 + i), lvl_tiles, False, i , j)
                     pygame.display.update()
                     pause()
-                elif keys[K_c]:
-                    clipping = not clipping
-                elif keys[K_h]:
-                    thx.change_health(100)
-                elif keys[K_z]:
-                    thx.shield_on()
+                elif keys[K_p]:
+                    print "X position: ", thx.x(), "  Y position:", thx.y()
                     
-                #elif keys[K_t]:
-                    # I still want to be able to look over the enemy tiles, since this seems to be an issue...
-                #    view_enemies(screen, levels[curlvl])
                 else:
                     pass
 
@@ -830,6 +849,26 @@ def main():
                             thx.push_direction(DIR_SE)
                         else:
                             thx_blocked = True
+                            
+                        # It is possible to finish the level in this case:
+                        if thx.x() >= LEVEL_END_X:
+                            display_end_level(screen, curlvl, lvl_tiles, lvl_graphics)
+                            #... and switch levels.
+
+                            curlvl += 1
+                            if curlvl >= 16:
+                                curlvl = (16-1)
+
+                            (lower_tile, upper_tile) = tile_bounds(curlvl)
+                            lvl_graphics = lvl_tiles[lower_tile:upper_tile]
+
+                            sprites = levels[curlvl].monsters().copy()
+                            sprites[THX_SPRITE] = thx
+
+                            thx.set_x(19)
+                            thx.set_y(11)
+
+
                     elif direction == DIR_W:
                         if is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().W(), clipping):
                             thx.set_x(thx.x() - 1)

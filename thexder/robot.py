@@ -228,6 +228,11 @@ class Robot(object):
 
 # Actions
 
+# TODO: Two things:
+#       1.  If you are a jet, flying over something on the ground should not incur damage.
+#       2.  If you take damage due to firing the laser while you have a shield, it should still 
+#           reduce your health.
+
     def take_damage(self, damage=2):
         # You should only get hurt once per tick... although this doesn't seem quite right. I'm not sure
         # that I completely get the rules for this.

@@ -92,6 +92,19 @@ SHOOTABLE_TILES = [[0x0d], [0x0d], [0x0d], [0x0d],
                     [],[],[],[0x0d]]
                 
 
+# Maybe the end of every level is at position 459?
+# Level 9 ends at position 457... But that might be within error.
+
+LEVEL_END_X = 459
+
+LEVEL_END_TILE = [0x08, 0x0c, 0x06, 0x0b,
+                  0x08, 0x08, 0x0b, 0x06,
+                  0x06, 0x07, 0x06, 0x0b,
+                  0x08, 0x08, 0x0b, 0x08]
+
+# These are where it should transition to the next level, at least if we are going to have it vary level by level.
+#LEVEL_END_X = [459, 459, 459, 459, 459]
+
 # This is the tile number (in every tile set, it seems) that causes damage when you stand on it.
 DAMAGE_TILE = 0x01
 
