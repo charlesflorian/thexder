@@ -868,6 +868,8 @@ def main():
 
                             thx.set_x(19)
                             thx.set_y(11)
+                            
+                            levels[curlvl].block_entry()
 
 
                     elif direction == DIR_W:

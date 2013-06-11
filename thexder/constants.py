@@ -102,6 +102,8 @@ LEVEL_END_TILE = [0x08, 0x0c, 0x06, 0x0b,
                   0x06, 0x07, 0x06, 0x0b,
                   0x08, 0x08, 0x0b, 0x08]
 
+LEVEL_BLOCK_TILE = 0x0b
+
 # These are where it should transition to the next level, at least if we are going to have it vary level by level.
 #LEVEL_END_X = [459, 459, 459, 459, 459]
 

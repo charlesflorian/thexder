@@ -35,6 +35,11 @@ class Level(object):
             self.monsters_data.append(animation.MonsterClass(anim[i], health_gain[i], 
                     enmax_gain[i], points[i], motion[i], health[i]))
 
+    def block_entry(self):
+        self.map.change_tile(18, 11, LEVEL_BLOCK_TILE)
+        self.map.change_tile(18, 12, LEVEL_BLOCK_TILE)
+        self.map.change_tile(18, 13, LEVEL_BLOCK_TILE)
+
     def tile(self, x, y):
         return self.map.tile(x,y)
 

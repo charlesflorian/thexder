@@ -298,8 +298,9 @@ class Robot(object):
             self.shield_value -= 1
 
     def shield_on(self):
-        self.shield_value = THX_SHIELD_STRENGTH
-        self.change_health(-10)
+        if self.shield() <= THX_SHIELD_STRENGTH * 0.25:
+            self.shield_value = THX_SHIELD_STRENGTH
+            self.change_health(-10)
 
     def die(self):
         self.push_flags(THX_FLAG_DEAD)
