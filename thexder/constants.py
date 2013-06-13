@@ -95,7 +95,7 @@ SHOOTABLE_TILES = [[0x0d], [0x0d], [0x0d], [0x0d],
 # Maybe the end of every level is at position 459?
 # Level 9 ends at position 457... But that might be within error.
 
-LEVEL_END_X = 459
+LEVEL_END_X = 460
 
 LEVEL_END_TILE = [0x08, 0x0c, 0x06, 0x0b,
                   0x08, 0x08, 0x0b, 0x06,
