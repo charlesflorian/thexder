@@ -610,9 +610,32 @@ def main():
         display_tile(screen, thx.tile(), 19, thx.y() - y_pos)
         
         display_stats(screen, lvl_tiles, thx, curlvl)
-    
-        
+
         pygame.display.update()
+
+        if thx.is_dead():
+            frame_count = 0
+            
+            dying = True
+            
+            while dying:
+                for event in pygame.event.get():
+                    if event.type == TIME_EVENT:
+                        frame_count += 1
+                        
+                        if frame_count % 4 == 0:                
+                            thx.tick()
+                            display_tile(screen, thx.tile(), 19, thx.y() - y_pos)                    
+                            pygame.display.update()
+                        
+                        if frame_count > 8:
+                            dying = False
+                    
+            display_text(screen, " GAME  OVER ", lvl_tiles, True, 0, 7)
+            pygame.display.update()
+            pause()
+            going = False
+        
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -684,10 +707,7 @@ def main():
 # TODO: I also need to work out how to change between the different robot states better.
 
             elif event.type == TIME_EVENT:
-            
-                if thx.is_dead():
-                    pass
-                    
+                                
                 game_clock += 1
             
                 move_monsters(levels[curlvl], sprites, x_pos, game_clock)

@@ -186,7 +186,7 @@ class Robot(object):
         return self.direction()
 
     def is_dead(self):
-        return self.flags() & THX_FLAG_DEAD
+        return self.get_health() <= 0
         
     def shield(self):
         return self.shield_value
@@ -228,10 +228,11 @@ class Robot(object):
 
 # Actions
 
-# TODO: Two things:
+# TODO: One thing:
 #       1.  If you are a jet, flying over something on the ground should not incur damage.
-#       2.  If you take damage due to firing the laser while you have a shield, it should still 
-#           reduce your health.
+
+    def laser_damage(self):
+        self.change_health(-2)
 
     def take_damage(self, damage=2):
         # You should only get hurt once per tick... although this doesn't seem quite right. I'm not sure
@@ -245,13 +246,13 @@ class Robot(object):
                 self.change_health(-1 * damage)
                 return True
         else:
-            return self.shield() > 0
+            return self.shield() == 0
         
 
     def fire(self):
         self.shots_fired += 1
         if self.shots_fired % THX_LASER_COUNT == 0:
-            self.take_damage()
+            self.laser_damage()
 
     def step(self):
         self.step_count += 1
@@ -294,7 +295,7 @@ class Robot(object):
         elif self.flags() & THX_FLAG_TRANSFORMING:
             self.clearflag(THX_FLAG_TRANSFORMING)
             
-        if self.shield():
+        if self.shield() > 0:
             self.shield_value -= 1
 
     def shield_on(self):
@@ -303,7 +304,8 @@ class Robot(object):
             self.change_health(-10)
 
     def die(self):
-        self.push_flags(THX_FLAG_DEAD)
+        self.reel = THX_DYING[:]
+        #self.reel = THX_FLYING_ANIM[:]
 
     def kill(self, monster_type):
         """
@@ -323,6 +325,8 @@ class Robot(object):
     def tile(self):
         if len(self.reel):                   # If there is a current animation...
             return self.tiles[self.reel[0]].tile() # ... use that frame.
+        elif self.is_dead():
+            return self.tiles[0x32].tile()
         else:
             # Return whatever other frame we should use.
             
@@ -364,8 +368,6 @@ class Robot(object):
         
         There are two auxiliary methods which simply change the state or direction.
         """
-        if state.flags & THX_FLAG_DEAD:
-            self.reel = THX_DYING[:]
         if state.flags & THX_FLAG_JET and self.is_robot(): # Transform to jet
             if self.direction() == DIR_E:
                 self.reel = THX_TRANSFORMING_RIGHT_ANIM[:]
