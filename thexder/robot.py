@@ -305,7 +305,6 @@ class Robot(object):
 
     def die(self):
         self.reel = THX_DYING[:]
-        #self.reel = THX_FLYING_ANIM[:]
 
     def kill(self, monster_type):
         """

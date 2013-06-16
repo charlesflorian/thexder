@@ -444,13 +444,16 @@ def dir_to_vec(direction):
         return (-2, 1)
     raise IndexError
 
-def draw_line(screen, start_x, start_y, direction, color=COLORS[0x0f]):
+# TODO: Fix this. Instead of stopping when it hits something not black, it should stop when it hits
+#       a level.is_empty == False, or something like that.
+#
+#       Basically, I need to completely re-write how the laser is fired.
+
+def draw_line(screen, level, sprites, screen_x, screen_y, start_x, start_y, direction, color=COLORS[0x0f]):
     """
     This will be the aux method that will draw a line from the (thexder-sized) pixel at
     position given by start_pos and going in the direction given.
     """
-#    if direction == (0, 0): # This is something that should never happen, if the enemies can't pass through you.
-#        raise ValueError
     
     x_pos = start_x = start_x * PX_SIZE
     y_pos = start_y = start_y * PX_SIZE
@@ -459,8 +462,10 @@ def draw_line(screen, start_x, start_y, direction, color=COLORS[0x0f]):
         scr_color = screen.get_at((x_pos, y_pos))
     except IndexError:
         return False
-    
+
     while scr_color == COLORS[0]:
+    
+#    while scr_color == COLORS[0] and is_empty(level, sprites, THX_SPRITE, animation.frame(x_pos/PX_SIZE + screen_x,y_pos/PX_SIZE + screen_y,1,1)):
         
         screen.fill(color, pygame.Rect(x_pos, y_pos, PX_SIZE, PX_SIZE))
         
@@ -483,13 +488,13 @@ def draw_line(screen, start_x, start_y, direction, color=COLORS[0x0f]):
     
     return (x_pos / PX_SIZE, y_pos / PX_SIZE)
 
-def draw_laser(screen, start_x, start_y, direction, facing):
+def draw_laser(screen, level, sprites, screen_x, screen_y, start_x, start_y, direction, facing):
     """
     This will draw the laser from the tile located at screen position (start_x, start_y) in the direction
     given, offset from the start_x, start_y position by the value of the tuple facing.
     """
     
-    result = draw_line(screen, (start_x + facing[0]) * TILE_WIDTH + TILE_WIDTH / 2,
+    result = draw_line(screen, level, sprites, screen_x, screen_y, (start_x + facing[0]) * TILE_WIDTH + TILE_WIDTH / 2,
             (start_y + facing[1]) * TILE_HEIGHT + 3, direction)
     
     if result:        
@@ -776,7 +781,7 @@ def main():
                             else:
                                 laser_dir = (1,0)
                                 
-                            result = draw_laser(screen, 20, robot_screen_y_pos(thx.y()), laser_dir, (1,0))
+                            result = draw_laser(screen, levels[curlvl], sprites, x_pos, y_pos, 20, robot_screen_y_pos(thx.y()), laser_dir, (1,0))
                             
                             if result:
                                 hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
@@ -797,7 +802,7 @@ def main():
                             else:
                                 laser_dir = (-1,0)
                                 
-                            result = draw_laser(screen, 20, robot_screen_y_pos(thx.y()), laser_dir, (-1,0))
+                            result = draw_laser(screen, levels[curlvl], sprites, x_pos, y_pos, 20, robot_screen_y_pos(thx.y()), laser_dir, (-1,0))
                             
                             if result:
                                 hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
@@ -986,7 +991,7 @@ def main():
                         thx.fire()
                         
                         direction = dir_to_vec(thx.facing())
-                        result = draw_laser(screen, 20, robot_screen_y_pos(thx.y()) + 1, direction, direction)
+                        result = draw_laser(screen, levels[curlvl], sprites, x_pos, y_pos, 20, robot_screen_y_pos(thx.y()) + 1, direction, direction)
 
                         if result:
                             hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)

@@ -4,14 +4,6 @@ from . import thx_map
 from . import data
 from sprites import sprite_collision
 
-#####################################################################
-#
-# Note that in certain levels, blocks of type 0x0d are things we can
-# pass through (after shooting them)...
-#
-# Actually, this seems to vary from level to level.
-#
-#####################################################################
 
 class Level(object):
     """
