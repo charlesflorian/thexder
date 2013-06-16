@@ -479,10 +479,10 @@ def draw_line(screen, level, sprites, screen_x, screen_y, start_x, start_y, dire
         try:
             scr_color = screen.get_at((x_pos, y_pos))
         except IndexError:
-            pygame.display.update()
+            #pygame.display.update()
             return False
     
-    pygame.display.update()
+    #pygame.display.update()
     
     # This should return the sprite id, if it hits a sprite. Or some way of hitting a wall?
     
@@ -501,6 +501,7 @@ def draw_laser(screen, level, sprites, screen_x, screen_y, start_x, start_y, dir
         return (result[0] / TILE_WIDTH, result[1] / TILE_HEIGHT)
     return False        
     
+
 
 def target_hit(level, sprites, x, y):
     """
@@ -538,21 +539,6 @@ def target_hit(level, sprites, x, y):
 # TODO: There is a bug here, in that when you are falling near the top of the level and firing
 #       the laser at the same time, it comes from the wrong spot.
 
-
-
-def robot_screen_y_pos(robot_y):
-    """
-    This just let's you know the y-position on the screen of the robot who is at the position
-    
-    robot_y
-    
-    in the actual level.
-    """
-    if robot_y < 11:
-        return robot_y
-    elif robot_y > LVL_HEIGHT - DISPLAY_HEIGHT / 2:
-        return robot_y - (LVL_HEIGHT - DISPLAY_HEIGHT)
-    return 11
 
 def main():
 
@@ -616,7 +602,7 @@ def main():
         
         display_stats(screen, lvl_tiles, thx, curlvl)
 
-        pygame.display.update()
+#        pygame.display.update()
 
         if thx.is_dead():
             frame_count = 0
@@ -728,6 +714,53 @@ def main():
                 
                     keys = pygame.key.get_pressed()
                     
+                    if keys[K_SPACE]:
+                        thx.fire()
+
+                        if thx.direction() == DIR_E:
+                            targets = get_laser_targets(sprites, x_pos, y_pos, True)
+
+                            if len(targets):
+                                target = targets[game_clock % len(targets)]
+                                laser_dir = (target[0] - (thx.x() + 2), target[1] - thx.y())
+                            else:
+                                laser_dir = (1,0)
+
+                            result = draw_laser(screen, levels[curlvl], sprites, x_pos,
+                                    y_pos, 20, thx.y() - y_pos, laser_dir, (1,0))
+                            
+                            if result:
+                                hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
+                                
+                                if hit:
+                                    if type(hit) is tuple:
+                                        if hit[0] == 0:
+                                            if hit[3] in SHOOTABLE_TILES[curlvl]:
+                                                levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
+                                        else:
+                                            thx.kill(levels[curlvl].monster_data(hit[1]))
+                        else:
+                            targets = get_laser_targets(sprites, x_pos, y_pos, False)
+                            
+                            if len(targets):
+                                target = targets[game_clock % len(targets)]
+                                laser_dir = (target[0] - thx.x(), target[1] - thx.y())
+                            else:
+                                laser_dir = (-1,0)
+                                
+                            result = draw_laser(screen, levels[curlvl], sprites, x_pos, y_pos, 20, thx.y() - y_pos, laser_dir, (-1,0))
+                            
+                            if result:
+                                hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
+
+                                if hit:
+                                    if type(hit) is tuple:
+                                        if hit[0] == 0:
+                                            if hit[3] in SHOOTABLE_TILES[curlvl]:
+                                                levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
+                                        else:
+                                            thx.kill(levels[curlvl].monster_data(hit[1]))
+
                     if thx.is_jumping():
                         if keys[K_UP] and thx.jump() and is_empty(levels[curlvl], sprites, THX_SPRITE, thx.get_frame().N(), clipping):
                             thx.set_y(thx.y() - 1)
@@ -767,53 +800,6 @@ def main():
                             thx.step()
                     
                     
-                    # TODO: Something funny here when jumping/falling... 
-                         
-                    if keys[K_SPACE]:
-                        thx.fire()
-
-                        if thx.direction() == DIR_E:
-                            targets = get_laser_targets(sprites, x_pos, y_pos, True)
-
-                            if len(targets):
-                                target = targets[game_clock % len(targets)]
-                                laser_dir = (target[0] - (thx.x() + 2), target[1] - thx.y())
-                            else:
-                                laser_dir = (1,0)
-                                
-                            result = draw_laser(screen, levels[curlvl], sprites, x_pos, y_pos, 20, robot_screen_y_pos(thx.y()), laser_dir, (1,0))
-                            
-                            if result:
-                                hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
-                                
-                                if hit:
-                                    if type(hit) is tuple:
-                                        if hit[0] == 0:
-                                            if hit[3] in SHOOTABLE_TILES[curlvl]:
-                                                levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
-                                        else:
-                                            thx.kill(levels[curlvl].monster_data(hit[1]))
-                        else:
-                            targets = get_laser_targets(sprites, x_pos, y_pos, False)
-                            
-                            if len(targets):
-                                target = targets[game_clock % len(targets)]
-                                laser_dir = (target[0] - thx.x(), target[1] - thx.y())
-                            else:
-                                laser_dir = (-1,0)
-                                
-                            result = draw_laser(screen, levels[curlvl], sprites, x_pos, y_pos, 20, robot_screen_y_pos(thx.y()), laser_dir, (-1,0))
-                            
-                            if result:
-                                hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
-
-                                if hit:
-                                    if type(hit) is tuple:
-                                        if hit[0] == 0:
-                                            if hit[3] in SHOOTABLE_TILES[curlvl]:
-                                                levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
-                                        else:
-                                            thx.kill(levels[curlvl].monster_data(hit[1]))
 
                     if thx.is_robot():
                         # Check to see if the ground below us damages the robot.
@@ -831,6 +817,27 @@ def main():
                                         # of motion. If it turns out to be, then it should try transform.
                     
                     keys = pygame.key.get_pressed()
+
+
+                    if keys[K_SPACE]:
+                        thx.fire()
+                        
+                        direction = dir_to_vec(thx.facing())
+                        
+                        result = draw_laser(screen, levels[curlvl], sprites, x_pos, y_pos, 20, thx.y() - y_pos + 1, direction, direction)
+
+                        if result:
+                            hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
+
+                            if hit:
+                                if type(hit) is tuple:
+                                    if hit[0] == 0:
+                                        if hit[3] in SHOOTABLE_TILES[curlvl]:
+                                            levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
+                                    else:
+                                        thx.kill(levels[curlvl].monster_data(hit[1]))
+
+
 
 # TODO: Fix the up/down thing when in a tunnel.
 
@@ -987,23 +994,6 @@ def main():
                         else:
                             thx_blocked = True
                     
-                    if keys[K_SPACE]:
-                        thx.fire()
-                        
-                        direction = dir_to_vec(thx.facing())
-                        result = draw_laser(screen, levels[curlvl], sprites, x_pos, y_pos, 20, robot_screen_y_pos(thx.y()) + 1, direction, direction)
-
-                        if result:
-                            hit = target_hit(levels[curlvl], sprites, result[0] + x_pos, result[1] + y_pos)
-
-                            if hit:
-                                if type(hit) is tuple:
-                                    if hit[0] == 0:
-                                        if hit[3] in SHOOTABLE_TILES[curlvl]:
-                                            levels[curlvl].map.change_tile(hit[1], hit[2], 0x00)
-                                    else:
-                                        thx.kill(levels[curlvl].monster_data(hit[1]))
-
                     
                     if thx_blocked:
                         # Try transform; if you can't, then turn around.
@@ -1027,7 +1017,8 @@ def main():
                 if thx.y() > LVL_HEIGHT - 4: # This is a little cheeky, since for a plane you 
                                              # _technically_ could be lower than this...
                     thx.set_y(LVL_HEIGHT - 4)
-                    
+            
+                pygame.display.update()        
                     
 ##############################
 
